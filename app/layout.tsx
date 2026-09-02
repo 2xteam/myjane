@@ -18,7 +18,6 @@ export const metadata: Metadata = {
   alternates: { canonical: SITE_URL },
   icons: {
     icon: [
-      { url: "/icon.svg", type: "image/svg+xml" },
       { url: "/favicon-32.png", sizes: "32x32", type: "image/png" },
       { url: "/icon-192.png", sizes: "192x192", type: "image/png" },
     ],
@@ -28,7 +27,7 @@ export const metadata: Metadata = {
 
 export const viewport: Viewport = {
   themeColor: [
-    { media: "(prefers-color-scheme: dark)", color: "#0f1e3d" },
+    { media: "(prefers-color-scheme: dark)", color: "#0c2343" },
     { media: "(prefers-color-scheme: light)", color: "#f4f6fc" },
   ],
 };

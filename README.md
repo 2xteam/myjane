@@ -34,14 +34,25 @@ npm run dev      # http://localhost:3002
 
 ### 아이콘 에셋
 
-`public/myjane-mark.svg`가 원본이고, 나머지 PNG는 여기서 생성한다.
-마크를 수정하면 아래 명령으로 다시 뽑는다(`sharp` 필요).
+`public/myjane-icon.png`(512px)가 원본이고 나머지는 여기서 파생한다.
+
+| 파일 | 용도 |
+|---|---|
+| `public/myjane-icon.png` | 원본 512px, 페이지 히어로에 사용 |
+| `public/icon-192.png` | PWA·안드로이드 홈 화면 |
+| `public/apple-touch-icon.png` | iOS 홈 화면 (180px) |
+| `public/favicon-32.png` | 브라우저 탭 |
+| `app/icon.png` | Next.js 파일 규칙 파비콘 (256px) |
+
+아이콘을 교체하면 512px 원본을 `public/myjane-icon.png`로 덮어쓴 뒤
+아래 명령으로 나머지를 다시 만든다(`sharp` 필요).
 
 ```bash
-node -e "const s=require('sharp');[[32,'favicon-32.png'],[180,'apple-touch-icon.png'],[192,'icon-192.png'],[512,'icon-512.png']].forEach(([n,f])=>s('public/myjane-mark.svg',{density:600}).resize(n,n).png().toFile('public/'+f))"
+node -e "const s=require('sharp');[[192,'public/icon-192.png'],[180,'public/apple-touch-icon.png'],[32,'public/favicon-32.png'],[256,'app/icon.png']].forEach(([n,p])=>s('public/myjane-icon.png').resize(n,n).png().toFile(p))"
 ```
 
-`app/icon.svg`는 파비콘용 복사본이므로 마크를 바꾸면 함께 갱신한다.
+아이콘 배경(네이비)이 페이지 배경과 거의 같아, 히어로의 타일은
+`.mark`의 테두리·그림자로 경계를 만든다.
 
 링크 대상을 바꾸거나 앱을 추가하려면 [app/page.tsx](app/page.tsx)의 `APPS` 배열만 수정하면 된다.
 

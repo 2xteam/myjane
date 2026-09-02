@@ -1,25 +1,26 @@
 /*
  * myjane 브랜드 색 — 아이콘(MJ 마크)에서 가져왔다.
- *  - 네이비 #16294F : 아이콘 배경
- *  - 앰버   #FDC02B : 모노그램 (밝은 #FFD24A ~ 진한 #F2951A 그라디언트)
+ *  - 네이비 #0c2343 : 아이콘 배경
+ *  - 앰버   #f9c22a : 모노그램 (진한 쪽 #f8a024)
+ * 값은 아이콘 원본 이미지에서 추출했다.
  *
  * 라이트 모드에서는 앰버가 흰 배경 위에서 대비가 부족하므로,
  * 텍스트용 강조색은 어둡게 조정한 값(--accent-ink)을 따로 둔다.
  */
 
 :root {
-  --bg: #0f1e3d;
-  --surface: #17294c;
-  --surface-hover: #1d3159;
+  --bg: #0c2343;
+  --surface: #143059;
+  --surface-hover: #1a3a68;
   --border: rgba(255, 255, 255, 0.12);
-  --border-strong: rgba(253, 192, 43, 0.55);
+  --border-strong: rgba(249, 194, 42, 0.55);
   --text: #ffffff;
-  --text-dim: #a8b6d4;
-  --accent: #fdc02b;
-  --accent-ink: #fdc02b;
-  --accent-soft: rgba(253, 192, 43, 0.14);
-  --gold-from: #ffd24a;
-  --gold-to: #f2951a;
+  --text-dim: #a3b3d2;
+  --accent: #f9c22a;
+  --accent-ink: #f9c22a;
+  --accent-soft: rgba(249, 194, 42, 0.14);
+  --gold-from: #f9c22a;
+  --gold-to: #f8a024;
 }
 
 @media (prefers-color-scheme: light) {
@@ -27,15 +28,15 @@
     --bg: #f4f6fc;
     --surface: #ffffff;
     --surface-hover: #fbfcff;
-    --border: rgba(22, 41, 79, 0.1);
-    --border-strong: rgba(242, 149, 26, 0.6);
-    --text: #16294f;
+    --border: rgba(12, 35, 67, 0.1);
+    --border-strong: rgba(248, 160, 36, 0.6);
+    --text: #0c2343;
     --text-dim: #5d6c8c;
-    --accent: #f2951a;
-    --accent-ink: #a2620a;
-    --accent-soft: rgba(253, 192, 43, 0.2);
-    --gold-from: #f2a81a;
-    --gold-to: #d97c08;
+    --accent: #f8a024;
+    --accent-ink: #9c6206;
+    --accent-soft: rgba(249, 194, 42, 0.2);
+    --gold-from: #d99a10;
+    --gold-to: #b06d05;
   }
 }
 
@@ -81,11 +82,17 @@ a {
   max-width: 520px;
 }
 
+/*
+ * 아이콘 배경(네이비)이 페이지 배경과 거의 같아 경계가 흐릿하게 비친다.
+ * 테두리와 그림자를 줘서 앱 아이콘 타일처럼 또렷하게 보이도록 한다.
+ */
 .mark {
-  width: 76px;
-  height: 76px;
-  border-radius: 20px;
-  margin-bottom: 18px;
+  width: 84px;
+  height: 84px;
+  border-radius: 22px;
+  margin-bottom: 20px;
+  border: 1px solid var(--border);
+  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.35);
 }
 
 .wordmark {

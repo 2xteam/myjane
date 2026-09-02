@@ -36,10 +36,10 @@ export default function Home() {
       <header className="hero">
         <Image
           className="mark"
-          src="/myjane-mark.svg"
+          src="/myjane-icon.png"
           alt=""
-          width={76}
-          height={76}
+          width={84}
+          height={84}
           priority
         />
         <h1 className="wordmark">
