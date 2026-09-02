@@ -40,6 +40,24 @@
   }
 }
 
+/*
+ * 통합 로그인 화면은 SnapWord의 인증 화면을 옮겨온 것이라
+ * 앱 계열 변수명(--bg-primary 등)을 쓴다. myjane 팔레트로 매핑해 둔다.
+ */
+:root {
+  --bg-primary: var(--bg);
+  --bg-card: var(--surface);
+  --text-primary: var(--text);
+  --text-secondary: var(--text-dim);
+  --text-muted: var(--text-dim);
+  --input-bg: var(--surface-hover);
+  --input-border: var(--border);
+  --danger: #ff6b6b;
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-xl: 20px;
+}
+
 * {
   box-sizing: border-box;
 }
@@ -240,4 +258,229 @@ a {
   * {
     transition: none !important;
   }
+}
+
+/* ────────────────────────────────────────────────────────────
+ * 인증 화면 (로그인 · 회원가입 · 계정 찾기)
+ *
+ * 구성은 결쩜사(kyulzzumsa.co.kr) 패턴을 따른다.
+ *   ← 메인으로 / 영문 eyebrow / 줄바꿈을 설계한 헤드라인 / 서브카피 / 카드 폼
+ * 색만 myjane 팔레트(남색 + 앰버)를 쓴다.
+ * 자세한 분석: my-obsidian-vault → 20-Design/결쩜사 페이지 패턴.md
+ * ──────────────────────────────────────────────────────────── */
+
+.auth {
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: clamp(28px, 6vw, 64px) 20px 40px;
+}
+
+.auth-inner {
+  width: 100%;
+  max-width: 460px;
+}
+
+.auth-back {
+  display: inline-block;
+  margin-bottom: clamp(28px, 6vw, 52px);
+  font-size: 0.85rem;
+  color: var(--text-dim);
+}
+
+.auth-back:hover {
+  color: var(--accent-ink);
+}
+
+/* eyebrow — 영문 대문자 라벨. 이 사이트들의 서명 같은 요소 */
+.auth-eyebrow {
+  margin: 0 0 14px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.18em;
+  color: var(--accent-ink);
+}
+
+/* 헤드라인 — 줄바꿈 위치까지 설계 대상이다 */
+.auth-headline {
+  margin: 0;
+  font-size: clamp(28px, 6vw, 40px);
+  font-weight: 800;
+  line-height: 1.28;
+  letter-spacing: -0.02em;
+  word-break: keep-all;
+}
+
+.auth-headline span {
+  background: linear-gradient(160deg, var(--gold-from), var(--gold-to));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.auth-sub {
+  margin: 14px 0 0;
+  font-size: 0.95rem;
+  line-height: 1.7;
+  color: var(--text-dim);
+  word-break: keep-all;
+}
+
+.auth-card {
+  margin-top: clamp(28px, 5vw, 40px);
+  padding: clamp(22px, 5vw, 30px);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  background: var(--surface);
+  box-shadow: 0 18px 44px rgba(0, 0, 0, 0.18);
+}
+
+/* 출처 앱 배지 — "SnapWord으로 계속하기" */
+.auth-app {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding: 9px 14px;
+  margin-bottom: 20px;
+  border-radius: 999px;
+  background: var(--accent-soft);
+  color: var(--accent-ink);
+  font-size: 0.85rem;
+}
+
+.auth-app img {
+  border-radius: 7px;
+}
+
+/* 탭 — 로그인 / 회원가입 */
+.auth-tabs {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 4px;
+  padding: 4px;
+  margin-bottom: 24px;
+  border-radius: 12px;
+  background: var(--surface-hover);
+  border: 1px solid var(--border);
+}
+
+.auth-tab {
+  padding: 9px 0;
+  border-radius: 9px;
+  text-align: center;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--text-dim);
+}
+
+.auth-tab[aria-current="page"] {
+  background: var(--accent);
+  color: #0c2343;
+}
+
+.auth-field {
+  margin-bottom: 16px;
+}
+
+.auth-label {
+  display: block;
+  margin-bottom: 6px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--text-dim);
+}
+
+.auth-input {
+  width: 100%;
+  padding: 12px 14px;
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  background: var(--bg);
+  color: var(--text);
+  font-size: 1rem;
+}
+
+.auth-input:focus {
+  outline: none;
+  border-color: var(--accent);
+}
+
+.auth-hint {
+  margin: 6px 0 0;
+  font-size: 0.75rem;
+  color: var(--text-dim);
+}
+
+.auth-btn {
+  width: 100%;
+  padding: 14px 16px;
+  margin-top: 6px;
+  border: none;
+  border-radius: 12px;
+  background: var(--accent);
+  color: #0c2343;
+  font-size: 1rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.auth-btn:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+
+.auth-btn-ghost {
+  width: 100%;
+  padding: 13px 16px;
+  margin-top: 10px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: transparent;
+  color: var(--text);
+  font-size: 0.95rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.auth-msg {
+  margin: 16px 0 0;
+  font-size: 0.85rem;
+  color: var(--danger);
+  word-break: keep-all;
+}
+
+.auth-links {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 8px;
+  margin-top: 22px;
+  font-size: 0.85rem;
+  color: var(--text-dim);
+}
+
+.auth-links a {
+  color: var(--accent-ink);
+  font-weight: 600;
+}
+
+/* NOTE 블록 — 결쩜사의 "이것만 확인해 주세요" 패턴 */
+.auth-note {
+  margin-top: clamp(24px, 5vw, 34px);
+  padding-top: 18px;
+  border-top: 1px solid var(--border);
+  font-size: 0.78rem;
+  line-height: 1.7;
+  color: var(--text-dim);
+  word-break: keep-all;
+}
+
+.auth-note strong {
+  display: block;
+  margin-bottom: 6px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  color: var(--text-dim);
 }
