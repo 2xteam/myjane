@@ -1,42 +1,50 @@
 /*
- * myjane 브랜드 색 — 아이콘(MJ 마크)에서 가져왔다.
- *  - 네이비 #0c2343 : 아이콘 배경
- *  - 앰버   #f9c22a : 모노그램 (진한 쪽 #f8a024)
- * 값은 아이콘 원본 이미지에서 추출했다.
+ * myjane 팔레트 — 결쩜사(kyulzzumsa.co.kr)의 색 체계를 따른다.
+ *   보라 #7C3AED (주 강조) + 금 #C9A84C (격식·프리미엄 강조점)
+ *   밝은 오프화이트 #FDFBFF 위에 얹는 라이트 기본, 다크는 딥퍼플로 뒤집는다.
  *
- * 라이트 모드에서는 앰버가 흰 배경 위에서 대비가 부족하므로,
- * 텍스트용 강조색은 어둡게 조정한 값(--accent-ink)을 따로 둔다.
+ * 핵심 규칙: 순수한 검정·회색을 쓰지 않는다. 모든 중립색에 보라가 섞여 있다.
+ * 근거: my-obsidian-vault → 20-Design/결쩜사 디자인 시스템.md
  */
 
 :root {
-  --bg: #0c2343;
-  --surface: #143059;
-  --surface-hover: #1a3a68;
-  --border: rgba(255, 255, 255, 0.12);
-  --border-strong: rgba(249, 194, 42, 0.55);
-  --text: #ffffff;
-  --text-dim: #a3b3d2;
-  --accent: #f9c22a;
-  --accent-ink: #f9c22a;
-  --accent-soft: rgba(249, 194, 42, 0.14);
-  --gold-from: #f9c22a;
-  --gold-to: #f8a024;
+  --bg: #fdfbff;
+  --surface: #ffffff;
+  --surface-hover: #f5f0fc;
+  --border: rgba(139, 92, 246, 0.14);
+  --border-strong: rgba(124, 58, 237, 0.45);
+  --text: #1a0f2e;
+  --text-dim: #6b5f8a;
+  --accent: #7c3aed;
+  --accent-ink: #7c3aed;
+  --accent-soft: rgba(139, 92, 246, 0.08);
+  /* 강조 그라디언트 — 워드마크·헤드라인 */
+  --gold-from: #8b5cf6;
+  --gold-to: #7c3aed;
+  /* 금색 — 배지·구분선 같은 좁은 면적에만 */
+  --gold: #c9a84c;
+  --gold-soft: rgba(201, 168, 76, 0.12);
+  /* 버튼 위 글자색 */
+  --on-accent: #ffffff;
 }
 
-@media (prefers-color-scheme: light) {
+@media (prefers-color-scheme: dark) {
   :root {
-    --bg: #f4f6fc;
-    --surface: #ffffff;
-    --surface-hover: #fbfcff;
-    --border: rgba(12, 35, 67, 0.1);
-    --border-strong: rgba(248, 160, 36, 0.6);
-    --text: #0c2343;
-    --text-dim: #5d6c8c;
-    --accent: #f8a024;
-    --accent-ink: #9c6206;
-    --accent-soft: rgba(249, 194, 42, 0.2);
-    --gold-from: #d99a10;
-    --gold-to: #b06d05;
+    --bg: #1e0938;
+    --surface: #2d1054;
+    --surface-hover: #3a1760;
+    --border: rgba(196, 181, 253, 0.18);
+    --border-strong: rgba(167, 139, 250, 0.6);
+    --text: #f6f1fb;
+    --text-dim: #b0a3cd;
+    --accent: #a78bfa;
+    --accent-ink: #c4b5fd;
+    --accent-soft: rgba(167, 139, 250, 0.16);
+    --gold-from: #c4b5fd;
+    --gold-to: #a78bfa;
+    --gold: #e8c96a;
+    --gold-soft: rgba(232, 201, 106, 0.14);
+    --on-accent: #21083f;
   }
 }
 
@@ -376,7 +384,7 @@ a {
 
 .auth-tab[aria-current="page"] {
   background: var(--accent);
-  color: #0c2343;
+  color: var(--on-accent);
 }
 
 .auth-field {
@@ -419,7 +427,7 @@ a {
   border: none;
   border-radius: 12px;
   background: var(--accent);
-  color: #0c2343;
+  color: var(--on-accent);
   font-size: 1rem;
   font-weight: 700;
   cursor: pointer;

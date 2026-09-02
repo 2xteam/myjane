@@ -19,18 +19,20 @@ npm run dev      # http://localhost:3002
 
 ## 디자인
 
-브랜드 색은 MJ 아이콘([public/myjane-mark.svg](public/myjane-mark.svg))에서 가져왔다.
-값은 [app/globals.css](app/globals.css)의 CSS 변수로 모아 두었다.
+색 체계는 **결쩜사(kyulzzumsa.co.kr) 팔레트**를 따른다.
+분석 문서: `my-obsidian-vault → 20-Design/결쩜사 디자인 시스템.md`
 
-| | 배경 | 강조 |
-|---|---|---|
-| 다크(기본) | `#0f1e3d` | `#fdc02b` |
-| 라이트 | `#f4f6fc` | `#f2951a` (텍스트용 `#a2620a`) |
+| | 배경 | 표면 | 강조 |
+|---|---|---|---|
+| 라이트(기본) | `#fdfbff` | `#ffffff` | `#7c3aed` |
+| 다크 | `#1e0938` | `#2d1054` | `#a78bfa` |
 
-앰버는 흰 배경에서 대비가 부족하므로, 라이트 모드의 텍스트 강조에는
-어둡게 조정한 `--accent-ink`를 쓴다.
+핵심 규칙은 **순수한 검정·회색을 쓰지 않는 것**이다. 본문색이 `#1a0f2e`처럼
+모든 중립색에 보라가 섞여 있다. 이것만 지켜도 같은 결로 보인다.
+금색(`#c9a84c`)은 배지·구분선 같은 좁은 면적에만 쓴다.
+
+값은 [app/globals.css](app/globals.css)의 CSS 변수에 모아 두었고,
 라이트/다크는 OS 설정(`prefers-color-scheme`)을 따른다.
-카드 아이콘은 두 앱의 앱 전환 메뉴에서 쓰는 아이콘과 동일한 이미지다.
 
 ### 아이콘 에셋
 
