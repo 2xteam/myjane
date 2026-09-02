@@ -16,12 +16,20 @@ export const metadata: Metadata = {
     description: "영어 단어장 SnapWord, 오답노트 SnapNote 바로가기",
   },
   alternates: { canonical: SITE_URL },
+  icons: {
+    icon: [
+      { url: "/icon.svg", type: "image/svg+xml" },
+      { url: "/favicon-32.png", sizes: "32x32", type: "image/png" },
+      { url: "/icon-192.png", sizes: "192x192", type: "image/png" },
+    ],
+    apple: "/apple-touch-icon.png",
+  },
 };
 
 export const viewport: Viewport = {
   themeColor: [
-    { media: "(prefers-color-scheme: dark)", color: "#000000" },
-    { media: "(prefers-color-scheme: light)", color: "#f2f2f7" },
+    { media: "(prefers-color-scheme: dark)", color: "#0f1e3d" },
+    { media: "(prefers-color-scheme: light)", color: "#f4f6fc" },
   ],
 };
 

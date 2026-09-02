@@ -34,6 +34,14 @@ export default function Home() {
   return (
     <main className="page">
       <header className="hero">
+        <Image
+          className="mark"
+          src="/myjane-mark.svg"
+          alt=""
+          width={76}
+          height={76}
+          priority
+        />
         <h1 className="wordmark">
           my<span>jane</span>
         </h1>

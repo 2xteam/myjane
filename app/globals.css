@@ -1,32 +1,41 @@
 /*
- * SnapWord·SnapNote와 같은 색 체계를 사용한다.
- *  - 기본(다크): 배경 #000000 / 강조 #2ee8ae
- *  - 라이트    : 배경 #f2f2f7 / 강조 #1ab485
+ * myjane 브랜드 색 — 아이콘(MJ 마크)에서 가져왔다.
+ *  - 네이비 #16294F : 아이콘 배경
+ *  - 앰버   #FDC02B : 모노그램 (밝은 #FFD24A ~ 진한 #F2951A 그라디언트)
+ *
+ * 라이트 모드에서는 앰버가 흰 배경 위에서 대비가 부족하므로,
+ * 텍스트용 강조색은 어둡게 조정한 값(--accent-ink)을 따로 둔다.
  */
 
 :root {
-  --bg: #000000;
-  --surface: #101012;
-  --surface-hover: #17171a;
-  --border: rgba(255, 255, 255, 0.1);
-  --border-strong: rgba(46, 232, 174, 0.45);
+  --bg: #0f1e3d;
+  --surface: #17294c;
+  --surface-hover: #1d3159;
+  --border: rgba(255, 255, 255, 0.12);
+  --border-strong: rgba(253, 192, 43, 0.55);
   --text: #ffffff;
-  --text-dim: #a1a1aa;
-  --accent: #2ee8ae;
-  --accent-soft: rgba(46, 232, 174, 0.12);
+  --text-dim: #a8b6d4;
+  --accent: #fdc02b;
+  --accent-ink: #fdc02b;
+  --accent-soft: rgba(253, 192, 43, 0.14);
+  --gold-from: #ffd24a;
+  --gold-to: #f2951a;
 }
 
 @media (prefers-color-scheme: light) {
   :root {
-    --bg: #f2f2f7;
+    --bg: #f4f6fc;
     --surface: #ffffff;
-    --surface-hover: #fbfbfd;
-    --border: rgba(0, 0, 0, 0.08);
-    --border-strong: rgba(26, 180, 133, 0.5);
-    --text: #1a1a1a;
-    --text-dim: #6b6b73;
-    --accent: #1ab485;
-    --accent-soft: rgba(26, 180, 133, 0.1);
+    --surface-hover: #fbfcff;
+    --border: rgba(22, 41, 79, 0.1);
+    --border-strong: rgba(242, 149, 26, 0.6);
+    --text: #16294f;
+    --text-dim: #5d6c8c;
+    --accent: #f2951a;
+    --accent-ink: #a2620a;
+    --accent-soft: rgba(253, 192, 43, 0.2);
+    --gold-from: #f2a81a;
+    --gold-to: #d97c08;
   }
 }
 
@@ -72,6 +81,13 @@ a {
   max-width: 520px;
 }
 
+.mark {
+  width: 76px;
+  height: 76px;
+  border-radius: 20px;
+  margin-bottom: 18px;
+}
+
 .wordmark {
   margin: 0;
   font-size: clamp(2.5rem, 9vw, 3.5rem);
@@ -80,7 +96,10 @@ a {
 }
 
 .wordmark span {
-  color: var(--accent);
+  background: linear-gradient(160deg, var(--gold-from), var(--gold-to));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
 }
 
 .tagline {
@@ -143,7 +162,7 @@ a {
   border-radius: 14px;
   flex-shrink: 0;
   object-fit: cover;
-  background: var(--accent-soft);
+  background: #ffffff;
 }
 
 .card-name {
@@ -180,7 +199,7 @@ a {
   padding: 4px 10px;
   border-radius: 999px;
   background: var(--accent-soft);
-  color: var(--accent);
+  color: var(--accent-ink);
 }
 
 .card-cta {
@@ -188,7 +207,7 @@ a {
   padding-top: 4px;
   font-size: 0.92rem;
   font-weight: 700;
-  color: var(--accent);
+  color: var(--accent-ink);
   display: inline-flex;
   align-items: center;
   gap: 6px;

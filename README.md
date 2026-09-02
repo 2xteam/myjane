@@ -19,16 +19,29 @@ npm run dev      # http://localhost:3002
 
 ## 디자인
 
-SnapWord·SnapNote와 같은 색 체계를 쓴다. 값은 [app/globals.css](app/globals.css)의
-CSS 변수로 모아 두었다.
+브랜드 색은 MJ 아이콘([public/myjane-mark.svg](public/myjane-mark.svg))에서 가져왔다.
+값은 [app/globals.css](app/globals.css)의 CSS 변수로 모아 두었다.
 
 | | 배경 | 강조 |
 |---|---|---|
-| 다크(기본) | `#000000` | `#2ee8ae` |
-| 라이트 | `#f2f2f7` | `#1ab485` |
+| 다크(기본) | `#0f1e3d` | `#fdc02b` |
+| 라이트 | `#f4f6fc` | `#f2951a` (텍스트용 `#a2620a`) |
 
+앰버는 흰 배경에서 대비가 부족하므로, 라이트 모드의 텍스트 강조에는
+어둡게 조정한 `--accent-ink`를 쓴다.
 라이트/다크는 OS 설정(`prefers-color-scheme`)을 따른다.
 카드 아이콘은 두 앱의 앱 전환 메뉴에서 쓰는 아이콘과 동일한 이미지다.
+
+### 아이콘 에셋
+
+`public/myjane-mark.svg`가 원본이고, 나머지 PNG는 여기서 생성한다.
+마크를 수정하면 아래 명령으로 다시 뽑는다(`sharp` 필요).
+
+```bash
+node -e "const s=require('sharp');[[32,'favicon-32.png'],[180,'apple-touch-icon.png'],[192,'icon-192.png'],[512,'icon-512.png']].forEach(([n,f])=>s('public/myjane-mark.svg',{density:600}).resize(n,n).png().toFile('public/'+f))"
+```
+
+`app/icon.svg`는 파비콘용 복사본이므로 마크를 바꾸면 함께 갱신한다.
 
 링크 대상을 바꾸거나 앱을 추가하려면 [app/page.tsx](app/page.tsx)의 `APPS` 배열만 수정하면 된다.
 
