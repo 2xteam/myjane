@@ -26,17 +26,15 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
-  themeColor: [
-    { media: "(prefers-color-scheme: dark)", color: "#1e0938" },
-    { media: "(prefers-color-scheme: light)", color: "#fdfbff" },
-  ],
+  // 라이트 전용 사이트
+  themeColor: "#fdfbff",
 };
 
 export default function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html lang="ko">
+    <html lang="ko" style={{ colorScheme: "light" }}>
       <head>
         {/* Pretendard — 결쩜사와 동일한 본문 서체 */}
         <link

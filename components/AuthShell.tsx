@@ -42,13 +42,23 @@ export function AuthShell({
       <main className="auth">
         <div className="auth-shell">
           <aside className="auth-story">
-            {/* 기록이 이어지는 흐름을 은유한 얇은 곡선 */}
-            <svg viewBox="0 0 280 240" preserveAspectRatio="none" aria-hidden="true">
-              <g fill="none" stroke="rgba(200,184,255,0.22)" strokeWidth="0.8">
-                <ellipse cx="140" cy="70" rx="190" ry="52" />
-                <ellipse cx="140" cy="70" rx="150" ry="34" />
-                <ellipse cx="140" cy="86" rx="210" ry="66" />
+            {/* 결(結)을 은유한 실 — 원본처럼 패널 위쪽을 가로지르는 넓은 호 */}
+            <svg viewBox="0 0 280 640" preserveAspectRatio="none" aria-hidden="true">
+              <g fill="none" strokeWidth="0.9">
+                <path
+                  d="M-40 150 C 60 60, 220 60, 320 150"
+                  stroke="rgba(200,184,255,0.20)"
+                />
+                <path
+                  d="M-40 178 C 70 96, 210 96, 320 178"
+                  stroke="rgba(232,201,106,0.16)"
+                />
+                <path
+                  d="M-40 120 C 80 210, 200 210, 320 120"
+                  stroke="rgba(200,184,255,0.14)"
+                />
               </g>
+              <circle cx="236" cy="104" r="2.6" fill="#ead58c" opacity="0.8" />
             </svg>
 
             <div className="auth-story-body">

@@ -28,43 +28,13 @@
   --on-accent: #ffffff;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --bg: #1e0938;
-    --surface: #2d1054;
-    --surface-hover: #3a1760;
-    --border: rgba(196, 181, 253, 0.18);
-    --border-strong: rgba(167, 139, 250, 0.6);
-    --text: #f6f1fb;
-    --text-dim: #b0a3cd;
-    --accent: #a78bfa;
-    --accent-ink: #c4b5fd;
-    --accent-soft: rgba(167, 139, 250, 0.16);
-    --gold-from: #c4b5fd;
-    --gold-to: #a78bfa;
-    --gold: #e8c96a;
-    --gold-soft: rgba(232, 201, 106, 0.14);
-    --on-accent: #21083f;
-  }
-}
-
 /*
- * 통합 로그인 화면은 SnapWord의 인증 화면을 옮겨온 것이라
- * 앱 계열 변수명(--bg-primary 등)을 쓴다. myjane 팔레트로 매핑해 둔다.
+ * 다크 모드를 두지 않는다. 결쩜사는 라이트 전용 사이트이고,
+ * 흰 카드 위 보라라는 조합 자체가 이 디자인의 인상이다.
+ * OS 설정을 따라가면 카드가 어두워지면서 다른 사이트처럼 보인다.
  */
-:root {
-  --bg-primary: var(--bg);
-  --bg-card: var(--surface);
-  --text-primary: var(--text);
-  --text-secondary: var(--text-dim);
-  --text-muted: var(--text-dim);
-  --input-bg: var(--surface-hover);
-  --input-border: var(--border);
-  --danger: #ff6b6b;
-  --radius-sm: 8px;
-  --radius-md: 12px;
-  --radius-xl: 20px;
-}
+
+/* ── 기본 ─────────────────────────────────────────── */
 
 * {
   box-sizing: border-box;
@@ -517,6 +487,8 @@ a {
 
 /* 페이지 — 옅은 보라 배경 위에 은은한 빛 */
 .auth {
+  position: relative;
+  overflow: hidden;
   min-height: calc(100dvh - 58px);
   display: flex;
   flex-direction: column;
@@ -526,6 +498,17 @@ a {
   background:
     radial-gradient(circle at 85% 8%, var(--accent-soft), transparent 42%),
     radial-gradient(circle at 10% 80%, var(--accent-soft), transparent 46%);
+}
+
+/* 원본 배경의 얇은 대각선 */
+.auth::before {
+  content: "";
+  position: absolute;
+  inset: -20%;
+  background:
+    linear-gradient(104deg, transparent 49.9%, rgba(139, 92, 246, 0.07) 50%,
+      transparent 50.1%);
+  pointer-events: none;
 }
 
 /* 스토리 패널 + 폼 카드 = 한 덩어리 */
@@ -551,7 +534,7 @@ a {
   /* 원본처럼 스토리 패널이 폼 카드보다 위아래로 더 길게 나온다 */
   .auth-shell > .auth-story {
     align-self: stretch;
-    margin: -26px 0;
+    margin: -58px 0;
     border-radius: 24px 0 0 24px;
     box-shadow: 0 24px 65px rgba(37, 13, 62, 0.14);
   }
