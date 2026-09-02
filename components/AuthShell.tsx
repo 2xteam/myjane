@@ -32,7 +32,9 @@ export function AuthShell({
       <header className="auth-topbar">
         <Link href="/" className="auth-brand">
           <Image src="/myjane-icon.png" alt="" width={26} height={26} />
-          my<span>jane</span>
+          <span className="brand-word">
+            my<span>jane</span>
+          </span>
         </Link>
         <Link href="/" className="auth-home">
           ← 메인으로

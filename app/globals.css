@@ -164,10 +164,11 @@ a {
 
 .headline {
   margin: 0;
+  font-family: "Gowun Batang", serif;
   font-size: clamp(24px, 4.4vw, 34px);
-  font-weight: 800;
-  line-height: 1.38;
-  letter-spacing: -0.03em;
+  font-weight: 700;
+  line-height: 1.4;
+  letter-spacing: -0.8px;
   word-break: keep-all;
 }
 
@@ -469,6 +470,12 @@ a {
   border-radius: 8px;
 }
 
+/* my / jane 사이에 flex gap이 끼어들지 않도록 한 덩어리로 묶는다 */
+.brand-word {
+  display: inline-block;
+  white-space: nowrap;
+}
+
 .auth-brand span {
   background: linear-gradient(160deg, var(--gold-from), var(--gold-to));
   -webkit-background-clip: text;
@@ -533,8 +540,8 @@ a {
 
   /* 원본처럼 스토리 패널이 폼 카드보다 위아래로 더 길게 나온다 */
   .auth-shell > .auth-story {
-    align-self: stretch;
-    margin: -58px 0;
+    align-self: center;
+    margin: 0;
     border-radius: 24px 0 0 24px;
     box-shadow: 0 24px 65px rgba(37, 13, 62, 0.14);
   }
@@ -562,6 +569,8 @@ a {
 
 @media (min-width: 860px) {
   .auth-story {
+    /* 원본 실측: 패널 774px, 폼 카드 552px */
+    min-height: 774px;
     padding: 58px 38px 42px;
   }
 }
@@ -590,10 +599,12 @@ a {
 
 .auth-headline {
   margin: 0;
-  font-size: clamp(20px, 4.5vw, 23px);
-  font-weight: 800;
+  /* 결쩜사의 큰 헤드라인은 명조(Gowun Batang) 700이다 */
+  font-family: "Gowun Batang", serif;
+  font-size: clamp(22px, 4.6vw, 28px);
+  font-weight: 700;
   line-height: 1.42;
-  letter-spacing: -0.03em;
+  letter-spacing: -0.8px;
   color: #fff;
   word-break: keep-all;
 }

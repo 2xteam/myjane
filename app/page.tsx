@@ -91,7 +91,9 @@ export default function Home() {
       <header className="site-top">
         <Link href="/" className="auth-brand">
           <Image src="/myjane-icon.png" alt="" width={26} height={26} />
-          my<span>jane</span>
+          <span className="brand-word">
+            my<span>jane</span>
+          </span>
         </Link>
         <nav className="site-nav">
           <Link href="/login">로그인</Link>
