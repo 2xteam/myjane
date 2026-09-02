@@ -83,7 +83,8 @@ function LoginForm() {
       note={
         <>
           <strong>NOTE</strong>
-          하나의 계정으로 SnapWord · SnapNote · FitLog를 모두 사용해요.
+          계정 하나로 공부 기록(SnapWord · SnapNote)과 건강 기록(FitLog)에
+          들어가요.
           <br />
           공용 기기에서는 사용 후 로그아웃해 주세요.
         </>

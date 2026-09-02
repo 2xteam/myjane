@@ -115,9 +115,9 @@ function SignupForm() {
       }
       storySub={
         <>
-          한 번 가입하면 SnapWord · SnapNote · FitLog를
+          한 번 가입하면 공부 기록과 건강 기록을
           <br />
-          같은 계정으로 사용해요.
+          같은 계정으로 골라 써요.
         </>
       }
       app={app}

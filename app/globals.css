@@ -256,10 +256,18 @@ a {
   margin-top: 30px;
 }
 
+/* 카테고리마다 카드 수가 달라 그리드를 따로 둔다 */
 @media (min-width: 760px) {
-  .apps {
-    grid-template-columns: repeat(3, 1fr);
+  .apps--pair {
+    grid-template-columns: repeat(2, 1fr);
   }
+}
+
+/* 단독 카드는 화면을 다 채우면 허전해서 폭을 묶는다 */
+.apps--solo {
+  max-width: 620px;
+  margin-left: auto;
+  margin-right: auto;
 }
 
 .card {
@@ -294,6 +302,19 @@ a {
   flex-shrink: 0;
   background: #fff;
   border: 1px solid var(--border);
+}
+
+.card-role {
+  margin-left: auto;
+  align-self: flex-start;
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: var(--surface-hover);
+  border: 1px solid var(--border);
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--accent-ink);
+  white-space: nowrap;
 }
 
 .card-name {
@@ -427,6 +448,11 @@ a {
   border-radius: 8px;
 }
 
+/* 어두운 푸터에서는 my 를 흰색, jane 을 보라로 (앱 푸터의 워드마크와 같은 톤) */
+.site-footer-brand .brand-word > span {
+  color: #a78bfa;
+}
+
 .site-footer a {
   color: rgba(232, 222, 250, 0.85);
 }
@@ -464,6 +490,8 @@ a {
   font-size: 1.05rem;
   font-weight: 800;
   letter-spacing: -0.02em;
+  /* my 는 검정, jane 은 보라 */
+  color: #14121a;
 }
 
 .auth-brand img {
@@ -476,11 +504,9 @@ a {
   white-space: nowrap;
 }
 
-.auth-brand span {
-  background: linear-gradient(160deg, var(--gold-from), var(--gold-to));
-  -webkit-background-clip: text;
-  background-clip: text;
-  color: transparent;
+/* 워드마크의 jane 만 보라로 */
+.auth-brand .brand-word > span {
+  color: var(--accent);
 }
 
 .auth-home {
