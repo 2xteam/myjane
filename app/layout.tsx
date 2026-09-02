@@ -39,8 +39,6 @@ export default function RootLayout({
         {/* Pretendard — 결쩜사와 동일한 본문 서체 */}
         <link
           rel="stylesheet"
-          as="style"
-          crossOrigin="anonymous"
           href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard-dynamic-subset.min.css"
         />
       </head>
