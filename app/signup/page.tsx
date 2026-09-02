@@ -110,10 +110,10 @@ function SignupForm() {
         <>
           기록은
           <br />
-          <span>여기서 시작해요</span>
+          여기서 시작해요
         </>
       }
-      sub={
+      storySub={
         <>
           한 번 가입하면 SnapWord · SnapNote · FitLog를
           <br />
@@ -128,14 +128,17 @@ function SignupForm() {
           <br />* 이메일은 PIN을 잊었을 때 재설정 링크를 받는 곳이에요.
           {needsBody ? (
             <>
-              <br />* 키·성별·출생연도는 인바디 결과를 해석하는 데 필요해요. 나중에
-              마이페이지에서 바꿀 수 있어요.
+              <br />* 키·성별·출생연도는 인바디 결과를 해석하는 데 필요해요.
+              나중에 마이페이지에서 바꿀 수 있어요.
             </>
           ) : null}
         </>
       }
     >
       <AuthTabs current="signup" qs={qs} />
+
+      <h2 className="auth-title">처음 오셨네요</h2>
+      <p className="auth-sub">전화번호와 PIN으로 계정을 만들어요</p>
 
       <form
         onSubmit={(e) => {
@@ -222,9 +225,10 @@ function SignupForm() {
 
         {needsBody ? (
           <>
-            <p className="auth-eyebrow" style={{ marginTop: 26 }}>
-              BODY PROFILE
-            </p>
+            <div className="auth-section">
+              <p className="auth-eyebrow">BODY PROFILE</p>
+              <p>인바디 결과를 해석하는 데 필요한 정보예요.</p>
+            </div>
 
             <div className="auth-field">
               <label className="auth-label" htmlFor="heightCm">

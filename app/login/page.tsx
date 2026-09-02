@@ -21,10 +21,10 @@ function LoginForm() {
 
   const [phone, setPhone] = useState("");
   const [pin, setPin] = useState("");
+  const [reveal, setReveal] = useState(false);
   const [busy, setBusy] = useState(false);
   const [msg, setMsg] = useState<string | null>(null);
 
-  // 이미 로그인돼 있으면 곧바로 돌려보낸다
   useEffect(() => {
     if (!loadSession()) return;
     if (app) window.location.href = returnUrl;
@@ -64,30 +64,35 @@ function LoginForm() {
 
   return (
     <AuthShell
-      eyebrow="WELCOME BACK"
+      eyebrow="RETURN TO YOUR RECORD"
       headline={
         <>
           다시,
           <br />
-          <span>기록을 이어가요</span>
+          기록을 이어가요
         </>
       }
-      sub={
+      storySub={
         <>
-          하나의 계정으로 SnapWord · SnapNote · FitLog를
+          쌓아둔 단어장과 오답노트, 몸의 기록을
           <br />
-          모두 사용해요.
+          이어서 확인해요.
         </>
       }
       app={app}
       note={
         <>
           <strong>NOTE</strong>
-          로그인하면 세 서비스에 모두 접속돼요. 공용 기기에서는 사용 후 로그아웃해 주세요.
+          하나의 계정으로 SnapWord · SnapNote · FitLog를 모두 사용해요.
+          <br />
+          공용 기기에서는 사용 후 로그아웃해 주세요.
         </>
       }
     >
       <AuthTabs current="login" qs={qs} />
+
+      <h2 className="auth-title">다시 만나요</h2>
+      <p className="auth-sub">전화번호와 PIN으로 로그인해 주세요</p>
 
       <form
         onSubmit={(e) => {
@@ -115,16 +120,26 @@ function LoginForm() {
           <label className="auth-label" htmlFor="pin">
             PIN
           </label>
-          <input
-            id="pin"
-            className="auth-input"
-            type="password"
-            inputMode="numeric"
-            autoComplete="current-password"
-            value={pin}
-            onChange={(e) => setPin(e.target.value)}
-            placeholder="4자리 이상"
-          />
+          <div className="auth-input-wrap">
+            <input
+              id="pin"
+              className="auth-input"
+              type={reveal ? "text" : "password"}
+              inputMode="numeric"
+              autoComplete="current-password"
+              value={pin}
+              onChange={(e) => setPin(e.target.value)}
+              placeholder="PIN을 입력해 주세요"
+              style={{ paddingRight: 52 }}
+            />
+            <button
+              type="button"
+              className="auth-reveal"
+              onClick={() => setReveal((v) => !v)}
+            >
+              {reveal ? "숨기기" : "보기"}
+            </button>
+          </div>
         </div>
 
         <button type="submit" className="auth-btn" disabled={busy}>
@@ -135,9 +150,15 @@ function LoginForm() {
       {msg ? <p className="auth-msg">{msg}</p> : null}
 
       <div className="auth-links">
-        <Link href={withQs("/find-phone")}>전화번호 찾기</Link>
-        <span>·</span>
-        <Link href={withQs("/forgot-pin")}>PIN 찾기</Link>
+        <div>
+          아직 계정이 없으신가요? <Link href={withQs("/signup")}>회원가입</Link>
+        </div>
+        <div>
+          <Link href={withQs("/forgot-pin")}>PIN을 잊으셨나요?</Link>
+        </div>
+        <div>
+          <Link href={withQs("/find-phone")}>전화번호 찾기</Link>
+        </div>
       </div>
     </AuthShell>
   );

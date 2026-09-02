@@ -80,8 +80,8 @@ body {
   min-height: 100dvh;
   background: var(--bg);
   color: var(--text);
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans KR",
-    Roboto, "Apple SD Gothic Neo", sans-serif;
+  font-family: Pretendard, -apple-system, BlinkMacSystemFont, "Segoe UI",
+    "Noto Sans KR", Roboto, "Apple SD Gothic Neo", sans-serif;
   -webkit-font-smoothing: antialiased;
   line-height: 1.5;
 }
@@ -271,142 +271,246 @@ a {
 /* ────────────────────────────────────────────────────────────
  * 인증 화면 (로그인 · 회원가입 · 계정 찾기)
  *
- * 구성은 결쩜사(kyulzzumsa.co.kr) 패턴을 따른다.
- *   ← 메인으로 / 영문 eyebrow / 줄바꿈을 설계한 헤드라인 / 서브카피 / 카드 폼
- * 색만 myjane 팔레트(남색 + 앰버)를 쓴다.
- * 자세한 분석: my-obsidian-vault → 20-Design/결쩜사 페이지 패턴.md
+ * 결쩜사(kyulzzumsa.co.kr) 로그인 페이지를 실제 렌더링 기준으로 옮긴 것.
+ *   데스크톱: 어두운 스토리 패널(280px) + 흰 폼 카드(420px)가 한 덩어리
+ *   모바일  : 스토리 패널이 위, 폼 카드가 아래로 쌓임
+ * 수치(반경·그림자·폰트 크기)는 원본에서 추출한 값을 그대로 쓴다.
+ * 분석: my-obsidian-vault → 20-Design/결쩜사 페이지 패턴.md
  * ──────────────────────────────────────────────────────────── */
 
-.auth {
-  min-height: 100dvh;
+/* 상단 바 — 로고 좌, 메인으로 우 */
+.auth-topbar {
   display: flex;
-  flex-direction: column;
   align-items: center;
-  padding: clamp(28px, 6vw, 64px) 20px 40px;
+  justify-content: space-between;
+  padding: 14px clamp(16px, 4vw, 32px);
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
 }
 
-.auth-inner {
-  width: 100%;
-  max-width: 460px;
-}
-
-.auth-back {
-  display: inline-block;
-  margin-bottom: clamp(28px, 6vw, 52px);
-  font-size: 0.85rem;
-  color: var(--text-dim);
-}
-
-.auth-back:hover {
-  color: var(--accent-ink);
-}
-
-/* eyebrow — 영문 대문자 라벨. 이 사이트들의 서명 같은 요소 */
-.auth-eyebrow {
-  margin: 0 0 14px;
-  font-size: 0.72rem;
-  font-weight: 700;
-  letter-spacing: 0.18em;
-  color: var(--accent-ink);
-}
-
-/* 헤드라인 — 줄바꿈 위치까지 설계 대상이다 */
-.auth-headline {
-  margin: 0;
-  font-size: clamp(28px, 6vw, 40px);
+.auth-brand {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  font-size: 1.05rem;
   font-weight: 800;
-  line-height: 1.28;
   letter-spacing: -0.02em;
-  word-break: keep-all;
 }
 
-.auth-headline span {
+.auth-brand img {
+  border-radius: 8px;
+}
+
+.auth-brand span {
   background: linear-gradient(160deg, var(--gold-from), var(--gold-to));
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
 }
 
-.auth-sub {
-  margin: 14px 0 0;
-  font-size: 0.95rem;
-  line-height: 1.7;
+.auth-home {
+  font-size: 0.85rem;
   color: var(--text-dim);
+}
+
+.auth-home:hover {
+  color: var(--accent-ink);
+}
+
+/* 페이지 — 옅은 보라 배경 위에 은은한 빛 */
+.auth {
+  min-height: calc(100dvh - 58px);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: clamp(20px, 4vw, 48px) clamp(16px, 4vw, 32px) 32px;
+  background:
+    radial-gradient(circle at 85% 8%, var(--accent-soft), transparent 42%),
+    radial-gradient(circle at 10% 80%, var(--accent-soft), transparent 46%);
+}
+
+/* 스토리 패널 + 폼 카드 = 한 덩어리 */
+.auth-shell {
+  display: grid;
+  grid-template-columns: 1fr;
+  width: 100%;
+  max-width: 700px;
+  border-radius: 24px;
+  overflow: hidden;
+  box-shadow: 0 24px 65px rgba(37, 13, 62, 0.14);
+}
+
+@media (min-width: 860px) {
+  .auth-shell {
+    grid-template-columns: 280px 420px;
+    align-items: center;
+    border-radius: 0;
+    overflow: visible;
+    box-shadow: none;
+  }
+
+  /* 원본처럼 스토리 패널이 폼 카드보다 위아래로 더 길게 나온다 */
+  .auth-shell > .auth-story {
+    align-self: stretch;
+    margin: -26px 0;
+    border-radius: 24px 0 0 24px;
+    box-shadow: 0 24px 65px rgba(37, 13, 62, 0.14);
+  }
+
+  .auth-shell > .auth-card {
+    border-radius: 0 24px 24px 0;
+    box-shadow: 0 24px 65px rgba(37, 13, 62, 0.09);
+  }
+}
+
+/* ── 스토리 패널 ── */
+.auth-story {
+  position: relative;
+  overflow: hidden;
+  padding: 30px 28px;
+  background:
+    radial-gradient(circle at 72% 20%, rgba(188, 167, 251, 0.14), transparent 34%),
+    linear-gradient(150deg, #190527, #32104f 65%, #401961);
+  color: #fff;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  min-height: 190px;
+}
+
+@media (min-width: 860px) {
+  .auth-story {
+    padding: 58px 38px 42px;
+  }
+}
+
+/* 결(結)을 은유한 실 — 얇은 곡선 */
+.auth-story svg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+
+.auth-story-body {
+  position: relative;
+}
+
+/* eyebrow — 금색 영문 라벨 */
+.auth-eyebrow {
+  margin: 0 0 10px;
+  font-size: 9px;
+  font-weight: 900;
+  letter-spacing: 2px;
+  color: #ead58c;
+}
+
+.auth-headline {
+  margin: 0;
+  font-size: clamp(20px, 4.5vw, 23px);
+  font-weight: 800;
+  line-height: 1.42;
+  letter-spacing: -0.03em;
+  color: #fff;
   word-break: keep-all;
 }
 
-.auth-card {
-  margin-top: clamp(28px, 5vw, 40px);
-  padding: clamp(22px, 5vw, 30px);
-  border: 1px solid var(--border);
-  border-radius: 20px;
-  background: var(--surface);
-  box-shadow: 0 18px 44px rgba(0, 0, 0, 0.18);
+.auth-story-sub {
+  margin: 14px 0 0;
+  font-size: 12.5px;
+  line-height: 1.75;
+  color: rgba(232, 222, 250, 0.72);
+  word-break: keep-all;
 }
 
-/* 출처 앱 배지 — "SnapWord으로 계속하기" */
+/* ── 폼 카드 ── */
+.auth-card {
+  padding: clamp(26px, 6vw, 44px) clamp(22px, 5vw, 42px);
+  background: var(--surface);
+}
+
+/* 출처 앱 배지 */
 .auth-app {
-  display: flex;
+  display: inline-flex;
   align-items: center;
-  gap: 9px;
-  padding: 9px 14px;
-  margin-bottom: 20px;
+  gap: 8px;
+  padding: 7px 13px;
+  margin-bottom: 18px;
   border-radius: 999px;
   background: var(--accent-soft);
   color: var(--accent-ink);
-  font-size: 0.85rem;
+  font-size: 12px;
+  font-weight: 600;
 }
 
 .auth-app img {
-  border-radius: 7px;
+  border-radius: 6px;
 }
 
-/* 탭 — 로그인 / 회원가입 */
+/* 탭 — 알약형, 활성 탭만 흰 알약 */
 .auth-tabs {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 4px;
-  padding: 4px;
-  margin-bottom: 24px;
-  border-radius: 12px;
+  padding: 3px;
+  margin-bottom: 26px;
+  border-radius: 999px;
   background: var(--surface-hover);
-  border: 1px solid var(--border);
 }
 
 .auth-tab {
-  padding: 9px 0;
-  border-radius: 9px;
+  padding: 11px 0;
+  border-radius: 999px;
   text-align: center;
-  font-size: 0.9rem;
-  font-weight: 600;
+  font-size: 12px;
+  font-weight: 700;
   color: var(--text-dim);
 }
 
 .auth-tab[aria-current="page"] {
-  background: var(--accent);
-  color: var(--on-accent);
+  background: var(--surface);
+  color: var(--text);
+  font-weight: 800;
+  box-shadow: 0 4px 15px rgba(38, 13, 63, 0.08);
+}
+
+.auth-title {
+  margin: 0 0 5px;
+  font-size: 22px;
+  font-weight: 700;
+  letter-spacing: -0.65px;
+  color: var(--text);
+}
+
+.auth-sub {
+  margin: 0 0 24px;
+  font-size: 13px;
+  color: var(--text-dim);
 }
 
 .auth-field {
-  margin-bottom: 16px;
+  margin-bottom: 15px;
 }
 
 .auth-label {
   display: block;
-  margin-bottom: 6px;
-  font-size: 0.8rem;
+  margin-bottom: 7px;
+  font-size: 12px;
   font-weight: 600;
+  letter-spacing: 0.3px;
   color: var(--text-dim);
 }
 
 .auth-input {
   width: 100%;
-  padding: 12px 14px;
-  border-radius: 12px;
+  padding: 11px 14px;
+  border-radius: 10px;
   border: 1px solid var(--border);
   background: var(--bg);
   color: var(--text);
-  font-size: 1rem;
+  font-size: 14px;
+  font-family: inherit;
 }
 
 .auth-input:focus {
@@ -414,58 +518,64 @@ a {
   border-color: var(--accent);
 }
 
+/* 비밀번호 보기 토글이 들어가는 입력 */
+.auth-input-wrap {
+  position: relative;
+}
+
+.auth-reveal {
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  border: none;
+  background: none;
+  padding: 0;
+  font-size: 12px;
+  color: var(--text-dim);
+  cursor: pointer;
+  font-family: inherit;
+}
+
 .auth-hint {
   margin: 6px 0 0;
-  font-size: 0.75rem;
+  font-size: 11.5px;
   color: var(--text-dim);
 }
 
 .auth-btn {
   width: 100%;
-  padding: 14px 16px;
-  margin-top: 6px;
+  padding: 13px;
+  margin-top: 10px;
   border: none;
-  border-radius: 12px;
-  background: var(--accent);
-  color: var(--on-accent);
-  font-size: 1rem;
+  border-radius: 11px;
+  background: linear-gradient(135deg, #8150e8, #6830c8);
+  box-shadow: 0 10px 24px rgba(104, 48, 200, 0.18);
+  color: #fff;
+  font-size: 15px;
   font-weight: 700;
+  font-family: inherit;
   cursor: pointer;
 }
 
 .auth-btn:disabled {
-  opacity: 0.6;
+  opacity: 0.55;
   cursor: default;
 }
 
-.auth-btn-ghost {
-  width: 100%;
-  padding: 13px 16px;
-  margin-top: 10px;
-  border: 1px solid var(--border);
-  border-radius: 12px;
-  background: transparent;
-  color: var(--text);
-  font-size: 0.95rem;
-  font-weight: 600;
-  cursor: pointer;
-}
-
 .auth-msg {
-  margin: 16px 0 0;
-  font-size: 0.85rem;
+  margin: 14px 0 0;
+  font-size: 13px;
   color: var(--danger);
   word-break: keep-all;
 }
 
 .auth-links {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  gap: 8px;
-  margin-top: 22px;
-  font-size: 0.85rem;
+  margin-top: 18px;
+  text-align: center;
+  font-size: 12.5px;
   color: var(--text-dim);
+  line-height: 2.1;
 }
 
 .auth-links a {
@@ -473,22 +583,46 @@ a {
   font-weight: 600;
 }
 
-/* NOTE 블록 — 결쩜사의 "이것만 확인해 주세요" 패턴 */
-.auth-note {
-  margin-top: clamp(24px, 5vw, 34px);
-  padding-top: 18px;
+.auth-links div + div {
+  margin-top: 2px;
+}
+
+/* 섹션 구분 — 회원가입의 신체 프로필 */
+.auth-section {
+  margin: 26px 0 16px;
+  padding-top: 20px;
   border-top: 1px solid var(--border);
-  font-size: 0.78rem;
-  line-height: 1.7;
+}
+
+.auth-section .auth-eyebrow {
+  color: var(--accent-ink);
+  margin-bottom: 4px;
+}
+
+.auth-section p {
+  margin: 0;
+  font-size: 12px;
   color: var(--text-dim);
+  word-break: keep-all;
+}
+
+/* NOTE 블록 — 조건을 숨기지 않고 드러내는 결쩜사 방식 */
+.auth-note {
+  width: 100%;
+  max-width: 700px;
+  margin-top: 22px;
+  font-size: 11.5px;
+  line-height: 1.9;
+  color: var(--text-dim);
+  text-align: center;
   word-break: keep-all;
 }
 
 .auth-note strong {
   display: block;
-  margin-bottom: 6px;
-  font-size: 0.72rem;
-  font-weight: 700;
-  letter-spacing: 0.14em;
+  margin-bottom: 4px;
+  font-size: 9px;
+  font-weight: 900;
+  letter-spacing: 2px;
   color: var(--text-dim);
 }
