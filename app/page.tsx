@@ -1,5 +1,11 @@
 import Image from "next/image";
 import Link from "next/link";
+import {
+  ClosingCta,
+  FooterAuth,
+  HeaderAuth,
+  HeroActions,
+} from "@/components/LandingAuth";
 
 /**
  * myjane 포털 랜딩.
@@ -144,10 +150,7 @@ export default function Home() {
           </span>
         </Link>
         <nav className="site-nav">
-          <Link href="/login">로그인</Link>
-          <Link href="/signup" className="cta">
-            회원가입
-          </Link>
+          <HeaderAuth />
         </nav>
       </header>
 
@@ -166,14 +169,7 @@ export default function Home() {
             <br />
             공부는 공부끼리, 건강은 건강끼리 따로 쌓입니다.
           </p>
-          <div className="btn-row">
-            <Link href="/signup" className="btn btn-primary">
-              지금 시작하기 <span className="arrow">→</span>
-            </Link>
-            <Link href="/login" className="btn btn-ghost">
-              로그인
-            </Link>
-          </div>
+          <HeroActions />
         </section>
 
         {/* 공부 기록 — 흰 시트 */}
@@ -243,17 +239,8 @@ export default function Home() {
           </div>
         </section>
 
-        {/* 마무리 CTA */}
-        <section className="sheet center">
-          <p className="eyebrow">START</p>
-          <h2 className="headline">첫 기록을 남겨볼까요?</h2>
-          <p className="lead">가입은 전화번호와 PIN이면 돼요.</p>
-          <div className="btn-row" style={{ justifyContent: "center" }}>
-            <Link href="/signup" className="btn btn-primary">
-              회원가입 <span className="arrow">→</span>
-            </Link>
-          </div>
-        </section>
+        {/* 마무리 CTA — 로그인 상태에서는 나오지 않는다 */}
+        <ClosingCta />
       </main>
 
       <footer className="site-footer">
@@ -264,7 +251,7 @@ export default function Home() {
           </span>
         </div>
         <div>
-          <Link href="/login">로그인</Link> · <Link href="/signup">회원가입</Link>
+          <FooterAuth />
         </div>
         <div>© {new Date().getFullYear()} MyJane. All rights reserved.</div>
       </footer>

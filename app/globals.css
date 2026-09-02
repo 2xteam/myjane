@@ -98,6 +98,31 @@ a {
   padding: 8px 10px;
 }
 
+/* 로그인 상태에서는 로그아웃 버튼만 둔다. 링크와 같은 크기·색으로 맞춘다. */
+.site-nav-logout {
+  border: 1px solid var(--border);
+  background: none;
+  border-radius: 999px;
+  padding: 8px 15px;
+  font-family: inherit;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--text-dim);
+  cursor: pointer;
+}
+
+.site-nav-logout:hover {
+  border-color: var(--border-strong);
+  color: var(--accent-ink);
+}
+
+/* 세션을 아직 못 읽은 사이 헤더 높이가 흔들리지 않게 자리만 잡는다 */
+.site-nav-placeholder {
+  display: block;
+  width: 1px;
+  height: 37px;
+}
+
 .site-nav a.cta {
   padding: 9px 16px;
   border-radius: 999px;
@@ -451,6 +476,21 @@ a {
 /* 어두운 푸터에서는 my 를 흰색, jane 을 보라로 (앱 푸터의 워드마크와 같은 톤) */
 .site-footer-brand .brand-word > span {
   color: #a78bfa;
+}
+
+.site-footer-logout {
+  border: none;
+  background: none;
+  padding: 0;
+  font-family: inherit;
+  font-size: inherit;
+  font-weight: 600;
+  color: rgba(232, 222, 250, 0.85);
+  cursor: pointer;
+}
+
+.site-footer-logout:hover {
+  text-decoration: underline;
 }
 
 .site-footer a {
