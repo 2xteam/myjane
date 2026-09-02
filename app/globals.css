@@ -1,0 +1,217 @@
+/*
+ * SnapWord·SnapNote와 같은 색 체계를 사용한다.
+ *  - 기본(다크): 배경 #000000 / 강조 #2ee8ae
+ *  - 라이트    : 배경 #f2f2f7 / 강조 #1ab485
+ */
+
+:root {
+  --bg: #000000;
+  --surface: #101012;
+  --surface-hover: #17171a;
+  --border: rgba(255, 255, 255, 0.1);
+  --border-strong: rgba(46, 232, 174, 0.45);
+  --text: #ffffff;
+  --text-dim: #a1a1aa;
+  --accent: #2ee8ae;
+  --accent-soft: rgba(46, 232, 174, 0.12);
+}
+
+@media (prefers-color-scheme: light) {
+  :root {
+    --bg: #f2f2f7;
+    --surface: #ffffff;
+    --surface-hover: #fbfbfd;
+    --border: rgba(0, 0, 0, 0.08);
+    --border-strong: rgba(26, 180, 133, 0.5);
+    --text: #1a1a1a;
+    --text-dim: #6b6b73;
+    --accent: #1ab485;
+    --accent-soft: rgba(26, 180, 133, 0.1);
+  }
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  min-height: 100dvh;
+  background: var(--bg);
+  color: var(--text);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans KR",
+    Roboto, "Apple SD Gothic Neo", sans-serif;
+  -webkit-font-smoothing: antialiased;
+  line-height: 1.5;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+.page {
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 40px;
+  padding: 48px 20px 40px;
+}
+
+/* ── 헤더 ─────────────────────────────────────────── */
+
+.hero {
+  text-align: center;
+  max-width: 520px;
+}
+
+.wordmark {
+  margin: 0;
+  font-size: clamp(2.5rem, 9vw, 3.5rem);
+  font-weight: 800;
+  letter-spacing: -0.03em;
+}
+
+.wordmark span {
+  color: var(--accent);
+}
+
+.tagline {
+  margin: 12px 0 0;
+  font-size: clamp(0.95rem, 3.4vw, 1.05rem);
+  color: var(--text-dim);
+  word-break: keep-all;
+}
+
+/* ── 앱 카드 ───────────────────────────────────────── */
+
+.apps {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 16px;
+  width: 100%;
+  max-width: 760px;
+}
+
+@media (min-width: 700px) {
+  .apps {
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+  }
+}
+
+.card {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: 24px;
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  background: var(--surface);
+  transition: border-color 0.18s ease, background 0.18s ease,
+    transform 0.18s ease;
+}
+
+.card:hover,
+.card:focus-visible {
+  border-color: var(--border-strong);
+  background: var(--surface-hover);
+  transform: translateY(-2px);
+}
+
+.card:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
+}
+
+.card-head {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.card-icon {
+  width: 52px;
+  height: 52px;
+  border-radius: 14px;
+  flex-shrink: 0;
+  object-fit: cover;
+  background: var(--accent-soft);
+}
+
+.card-name {
+  margin: 0;
+  font-size: 1.3rem;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
+
+.card-domain {
+  margin: 2px 0 0;
+  font-size: 0.8rem;
+  color: var(--text-dim);
+}
+
+.card-desc {
+  margin: 0;
+  font-size: 0.95rem;
+  color: var(--text-dim);
+  word-break: keep-all;
+}
+
+.card-features {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.card-features li {
+  font-size: 0.78rem;
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: var(--accent-soft);
+  color: var(--accent);
+}
+
+.card-cta {
+  margin-top: auto;
+  padding-top: 4px;
+  font-size: 0.92rem;
+  font-weight: 700;
+  color: var(--accent);
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.card:hover .card-cta .arrow {
+  transform: translateX(3px);
+}
+
+.arrow {
+  transition: transform 0.18s ease;
+}
+
+/* ── 푸터 ─────────────────────────────────────────── */
+
+.footer {
+  font-size: 0.8rem;
+  color: var(--text-dim);
+  text-align: center;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * {
+    transition: none !important;
+  }
+}
