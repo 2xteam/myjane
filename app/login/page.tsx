@@ -4,8 +4,14 @@ import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Suspense, useCallback, useEffect, useState } from "react";
 import { AuthShell, AuthTabs } from "@/components/AuthShell";
+import { EmailAuth } from "@/components/EmailAuth";
 import { buildReturnUrl, getApp } from "@/lib/apps";
-import { loadSession, saveSession, type SessionUser } from "@/lib/session";
+import {
+  loadSession,
+  loadSessionToken,
+  saveSession,
+  type SessionUser,
+} from "@/lib/session";
 
 /**
  * 통합 로그인.
@@ -27,9 +33,22 @@ function LoginForm() {
 
   useEffect(() => {
     if (!loadSession()) return;
+
+    /*
+      세션이 있어도 **그대로 돌려보내면 안 되는 경우**가 있다.
+
+      - `relogin=1` : 앱이 "이 세션으로는 안 된다"며 다시 보낸 것이다
+      - 토큰을 요구하는 앱(2hbk)인데 지금 세션에 서명 토큰이 없는 경우
+
+      그냥 돌려보내면 앱이 다시 여기로 보내고, 둘이 무한히 왕복한다.
+      2026-09-03에 실제로 그랬다 → 30-Patterns/인증과 세션 공유.md
+    */
+    if (params.get("relogin") === "1") return;
+    if (app?.usesEmailLogin && !loadSessionToken()) return;
+
     if (app) window.location.href = returnUrl;
     else router.replace("/");
-  }, [app, returnUrl, router]);
+  }, [app, returnUrl, router, params]);
 
   const login = useCallback(async () => {
     setBusy(true);
@@ -61,6 +80,11 @@ function LoginForm() {
 
   const qs = params.toString();
   const withQs = (path: string) => (qs ? `${path}?${qs}` : path);
+
+  // 2hbk처럼 이메일로 로그인하는 앱은 입력 항목이 달라 화면을 갈라 쓴다
+  if (app?.usesEmailLogin) {
+    return <EmailAuth mode="login" app={app} next={params.get("next")} qs={qs} />;
+  }
 
   return (
     <AuthShell

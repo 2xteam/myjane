@@ -67,6 +67,20 @@ const HEALTH_APPS: App[] = [
   },
 ];
 
+/** 습관 기록 — 정한 만큼 해냈는지를 스티커로 남긴다 */
+const HABIT_APPS: App[] = [
+  {
+    name: "2hbk",
+    domain: "2hbk.myjane.co.kr",
+    href: "https://2hbk.myjane.co.kr/home",
+    icon: "/2hbk-icon.png",
+    role: "스티커 목표",
+    description:
+      "함히보까 — 목표와 필요한 스티커 수를 정하면 그만큼 빈 칸이 생겨요. 해낼 때마다 목표를 만든 사람이 한 장씩 붙이고, 다 채우면 금색 판으로 바뀌어요. 혼자 해도 되고 친구를 초대해 같이 채워도 돼요.",
+    chips: ["스티커판", "혼자·같이", "친구 초대"],
+  },
+];
+
 /** 카테고리를 넘어 공통으로 해당되는 것만 적는다 */
 const NOTES = [
   {
@@ -77,7 +91,7 @@ const NOTES = [
   {
     icon: "✦",
     title: "골라 쓰면 돼요",
-    body: "공부만, 혹은 건강만 써도 충분해요. 쓰지 않는 서비스는 열지 않아도 돼요.",
+    body: "하나만 써도 충분해요. 쓰지 않는 서비스는 열지 않아도 돼요.",
   },
   {
     icon: "○",
@@ -87,7 +101,7 @@ const NOTES = [
   {
     icon: "△",
     title: "설정은 없어요",
-    body: "전화번호와 PIN으로 가입하고 바로 첫 기록을 남겨요.",
+    body: "몇 칸만 채우면 바로 첫 기록을 남겨요. 고를 것이 없어요.",
   },
 ];
 
@@ -158,7 +172,7 @@ export default function Home() {
         {/* 히어로 — 짙은 시트 (변형 A) */}
         <section className="sheet sheet--dark">
           <Ornament light />
-          <p className="hero-badge">✦ 공부 기록과 건강 기록</p>
+          <p className="hero-badge">✦ 공부 · 건강 · 습관 기록</p>
           <h1 className="headline">
             필요한 기록만,
             <br />
@@ -217,8 +231,29 @@ export default function Home() {
           </nav>
         </section>
 
-        {/* 공통 안내 — 흰 시트 */}
+        {/* 습관 기록 — 흰 시트 */}
         <section className="sheet">
+          <div className="center">
+            <p className="eyebrow">HABIT · 습관 기록</p>
+            <h2 className="headline">
+              해낸 만큼
+              <br />
+              <span>칸이 채워져요</span>
+            </h2>
+            <p className="lead">
+              오늘 하나를 해내면 스티커 한 장. 공부·건강 기록과는 별개로 동작합니다.
+            </p>
+          </div>
+
+          <nav className="apps apps--solo" aria-label="습관 기록 서비스">
+            {HABIT_APPS.map((app) => (
+              <AppCard key={app.name} app={app} />
+            ))}
+          </nav>
+        </section>
+
+        {/* 공통 안내 — 연보라 시트 */}
+        <section className="sheet sheet--tint">
           <div className="center">
             <p className="eyebrow">ABOUT MYJANE</p>
             <h2 className="headline">묶어둔 건 계정뿐이에요</h2>

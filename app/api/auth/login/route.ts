@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import bcrypt from "bcryptjs";
 import { connectDB } from "@/lib/db";
 import { normalizePhone } from "@/lib/phone";
+import { signSessionToken } from "@/lib/sessionToken";
 import { getUserModel } from "@/models/User";
 
 export const runtime = "nodejs";
@@ -34,6 +35,8 @@ export async function POST(req: Request) {
     const candidates = await User.find({ phone }).exec();
     const matches = [];
     for (const u of candidates) {
+      // 이메일로만 가입한 계정(2hbk)은 PIN이 없다 → 이 경로로는 로그인하지 않는다
+      if (!u.pin) continue;
       if (await bcrypt.compare(pin, u.pin)) {
         matches.push(u);
       }
@@ -64,6 +67,8 @@ export async function POST(req: Request) {
     return NextResponse.json({
       ok: true,
       user: { id: String(user._id), name: user.name, phone: user.phone },
+      // 2hbk도 쓰는 계정이면 앱 서버가 검증할 서명 토큰을 함께 준다
+      ...(user.userId ? { token: signSessionToken(String(user._id), user.userId) } : {}),
     });
   } catch (err) {
     const message =

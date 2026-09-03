@@ -5,7 +5,7 @@
  * 세션 쿠키는 `.myjane.co.kr` 도메인으로 저장되므로 서브도메인 전체에서 그대로 읽힌다.
  */
 
-export type AppKey = "snapword" | "snapnote" | "fitlog";
+export type AppKey = "snapword" | "snapnote" | "fitlog" | "2hbk";
 
 export type AppInfo = {
   key: AppKey;
@@ -14,6 +14,19 @@ export type AppInfo = {
   icon: string;
   /** 회원가입 시 신체 프로필(키·성별·출생연도)을 함께 받는다 */
   needsBodyProfile?: boolean;
+  /**
+   * 전화번호+PIN 대신 **이메일+비밀번호**로 로그인하는 앱.
+   *
+   * 2hbk(함히보까)는 자체 백엔드에서 이메일 로그인을 쓰다가 넘어왔다. 기존 회원 17명의
+   * bcrypt 해시를 그대로 옮겨 왔으므로 같은 비밀번호로 계속 로그인된다.
+   * → my-obsidian-vault / 30-Patterns/인증과 세션 공유.md
+   */
+  usesEmailLogin?: boolean;
+  /**
+   * 이름 뒤에 붙는 조사. 기본은 `으로`.
+   * `2hbk`는 "…케이"로 끝나 `으로`가 어색해서 `로`를 쓴다.
+   */
+  particle?: "으로" | "로";
 };
 
 export const APPS: Record<AppKey, AppInfo> = {
@@ -35,6 +48,14 @@ export const APPS: Record<AppKey, AppInfo> = {
     origin: "https://fitlog.myjane.co.kr",
     icon: "/fitlog-icon.png",
     needsBodyProfile: true,
+  },
+  "2hbk": {
+    key: "2hbk",
+    name: "2hbk",
+    origin: "https://2hbk.myjane.co.kr",
+    icon: "/2hbk-icon.png",
+    usesEmailLogin: true,
+    particle: "로",
   },
 };
 

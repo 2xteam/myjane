@@ -5,14 +5,14 @@ const SITE_URL = "https://www.myjane.co.kr";
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
-  title: "myjane — 공부 기록과 건강 기록",
+  title: "myjane — 공부 · 건강 · 습관 기록",
   description:
     "공부 기록(단어장 SnapWord, 오답노트 SnapNote)과 건강 기록(인바디 FitLog)을 한 계정으로 쓰는 myjane 서비스 안내 페이지입니다.",
   openGraph: {
     type: "website",
     url: SITE_URL,
     siteName: "myjane",
-    title: "myjane — 공부 기록과 건강 기록",
+    title: "myjane — 공부 · 건강 · 습관 기록",
     description: "공부 기록 SnapWord · SnapNote, 건강 기록 FitLog 바로가기",
   },
   alternates: { canonical: SITE_URL },

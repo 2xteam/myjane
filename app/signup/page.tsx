@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Suspense, useCallback, useMemo, useState } from "react";
 import { AuthShell, AuthTabs } from "@/components/AuthShell";
+import { EmailAuth } from "@/components/EmailAuth";
 import { buildReturnUrl, getApp } from "@/lib/apps";
 import { saveSession, type SessionUser } from "@/lib/session";
 
@@ -102,6 +103,11 @@ function SignupForm() {
   ]);
 
   const qs = params.toString();
+
+  // 2hbk처럼 이메일로 가입하는 앱은 받는 항목이 달라 화면을 갈라 쓴다
+  if (app?.usesEmailLogin) {
+    return <EmailAuth mode="signup" app={app} next={params.get("next")} qs={qs} />;
+  }
 
   return (
     <AuthShell

@@ -81,7 +81,7 @@ export function ClosingCta() {
     <section className="sheet center">
       <p className="eyebrow">START</p>
       <h2 className="headline">첫 기록을 남겨볼까요?</h2>
-      <p className="lead">가입은 전화번호와 PIN이면 돼요.</p>
+      <p className="lead">가입은 몇 칸이면 돼요. 서비스에 따라 전화번호와 PIN, 또는 이메일을 씁니다.</p>
       <div className="btn-row" style={{ justifyContent: "center" }}>
         <Link href="/signup" className="btn btn-primary">
           회원가입 <span className="arrow">→</span>

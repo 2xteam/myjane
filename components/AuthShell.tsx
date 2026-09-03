@@ -74,7 +74,10 @@ export function AuthShell({
             {app ? (
               <div className="auth-app">
                 <Image src={app.icon} alt="" width={20} height={20} />
-                <span>{app.name}으로 계속하기</span>
+                <span>
+                  {app.name}
+                  {app.particle ?? "으로"} 계속하기
+                </span>
               </div>
             ) : null}
 
