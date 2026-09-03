@@ -203,8 +203,23 @@ export function loadSession(): SessionUser | null {
 
 export function saveSession(user: SessionUser, token?: string) {
   if (typeof window === "undefined") return;
+
+  /*
+    토큰을 넘기지 않았으면 이미 있는 토큰을 그대로 살린다.
+    사람이 바뀌었으면 남의 토큰을 물려줄 수 없으니 버린다.
+    → 30-Patterns/인증과 세션 공유.md
+  */
+  const kept = readBestPayload();
+  const carried =
+    token ?? (kept && kept.user.id === user.id ? kept.token : undefined);
+
   const expiresAt = Date.now() + SESSION_TTL_SEC * 1000;
-  const body: StoredPayload = { v: 1, user, ...(token ? { token } : {}), expiresAt };
+  const body: StoredPayload = {
+    v: 1,
+    user,
+    ...(carried ? { token: carried } : {}),
+    expiresAt,
+  };
   setCookie(SESSION_KEY, JSON.stringify(body), SESSION_TTL_SEC);
 
   try {

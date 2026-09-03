@@ -15,13 +15,14 @@ export type AppInfo = {
   /** 회원가입 시 신체 프로필(키·성별·출생연도)을 함께 받는다 */
   needsBodyProfile?: boolean;
   /**
-   * 전화번호+PIN 대신 **이메일+비밀번호**로 로그인하는 앱.
+   * 세션 쿠키의 **서명 토큰**이 있어야 동작하는 앱.
    *
-   * 2hbk(함히보까)는 자체 백엔드에서 이메일 로그인을 쓰다가 넘어왔다. 기존 회원 17명의
-   * bcrypt 해시를 그대로 옮겨 왔으므로 같은 비밀번호로 계속 로그인된다.
+   * 2hbk는 남의 목표에 스티커를 붙이는 동작이 있어 쿠키의 `id`를 믿지 않고
+   * 서명 토큰만 검증한다. 토큰 없는 세션을 들고 가면 앱이 되돌려보내므로,
+   * 로그인 화면이 세션을 보고 그냥 넘겨주면 무한히 왕복한다.
    * → my-obsidian-vault / 30-Patterns/인증과 세션 공유.md
    */
-  usesEmailLogin?: boolean;
+  requiresSessionToken?: boolean;
   /**
    * 이름 뒤에 붙는 조사. 기본은 `으로`.
    * `2hbk`는 "…케이"로 끝나 `으로`가 어색해서 `로`를 쓴다.
@@ -54,7 +55,7 @@ export const APPS: Record<AppKey, AppInfo> = {
     name: "2hbk",
     origin: "https://2hbk.myjane.co.kr",
     icon: "/2hbk-icon.png",
-    usesEmailLogin: true,
+    requiresSessionToken: true,
     particle: "로",
   },
 };

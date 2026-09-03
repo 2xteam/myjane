@@ -604,9 +604,17 @@ a {
     box-shadow: none;
   }
 
-  /* 원본처럼 스토리 패널이 폼 카드보다 위아래로 더 길게 나온다 */
+  /*
+    원본처럼 스토리 패널이 폼 카드보다 위아래로 더 길게 나온다.
+
+    다만 **폼이 패널보다 길어지면 패널이 함께 늘어나야 한다.** `align-self: center`로
+    두면 패널은 min-height(774px)에 머물고 폼 카드만 아래로 삐져나온다 —
+    항목이 많은 가입 화면(FitLog은 신체 프로필 3칸이 더 붙는다)에서 그랬다.
+    `stretch`로 두면 행 높이(= 둘 중 큰 쪽)를 따라간다. 폼 카드는 `align-items: center`를
+    그대로 물려받아 제 높이를 지키므로 짧을 때의 인상은 바뀌지 않는다.
+  */
   .auth-shell > .auth-story {
-    align-self: center;
+    align-self: stretch;
     margin: 0;
     border-radius: 24px 0 0 24px;
     box-shadow: 0 24px 65px rgba(37, 13, 62, 0.14);
