@@ -12,7 +12,7 @@ Vercel에서 함수 호출이 발생하지 않으므로 사실상 무료로 운�
 
 ```bash
 npm install
-npm run dev      # http://localhost:3002
+npm run dev      # http://localhost:3000
 ```
 
 포트를 3002로 둔 이유: SnapWord(3000)·SnapNote(3001)와 동시에 띄우기 위해서다.
