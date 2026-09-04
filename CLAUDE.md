@@ -24,8 +24,10 @@
 
 ## 이 프로젝트 메모
 
-- 환경 변수 없는 **정적 사이트**다. 함수 호출이 발생하지 않는다
-- 통합 로그인·회원가입과 통합 admin이 여기 들어올 예정
+- 통합 로그인·회원가입과 통합 admin이 여기 있다 → `30-Patterns/통합 admin.md`
+- 회원은 `user` DB 공유 — 포털이 원본을 갖는다
+- `/admin` 은 앱 DB를 직접 읽지 않고 **각 앱의 `/api/admin/*`** 을 부른다
+- 필수 환경 변수: `MONGODB_URI` `SESSION_SECRET` `ADMIN_API_SECRET` `SMTP_*`
 
 ## 작업이 끝나면
 
