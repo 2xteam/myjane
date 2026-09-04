@@ -17,7 +17,18 @@ type Params = { params: Promise<{ app: string; resource: string }> };
  * 공유 비밀(`ADMIN_API_SECRET`)은 **여기서만** 쓰인다. 브라우저로 내려가지 않는다.
  */
 
-const ALLOWED: AdminFeature[] = ["stats", "notices", "inquiries", "events"];
+const ALLOWED: AdminFeature[] = ["stats", "notices", "inquiries", "events", "quizzes"];
+
+/**
+ * 리소스 이름과 기능 이름이 다른 경우.
+ *
+ * 질문지의 공개·해제는 `quiz-status` 로 부르는데, 그건 `quizzes` 기능에 딸린
+ * 동작이다. 프록시가 한 겹(`[app]/[resource]`)만 넘기므로 앱 쪽에서도 경로를
+ * 한 겹으로 두었다 → TypeLog `/api/admin/quiz-status`
+ */
+const RESOURCE_FEATURE: Record<string, AdminFeature> = {
+  "quiz-status": "quizzes",
+};
 
 async function resolve(params: Params["params"]) {
   const { app: appKey, resource } = await params;
@@ -27,13 +38,15 @@ async function resolve(params: Params["params"]) {
     return { error: NextResponse.json({ ok: false, error: "알 수 없는 앱입니다." }, { status: 404 }) };
   }
 
-  if (!ALLOWED.includes(resource as AdminFeature)) {
+  const feature = RESOURCE_FEATURE[resource] ?? (resource as AdminFeature);
+
+  if (!ALLOWED.includes(feature)) {
     return { error: NextResponse.json({ ok: false, error: "알 수 없는 항목입니다." }, { status: 404 }) };
   }
 
   // 그 앱이 지원하지 않는 기능이면 앱을 부르지 않는다.
   // 부르면 404가 오는데, 앱이 죽은 것과 구분이 안 된다
-  if (!app.features.includes(resource as AdminFeature)) {
+  if (!app.features.includes(feature)) {
     return {
       error: NextResponse.json(
         { ok: false, error: `${app.name}에는 아직 없는 기능입니다.` },

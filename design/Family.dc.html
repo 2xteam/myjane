@@ -1,0 +1,102 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Gowun+Batang:wght@400;700&display=swap">
+  <style>
+    body { margin: 0; font-family: system-ui, -apple-system, sans-serif; }
+    a { color: #7c3aed; } a:hover { color: #6830c8; }
+    .ttl { font-family: "Gowun Batang", serif; }
+  </style>
+</helmet>
+
+<div style="display: flex; flex-direction: column; gap: 26px; padding: 32px 36px; background: #f5f0fc; min-height: 100%; box-sizing: border-box">
+
+  <div style="display: flex; flex-direction: column; gap: 7px">
+    <div style="font-size: 10px; font-weight: 900; letter-spacing: 2px; color: #7c3aed">APP SWITCHER</div>
+    <div class="ttl" style="font-size: 25px; font-weight: 700; letter-spacing: -0.8px; color: #1a0f2e">여섯 개가 한 가족으로 보이는지</div>
+    <div style="font-size: 13px; line-height: 1.75; color: #6b5f8a">
+      같은 타일과 게이지 호를 쓰고 안쪽 심볼만 달라요. 새 mj 와 새로 들어온 TypeLog 를
+      나머지 넷과 나란히 놓고 봐요.
+    </div>
+  </div>
+
+  <svg width="0" height="0" style="position: absolute" aria-hidden="true">
+    <defs>
+      <linearGradient id="tileF" x1="0" y1="0" x2="1" y2="1" gradientTransform="rotate(15)">
+        <stop offset="0" stop-color="#3a1266"></stop>
+        <stop offset="1" stop-color="#1c0733"></stop>
+      </linearGradient>
+    </defs>
+    <symbol id="mjF" viewBox="0 0 192 192">
+      <rect width="192" height="192" rx="44" fill="url(#tileF)"></rect>
+      <g transform="rotate(158.96 96 106.46)">
+        <circle cx="96" cy="106.46" r="60" fill="none" stroke="#6b4a9e" stroke-width="11" stroke-linecap="round" stroke-dasharray="232.6 144.4"></circle>
+        <circle cx="96" cy="106.46" r="60" fill="none" stroke="#e8d18a" stroke-width="11" stroke-linecap="round" stroke-dasharray="128 249"></circle>
+      </g>
+      <path d="M52,116 L52,98 C52,90 57,86 64,86 C71,86 76,90 76,98 L76,116" fill="none" stroke="#ffffff" stroke-width="11" stroke-linecap="round" stroke-linejoin="round"></path>
+      <path d="M76,98 C76,90 81,86 88,86 C95,86 100,90 100,98 L100,116" fill="none" stroke="#ffffff" stroke-width="11" stroke-linecap="round" stroke-linejoin="round"></path>
+      <path d="M121.2,86 L121.2,112.9 A 42 42 0 0 1 40 128" fill="none" stroke="#ffffff" stroke-width="11" stroke-linecap="round"></path>
+      <path d="M121,58.5 L122.77,64.23 L128.5,66 L122.77,67.77 L121,73.5 L119.23,67.77 L113.5,66 L119.23,64.23 Z" fill="#e8d18a"></path>
+    </symbol>
+  </svg>
+
+  <div style="display: flex; gap: 18px; align-items: flex-start">
+    <div style="display: flex; flex-direction: column; align-items: center; gap: 9px">
+      <svg viewBox="0 0 192 192" width="92" height="92" style="border-radius: 21px"><use href="#mjF"></use></svg>
+      <div style="font-size: 12px; font-weight: 700; color: #1a0f2e">MyJane</div>
+      <div style="font-size: 11px; color: #786b9c">포털 · 소문자 mj</div>
+    </div>
+    <div style="display: flex; flex-direction: column; align-items: center; gap: 9px">
+      <img src="snapword-icon.png" alt="SnapWord" width="92" height="92" style="border-radius: 21px; display: block">
+      <div style="font-size: 12px; font-weight: 700; color: #1a0f2e">SnapWord</div>
+      <div style="font-size: 11px; color: #786b9c">가로선 3개</div>
+    </div>
+    <div style="display: flex; flex-direction: column; align-items: center; gap: 9px">
+      <img src="snapnote-icon.png" alt="SnapNote" width="92" height="92" style="border-radius: 21px; display: block">
+      <div style="font-size: 12px; font-weight: 700; color: #1a0f2e">SnapNote</div>
+      <div style="font-size: 11px; color: #786b9c">체크</div>
+    </div>
+    <div style="display: flex; flex-direction: column; align-items: center; gap: 9px">
+      <img src="fitlog-icon.png" alt="FitLog" width="92" height="92" style="border-radius: 21px; display: block">
+      <div style="font-size: 12px; font-weight: 700; color: #1a0f2e">FitLog</div>
+      <div style="font-size: 11px; color: #786b9c">꺾은선</div>
+    </div>
+    <div style="display: flex; flex-direction: column; align-items: center; gap: 9px">
+      <img src="2hbk-icon.png" alt="2hbk" width="92" height="92" style="border-radius: 21px; display: block">
+      <div style="font-size: 12px; font-weight: 700; color: #1a0f2e">2hbk</div>
+      <div style="font-size: 11px; color: #786b9c">반쪽 채운 별</div>
+    </div>
+    <div style="display: flex; flex-direction: column; align-items: center; gap: 9px">
+      <img src="typelog-icon.png" alt="TypeLog" width="92" height="92" style="border-radius: 21px; display: block">
+      <div style="font-size: 12px; font-weight: 700; color: #1a0f2e">TypeLog</div>
+      <div style="font-size: 11px; color: #786b9c">선글라스 토끼 · 신규</div>
+    </div>
+  </div>
+
+  <div style="display: flex; flex-direction: column; gap: 12px; padding: 20px 22px; background: #ffffff; border-radius: 18px; border: 1px solid rgba(139,92,246,0.08)">
+    <div style="font-size: 11px; font-weight: 800; letter-spacing: 1.4px; color: #786b9c">스위처에 놓이는 크기 (56px)</div>
+    <div style="display: flex; gap: 12px; align-items: center">
+      <svg viewBox="0 0 192 192" width="56" height="56" style="border-radius: 13px"><use href="#mjF"></use></svg>
+      <img src="snapword-icon.png" alt="" width="56" height="56" style="border-radius: 13px; display: block">
+      <img src="snapnote-icon.png" alt="" width="56" height="56" style="border-radius: 13px; display: block">
+      <img src="fitlog-icon.png" alt="" width="56" height="56" style="border-radius: 13px; display: block">
+      <img src="2hbk-icon.png" alt="" width="56" height="56" style="border-radius: 13px; display: block">
+      <img src="typelog-icon.png" alt="" width="56" height="56" style="border-radius: 13px; display: block">
+    </div>
+  </div>
+
+  <div style="font-size: 12px; line-height: 1.8; color: #6b5f8a">
+    <strong style="color: #1a0f2e">봐야 할 것</strong> — mj 는 여섯 중 유일하게 글자예요. 획을 나머지 심볼과 같은 11 로 맞췄어요.
+    꼬리가 고리 안쪽으로 감겨 붙는 것도 mj 뿐이에요.
+  </div>
+
+</div>
+</x-dc>
+</body>
+</html>

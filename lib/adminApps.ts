@@ -8,7 +8,7 @@
  * 기능이 앱마다 다르다. 없는 탭을 그리면 404 를 부르게 되므로 여기서 선언한다.
  */
 
-export type AdminFeature = "stats" | "notices" | "inquiries" | "events";
+export type AdminFeature = "stats" | "notices" | "inquiries" | "events" | "quizzes";
 
 export type AdminApp = {
   key: string;
@@ -46,6 +46,13 @@ export const ADMIN_APPS: AdminApp[] = [
     // 공지·문의 기능이 아직 없다. 통계만 본다
     features: ["stats"],
   },
+  {
+    key: "typelog",
+    name: "TypeLog",
+    origin: "https://typelog.myjane.co.kr",
+    // 질문지 등록·공개가 이 앱의 관리 기능이다. 공지·문의는 아직 없다
+    features: ["stats", "quizzes"],
+  },
 ];
 
 export function getAdminApp(key: string | null | undefined): AdminApp | null {
@@ -56,13 +63,29 @@ export function getAdminApp(key: string | null | undefined): AdminApp | null {
 /**
  * 로컬 개발에서는 각 앱이 `localhost:<포트>` 에 뜬다.
  * 운영 도메인을 부르면 로컬에서 고친 것을 확인할 수 없으므로 포트로 바꿔 준다.
+ *
+ * ⚠️ **포트를 옮기면 이 표도 함께 고쳐야 한다.** 2026-09-04 에 포털을 3000 으로
+ * 옮기면서 여기를 빠뜨렸다 — 숫자만 있어 `localhost:3000` 같은 문자열 검색에
+ * 걸리지 않는다. 전체 표는 볼트 `Home.md`.
  */
 const LOCAL_PORTS: Record<string, number> = {
-  snapword: 3000,
-  snapnote: 3001,
+  snapword: 3001,
+  snapnote: 3002,
   fitlog: 3003,
   "2hbk": 3004,
+  typelog: 3005,
 };
+
+/**
+ * 로컬에서 앱을 어떤 스킴으로 부를지.
+ *
+ * ⚠️ `npm run dev:https` 로 띄운 앱은 **HTTPS 만 받는다.** `http://` 로 부르면
+ * 연결이 그냥 닫히고 `fetch failed` 만 남아서, 앱이 죽은 것처럼 보인다.
+ * (2026-09-04 실제로 겪었다 — 관리 화면의 모든 앱 조회가 502 였다)
+ *
+ * `.env.local` 에 `ADMIN_LOCAL_HTTPS=1` 을 두면 https 로 부른다.
+ */
+const localScheme = () => (process.env.ADMIN_LOCAL_HTTPS === "1" ? "https" : "http");
 
 export function resolveOrigin(app: AdminApp): string {
   const override = process.env[`ADMIN_ORIGIN_${app.key.toUpperCase()}`];
@@ -70,7 +93,7 @@ export function resolveOrigin(app: AdminApp): string {
 
   if (process.env.NODE_ENV !== "production") {
     const port = LOCAL_PORTS[app.key];
-    if (port) return `http://localhost:${port}`;
+    if (port) return `${localScheme()}://localhost:${port}`;
   }
   return app.origin;
 }

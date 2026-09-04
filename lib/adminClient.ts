@@ -9,9 +9,17 @@
 
 export class AdminError extends Error {
   readonly status: number;
-  constructor(message: string, status: number) {
+  /**
+   * 응답 본문 전체.
+   *
+   * 실패에도 쓸 정보가 실려 오는 경우가 있다 — 질문지 검증은 오류 목록과
+   * 분포를 **400 과 함께** 돌려준다. 메시지만 남기면 그걸 버리게 된다.
+   */
+  readonly payload: Record<string, unknown> | null;
+  constructor(message: string, status: number, payload: Record<string, unknown> | null = null) {
     super(message);
     this.status = status;
+    this.payload = payload;
   }
 }
 
@@ -38,7 +46,11 @@ export async function adminApi<T>(path: string, options: Options = {}): Promise<
 
   const payload = (data ?? {}) as { ok?: boolean; error?: string };
   if (!res.ok || payload.ok === false) {
-    throw new AdminError(payload.error ?? "요청을 처리하지 못했습니다.", res.status);
+    throw new AdminError(
+      payload.error ?? "요청을 처리하지 못했습니다.",
+      res.status,
+      payload as Record<string, unknown>,
+    );
   }
   return payload as T;
 }

@@ -1,0 +1,103 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Gowun+Batang:wght@400;700&display=swap">
+  <style>
+    body { margin: 0; font-family: system-ui, -apple-system, sans-serif; }
+    a { color: #7c3aed; } a:hover { color: #6830c8; }
+    .ttl { font-family: "Gowun Batang", serif; }
+    code { font-size: 11px; background: rgba(139,92,246,0.08); padding: 1px 5px; border-radius: 4px; }
+  </style>
+</helmet>
+
+<div style="display: flex; flex-direction: column; gap: 24px; padding: 34px 36px; background: #fdfbff; min-height: 100%; box-sizing: border-box">
+
+  <div style="display: flex; flex-direction: column; gap: 7px">
+    <div style="font-size: 10px; font-weight: 900; letter-spacing: 2px; color: #7c3aed">MYJANE · APP ICON</div>
+    <div class="ttl" style="font-size: 27px; font-weight: 700; letter-spacing: -0.8px; color: #1a0f2e">j의 꼬리가 게이지 안쪽으로 감겨 붙어요</div>
+    <div style="font-size: 13px; line-height: 1.75; color: #6b5f8a; max-width: 520px">
+      꼬리는 <strong style="color:#1a0f2e">게이지 호에 안쪽으로 맞닿는 반경 42 의 원</strong>이에요.
+      맞닿는 점이 정확히 호의 끝 <code>(40, 128)</code>이라 그 자리에서 방향이 저절로 같아져요.
+      굵기도 호와 같은 11 이에요.
+    </div>
+  </div>
+
+  <svg width="0" height="0" style="position: absolute" aria-hidden="true">
+    <defs>
+      <linearGradient id="tileM" x1="0" y1="0" x2="1" y2="1" gradientTransform="rotate(15)">
+        <stop offset="0" stop-color="#3a1266"></stop>
+        <stop offset="1" stop-color="#1c0733"></stop>
+      </linearGradient>
+      <g id="mjArt">
+        <rect width="192" height="192" rx="44" fill="url(#tileM)"></rect>
+        <g transform="rotate(158.96 96 106.46)">
+          <circle cx="96" cy="106.46" r="60" fill="none" stroke="#6b4a9e" stroke-width="11" stroke-linecap="round" stroke-dasharray="232.6 144.4"></circle>
+          <circle cx="96" cy="106.46" r="60" fill="none" stroke="#e8d18a" stroke-width="11" stroke-linecap="round" stroke-dasharray="128 249"></circle>
+        </g>
+        <path d="M52,116 L52,98 C52,90 57,86 64,86 C71,86 76,90 76,98 L76,116" fill="none" stroke="#ffffff" stroke-width="11" stroke-linecap="round" stroke-linejoin="round"></path>
+        <path d="M76,98 C76,90 81,86 88,86 C95,86 100,90 100,98 L100,116" fill="none" stroke="#ffffff" stroke-width="11" stroke-linecap="round" stroke-linejoin="round"></path>
+        <path d="M121.2,86 L121.2,112.9 A 42 42 0 0 1 40 128" fill="none" stroke="#ffffff" stroke-width="11" stroke-linecap="round"></path>
+        <path d="M121,58.5 L122.77,64.23 L128.5,66 L122.77,67.77 L121,73.5 L119.23,67.77 L113.5,66 L119.23,64.23 Z" fill="#e8d18a"></path>
+      </g>
+    </defs>
+  </svg>
+
+  <div style="display: flex; align-items: flex-end; gap: 26px">
+    <div style="display: flex; flex-direction: column; align-items: center; gap: 8px">
+      <svg viewBox="0 0 192 192" width="168" height="168"><use href="#mjArt"></use></svg>
+      <div style="font-size: 11px; color: #786b9c">192 · 앱 아이콘</div>
+    </div>
+    <div style="display: flex; flex-direction: column; align-items: center; gap: 8px">
+      <svg viewBox="0 0 192 192" width="64" height="64"><use href="#mjArt"></use></svg>
+      <div style="font-size: 11px; color: #786b9c">64 · 로고</div>
+    </div>
+    <div style="display: flex; flex-direction: column; align-items: center; gap: 8px">
+      <svg viewBox="0 0 192 192" width="56" height="56"><use href="#mjArt"></use></svg>
+      <div style="font-size: 11px; color: #786b9c">56 · 스위처</div>
+    </div>
+    <div style="display: flex; flex-direction: column; align-items: center; gap: 8px">
+      <svg viewBox="0 0 192 192" width="32" height="32"><use href="#mjArt"></use></svg>
+      <div style="font-size: 11px; color: #786b9c">32 · 탭</div>
+    </div>
+    <div style="display: flex; flex-direction: column; align-items: center; gap: 8px">
+      <svg viewBox="0 0 192 192" width="16" height="16"><use href="#mjArt"></use></svg>
+      <div style="font-size: 11px; color: #786b9c">16</div>
+    </div>
+  </div>
+
+  <div style="display: flex; gap: 8px; flex-wrap: wrap">
+    <span style="display: inline-flex; padding: 5px 11px; border-radius: 999px; font-size: 11px; font-weight: 700; background: rgba(139,92,246,0.08); color: #7c3aed">글자 획 11 = 호 11</span>
+    <span style="display: inline-flex; padding: 5px 11px; border-radius: 999px; font-size: 11px; font-weight: 700; background: rgba(139,92,246,0.08); color: #7c3aed">꼬리 최저 y 154.9</span>
+    <span style="display: inline-flex; padding: 5px 11px; border-radius: 999px; font-size: 11px; font-weight: 700; background: rgba(201,168,76,0.12); color: #c9a84c">별 4갈래</span>
+    <span style="display: inline-flex; padding: 5px 11px; border-radius: 999px; font-size: 11px; font-weight: 700; background: rgba(201,168,76,0.12); color: #c9a84c">내접 원 · 반경 42</span>
+  </div>
+
+  <div style="display: flex; flex-direction: column; gap: 9px; font-size: 12px; line-height: 1.7; color: #6b5f8a; padding-top: 12px; border-top: 1px solid rgba(139,92,246,0.14)">
+    <div style="font-size: 11px; font-weight: 800; letter-spacing: 1.4px; color: #786b9c">고친 것</div>
+    <div><strong style="color: #1a0f2e">굵기를 호와 같게 11 로.</strong> 이게 억지스러움의 원인이었어요 —
+      글자가 9, 호가 11 이라 붙는 자리에 계단이 생겼거든요. 소문자 m 의 속이 막히지 않게
+      아치를 24 폭으로 넓혔어요.</div>
+    <div><strong style="color: #1a0f2e">호와 같은 원(반경 60)은 너무 깊었어요.</strong> 바닥이 y 166.5 까지
+      내려가 아이콘이 아래로 무거워졌어요. 빨간 선으로 그려주신 자리는 그보다 12 쯤 위,
+      y 155 근처였어요.</div>
+    <div><strong style="color: #1a0f2e">그래서 안쪽으로 맞닿는 작은 원을 썼어요.</strong>
+      <code>A 42 42 0 0 1 40 128</code> — 호의 끝에서 <strong style="color:#1a0f2e">안쪽으로 맞닿는(내접)</strong>
+      원이에요. 맞닿는 점에서는 두 원의 방향이 저절로 같아지므로 각도를 따로 맞출 필요가 없어요.
+      반경이 작으니 바닥은 얕고(y 154.9) 왼쪽 상승은 급해요 — 빨간 선의 모양이에요.</div>
+    <div><strong style="color: #1a0f2e">기둥은 그 원의 가장 오른쪽 점에서 시작해요.</strong>
+      <code>x 121.2</code> 가 그 점이고, 거기서 원의 방향이 <strong style="color:#1a0f2e">정확히 수직</strong>이에요.
+      그래서 곧은 기둥이 곡선으로 넘어갈 때 꺾임이 0 이고, 이어주는 보조 곡선도 필요 없어요 —
+      지난 안에서 팔꿈치처럼 보인 건 그 보조 곡선이 오른쪽으로 부푼 자리였어요.</div>
+    <div><strong style="color: #1a0f2e">별은 4갈래로.</strong> TypeLog 의 반짝임과 같은 형태예요.</div>
+  </div>
+
+</div>
+</x-dc>
+</body>
+</html>
