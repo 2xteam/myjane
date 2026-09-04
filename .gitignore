@@ -34,3 +34,6 @@ next-env.d.ts
 .env*
 
 certificates
+# 디자인 캔버스 산출물 — 아트보드(.dc.html)와 canvas.json 만 보관한다
+design/myjane-app-icon.html
+design/check/
