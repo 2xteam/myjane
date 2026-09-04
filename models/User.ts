@@ -34,6 +34,18 @@ const UserSchema = new Schema(
     createdAt: { type: Date, default: Date.now },
     lastLoginAt: { type: Date },
 
+    /**
+     * ── 포털 전용 ──
+     * 통합 admin(`www.myjane.co.kr/admin`) 접근 권한.
+     *
+     * - `master`   : 운영자를 세우고 내릴 수 있다. 시드는 2xteam@naver.com 하나뿐이다
+     * - `operator` : admin 화면을 보고 공지·문의를 다룬다. 권한 관리는 못 한다
+     * - `null`     : admin 접근 불가 (대부분의 회원)
+     *
+     * 각 앱은 이 필드를 읽지도 쓰지도 않는다.
+     */
+    adminRole: { type: String, enum: ["master", "operator", null], default: null },
+
     /** 어느 앱에서 가입했는지 (통합 로그인에서 기록) */
     signupFrom: { type: String, default: null },
 

@@ -1,0 +1,323 @@
+/* ── 통합 admin ──
+ * 관리 화면은 랜딩과 목적이 다르다. 결쩜사 시트는 읽는 화면을 위한 것이고,
+ * 여기는 **한 화면에 많이 보여야** 한다. 그래서 여백을 줄이고 표를 쓴다.
+ * 색 토큰은 포털과 같은 것을 그대로 쓴다.
+ * ── */
+
+.adm {
+  max-width: 1180px;
+  margin: 0 auto;
+  padding: 18px clamp(14px, 3vw, 28px) 60px;
+}
+
+.adm-bar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  padding-bottom: 14px;
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.adm-title {
+  margin: 0;
+  font-size: 1.1rem;
+  font-weight: 900;
+  letter-spacing: -0.02em;
+}
+
+.adm-who {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.78rem;
+  color: var(--text-muted);
+}
+
+.adm-role {
+  padding: 3px 9px;
+  border-radius: 999px;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.4px;
+  background: var(--accent-subtle);
+  color: var(--accent);
+}
+
+.adm-role[data-role="master"] {
+  background: var(--point-subtle);
+  color: #8a6d1f;
+}
+
+/* ── 탭 ── */
+.adm-tabs {
+  display: flex;
+  gap: 4px;
+  flex-wrap: wrap;
+  margin: 16px 0 0;
+  padding: 4px;
+  border-radius: 999px;
+  background: var(--bg-secondary);
+}
+
+.adm-tab {
+  padding: 8px 16px;
+  border: none;
+  border-radius: 999px;
+  background: none;
+  color: var(--text-secondary);
+  font-family: inherit;
+  font-size: 12.5px;
+  font-weight: 800;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.adm-tab[data-active="true"] {
+  background: var(--bg-card);
+  color: var(--text-primary);
+  box-shadow: 0 4px 15px rgba(38, 13, 63, 0.08);
+}
+
+/* 앱 안에서 무엇을 볼지 고르는 두 번째 줄 */
+.adm-subtabs {
+  display: flex;
+  gap: 14px;
+  flex-wrap: wrap;
+  margin: 18px 0 0;
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.adm-subtab {
+  padding: 0 0 9px;
+  border: none;
+  border-bottom: 2px solid transparent;
+  background: none;
+  color: var(--text-muted);
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.adm-subtab[data-active="true"] {
+  color: var(--accent);
+  border-bottom-color: var(--accent);
+}
+
+/* ── 카드 ── */
+.adm-card {
+  margin-top: 18px;
+  padding: 18px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-subtle);
+  background: var(--bg-card);
+}
+
+.adm-card-title {
+  margin: 0 0 2px;
+  font-size: 0.92rem;
+  font-weight: 800;
+  letter-spacing: -0.2px;
+}
+
+.adm-card-sub {
+  margin: 0 0 14px;
+  font-size: 0.78rem;
+  color: var(--text-muted);
+  word-break: keep-all;
+}
+
+/* ── 수치 타일 ── */
+.adm-stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(132px, 1fr));
+  gap: 10px;
+}
+
+.adm-stat {
+  padding: 13px 15px;
+  border-radius: var(--radius-sm);
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-subtle);
+}
+
+.adm-stat-label {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--text-muted);
+}
+
+.adm-stat-value {
+  margin-top: 4px;
+  font-size: 1.4rem;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  color: var(--text-primary);
+}
+
+/* ── 표 ── */
+.adm-table-wrap {
+  overflow-x: auto;
+  margin: 0 -4px;
+}
+
+.adm-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 12.5px;
+  white-space: nowrap;
+}
+
+.adm-table th {
+  padding: 8px 10px;
+  text-align: left;
+  font-size: 10.5px;
+  font-weight: 800;
+  letter-spacing: 0.4px;
+  color: var(--text-muted);
+  border-bottom: 1px solid var(--border);
+}
+
+.adm-table td {
+  padding: 10px;
+  border-bottom: 1px solid var(--border-subtle);
+  color: var(--text-primary);
+  vertical-align: top;
+}
+
+.adm-table tr:last-child td {
+  border-bottom: none;
+}
+
+.adm-wrap-cell {
+  white-space: normal;
+  min-width: 220px;
+  word-break: keep-all;
+}
+
+/* ── 입력 ── */
+.adm-input,
+.adm-textarea {
+  width: 100%;
+  padding: 9px 12px;
+  border-radius: 9px;
+  border: 1px solid var(--input-border);
+  background: var(--input-bg);
+  color: var(--text-primary);
+  font-size: 13px;
+  font-family: inherit;
+}
+
+.adm-textarea {
+  resize: vertical;
+  min-height: 84px;
+  line-height: 1.7;
+}
+
+.adm-input:focus,
+.adm-textarea:focus {
+  outline: none;
+  border-color: var(--accent);
+}
+
+.adm-field {
+  margin-bottom: 11px;
+}
+
+.adm-label {
+  display: block;
+  margin-bottom: 5px;
+  font-size: 11.5px;
+  font-weight: 700;
+  color: var(--text-muted);
+}
+
+/* ── 버튼 ── */
+.adm-btn {
+  padding: 8px 15px;
+  border: none;
+  border-radius: 9px;
+  background: var(--accent);
+  color: var(--on-accent);
+  font-family: inherit;
+  font-size: 12.5px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.adm-btn--ghost {
+  background: transparent;
+  border: 1px solid var(--border);
+  color: var(--text-primary);
+}
+
+.adm-btn--danger {
+  background: transparent;
+  border: 1px solid var(--danger-subtle);
+  color: var(--danger);
+}
+
+.adm-btn:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+/* ── 상태 ── */
+.adm-pill {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-size: 10.5px;
+  font-weight: 800;
+  background: var(--accent-subtle);
+  color: var(--accent);
+}
+
+.adm-pill--wait {
+  background: var(--danger-subtle);
+  color: var(--danger);
+}
+
+.adm-pill--done {
+  background: var(--success-subtle);
+  color: var(--success);
+}
+
+.adm-note {
+  margin: 0;
+  padding: 11px 14px;
+  border-radius: 9px;
+  font-size: 0.8rem;
+  line-height: 1.7;
+  word-break: keep-all;
+}
+
+.adm-note--error {
+  background: var(--danger-subtle);
+  color: var(--danger);
+}
+
+.adm-note--info {
+  background: var(--accent-subtle);
+  color: var(--accent);
+}
+
+.adm-empty {
+  padding: 30px 16px;
+  text-align: center;
+  font-size: 0.83rem;
+  color: var(--text-muted);
+}
+
+.adm-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.adm-muted {
+  color: var(--text-muted);
+}
