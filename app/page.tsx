@@ -14,9 +14,12 @@ import {
  * 어두운 푸터로 닫는다. 시트마다 eyebrow → 헤드라인 → 콘텐츠 순서.
  * 근거: my-obsidian-vault → 20-Design/결쩜사 페이지 패턴.md
  *
- * 서비스는 **한 덩어리로 묶지 않는다.** 공부 기록(SnapWord·SnapNote)과
- * 건강 기록(FitLog)은 목적도 데이터도 다르므로 시트를 나눠 따로 설명한다.
- * 공유하는 것은 계정뿐이다.
+ * 서비스는 **한 덩어리로 묶지 않는다.** 공부 기록(SnapWord·SnapNote)·건강
+ * 기록(FitLog)·습관 기록(2hbk)·성향 기록(TypeLog)은 목적도 데이터도 다르므로
+ * 시트를 나눠 따로 설명한다. 공유하는 것은 계정뿐이다.
+ *
+ * 시트는 흰색과 연보라를 번갈아 쌓는다 — 카테고리를 추가할 때 색 순서를
+ * 확인하지 않으면 같은 색이 두 번 이어져 경계가 사라진다.
  */
 
 type App = {
@@ -78,6 +81,20 @@ const HABIT_APPS: App[] = [
     description:
       "함히보까 — 목표와 필요한 스티커 수를 정하면 그만큼 빈 칸이 생겨요. 해낼 때마다 목표를 만든 사람이 한 장씩 붙이고, 다 채우면 금색 판으로 바뀌어요. 혼자 해도 되고 친구를 초대해 같이 채워도 돼요.",
     chips: ["스티커판", "혼자·같이", "친구 초대"],
+  },
+];
+
+/** 성향 기록 — 질문에 답하고 나온 타입을 회차로 남긴다 */
+const TYPE_APPS: App[] = [
+  {
+    name: "TypeLog",
+    domain: "typelog.myjane.co.kr",
+    href: "https://typelog.myjane.co.kr/home",
+    icon: "/typelog-icon.png",
+    role: "성향 기록",
+    description:
+      "질문에 답하면 나와 가까운 타입이 나와요. 몇 달 뒤 다시 해보고 지난 회차와 나란히 두면 무엇이 달라졌는지 보여요. 검사가 아니라 놀이예요.",
+    chips: ["타입 찾기", "회차별 기록", "타입 도감"],
   },
 ];
 
@@ -252,8 +269,29 @@ export default function Home() {
           </nav>
         </section>
 
-        {/* 공통 안내 — 연보라 시트 */}
+        {/* 성향 기록 — 연보라 시트 */}
         <section className="sheet sheet--tint">
+          <div className="center">
+            <p className="eyebrow">TYPE · 성향 기록</p>
+            <h2 className="headline">
+              지금의 나를
+              <br />
+              <span>한 줄로 남겨요</span>
+            </h2>
+            <p className="lead">
+              몇 가지 질문에 답하면 나와 가까운 타입이 나와요. 다시 해보면 지난 회차와 비교할 수 있어요.
+            </p>
+          </div>
+
+          <nav className="apps apps--solo" aria-label="성향 기록 서비스">
+            {TYPE_APPS.map((app) => (
+              <AppCard key={app.name} app={app} />
+            ))}
+          </nav>
+        </section>
+
+        {/* 공통 안내 — 흰 시트 (앞의 성향 기록이 연보라라서 색을 바꾼다) */}
+        <section className="sheet">
           <div className="center">
             <p className="eyebrow">ABOUT MYJANE</p>
             <h2 className="headline">묶어둔 건 계정뿐이에요</h2>
