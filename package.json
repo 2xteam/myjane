@@ -7,7 +7,8 @@
     "dev:https": "next dev --experimental-https -p 3000",
     "build": "next build",
     "start": "next start -p 3000",
-    "lint": "next lint"
+    "lint": "next lint",
+    "icons": "node scripts/make-icons.mjs"
   },
   "dependencies": {
     "next": "^15.2.4",

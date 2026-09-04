@@ -1,0 +1,53 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 192 192" width="192" height="192">
+  <!--
+    myjane 포털 아이콘 — 소문자 mj.
+
+    다섯 앱과 같은 기하학(짙은 보라 타일 + 게이지 호)을 쓰고 안쪽만 다르다.
+    다른 앱의 심볼은 도형인데 이것만 글자라서, 획을 호와 **같은 11** 로 맞춘다.
+
+    j 의 꼬리가 게이지 호로 이어진다. 붙는 방식이 이 아이콘의 핵심이다 —
+    호와 같은 원(반경 60)을 타면 바닥이 y 166.5 까지 내려가 아래로 무거워지므로,
+    호의 끝 (40,128) 에서 **안쪽으로 맞닿는(내접) 반경 42** 의 원을 쓴다.
+    내접점에서는 두 원의 방향이 저절로 같아지므로 각도를 따로 맞출 필요가 없다.
+
+    기둥은 그 원의 **가장 오른쪽 점(x 121.2)** 에서 시작한다. 그 점에서 원의 방향이
+    정확히 수직이라 곧은 기둥이 곡선으로 그대로 넘어가고, 이어주는 보조 곡선이
+    필요 없다 — 보조 곡선을 두면 오른쪽으로 부풀어 팔꿈치처럼 꺾여 보인다.
+
+    두 호는 같은 <circle> 을 stroke-dasharray 만 바꿔 그린다. 따로 <path> 로 그리면
+    끝점이 어긋난다.
+    → my-obsidian-vault / 20-Design/앱 공통 UI와 아이콘.md · 10-Projects/MyJane.md
+  -->
+  <defs>
+    <linearGradient id="tile" x1="0" y1="0" x2="1" y2="1" gradientTransform="rotate(15)">
+      <stop offset="0" stop-color="#3a1266"/>
+      <stop offset="1" stop-color="#1c0733"/>
+    </linearGradient>
+  </defs>
+
+  <rect width="192" height="192" rx="44" fill="url(#tile)"/>
+
+  <!-- 게이지 호 -->
+  <g transform="rotate(158.96 96 106.46)">
+    <circle cx="96" cy="106.46" r="60" fill="none" stroke="#6b4a9e"
+            stroke-width="11" stroke-linecap="round" stroke-dasharray="232.6 144.4"/>
+    <circle cx="96" cy="106.46" r="60" fill="none" stroke="#e8d18a"
+            stroke-width="11" stroke-linecap="round" stroke-dasharray="128 249"/>
+  </g>
+
+  <!-- m — 아치 두 개. 획 11 에서 속이 막히지 않게 아치를 24 폭으로 둔다 -->
+  <path d="M52,116 L52,98 C52,90 57,86 64,86 C71,86 76,90 76,98 L76,116"
+        fill="none" stroke="#ffffff" stroke-width="11"
+        stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M76,98 C76,90 81,86 88,86 C95,86 100,90 100,98 L100,116"
+        fill="none" stroke="#ffffff" stroke-width="11"
+        stroke-linecap="round" stroke-linejoin="round"/>
+
+  <!-- j — 기둥이 곡선으로 그대로 이어져 호의 끝에 내접한다 -->
+  <path d="M121.2,86 L121.2,112.9 A 42 42 0 0 1 40 128"
+        fill="none" stroke="#ffffff" stroke-width="11" stroke-linecap="round"/>
+
+  <!-- j 위의 점은 별(4갈래). 게이지 호와 같은 금색을 쓴다 -->
+  <path d="M121,58.5 L122.77,64.23 L128.5,66 L122.77,67.77 L121,73.5 L119.23,67.77 L113.5,66 L119.23,64.23 Z"
+        fill="#e8d18a"/>
+</svg>
