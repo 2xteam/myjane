@@ -7,7 +7,7 @@ export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
   title: "myjane — 공부 · 건강 · 습관 · 성향 기록",
   description:
-    "공부 기록(단어장 SnapWord, 오답노트 SnapNote), 건강 기록(인바디 FitLog), 습관 기록(스티커 2hbk), 성향 기록(타입 TypeLog)을 한 계정으로 쓰는 myjane 서비스 안내 페이지입니다.",
+    "공부 기록(단어장 SnapWord, 오답노트 SnapNote), 건강 기록(인바디·피검사 FitLog), 습관 기록(스티커 2hbk), 성향 기록(타입 TypeLog)을 한 계정으로 쓰는 myjane 서비스 안내 페이지입니다.",
   openGraph: {
     type: "website",
     url: SITE_URL,
