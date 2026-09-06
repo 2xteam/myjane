@@ -256,7 +256,7 @@
 .adm-btn--danger {
   background: transparent;
   border: 1px solid var(--danger-subtle);
-  color: var(--danger);
+  color: var(--danger-ink);
 }
 
 .adm-btn:disabled {
@@ -277,7 +277,7 @@
 
 .adm-pill--wait {
   background: var(--danger-subtle);
-  color: var(--danger);
+  color: var(--danger-ink);
 }
 
 .adm-pill--done {
@@ -296,7 +296,7 @@
 
 .adm-note--error {
   background: var(--danger-subtle);
-  color: var(--danger);
+  color: var(--danger-ink);
 }
 
 .adm-note--info {
@@ -584,7 +584,7 @@
   color: var(--text-muted);
 }
 
-.adm-sub-label[data-tone="bad"] { color: var(--danger); }
+.adm-sub-label[data-tone="bad"] { color: var(--danger-ink); }
 .adm-sub-label[data-tone="warn"] { color: var(--warning); }
 
 .adm-app-grid {
@@ -658,7 +658,7 @@
 }
 
 .adm-msg--ok { color: var(--success); }
-.adm-msg--bad { color: var(--danger); }
+.adm-msg--bad { color: var(--danger-ink); }
 
 .adm-findings {
   margin: 0;

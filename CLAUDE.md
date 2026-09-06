@@ -29,6 +29,28 @@
 - `/admin` 은 앱 DB를 직접 읽지 않고 **각 앱의 `/api/admin/*`** 을 부른다
 - 필수 환경 변수: `MONGODB_URI` `SESSION_SECRET` `ADMIN_API_SECRET` `SMTP_*`
 
+## 색을 바꿀 때
+
+**`app/palette.css` 를 직접 고치지 말 것.** 생성 파일이다.
+
+색은 여섯 앱이 공유하고 원본은 한 곳뿐이다.
+
+```
+design/palette.json          ← 여기만 고친다 (원본이 이 저장소에 있다)
+npm run palette -- --write   ← 여섯 앱이 함께 갱신된다
+```
+
+`npm run palette` 는 쓰기 전에 대비를 31건 검사하고, 하나라도 미달이면
+**아무 파일도 쓰지 않고 멈춘다.**
+
+새 색을 쓸 때는 리터럴 대신 토큰을 쓴다. 짙은 시트·어두운 푸터·버튼
+그라디언트도 토큰이 있다 (`--sheet-dark` `--footer-bg` `--btn-gradient`
+`--on-dark` `--accent-on-dark`). 리터럴로 쓰면 다음 색 교체 때 또 손으로 찾아야 한다.
+
+⚠️ 밝은 색을 글자로 쓰지 말 것. 면적용과 글자용이 따로 있다 —
+`--accent` / `--accent-ink`, `--point` / `--point-ink`, `--danger` / `--danger-ink`.
+→ my-obsidian-vault / 20-Design/먹청 톤 팔레트.md
+
 ## 작업이 끝나면
 
 바뀐 사실(도메인·DB·진행 상황·새로 발견한 함정)을 볼트의 해당 노트에 반영하고

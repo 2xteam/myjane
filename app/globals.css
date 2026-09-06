@@ -1,3 +1,5 @@
+@import "./palette.css";
+
 /*
  * myjane 팔레트 — 먹청(Petrol).
  *   옅은 청백 #F7FBFB 바탕 위에 먹청 #116271.
@@ -20,33 +22,7 @@
  *       20-Design/먹청 톤 팔레트.md (색과 대비 계산)
  */
 
-:root {
-  --bg: #f7fbfb;
-  /* 시트는 순수 흰색. 바탕과의 분리는 색이 아니라 그림자가 한다 */
-  --surface: #ffffff;
-  --surface-hover: #e8f2f3;
-  --border: rgba(17, 98, 113, 0.14);
-  --border-strong: rgba(17, 98, 113, 0.42);
-  --text: #0f2027;
-  --text-dim: #566b70;
-  /* 먹청은 어두워서 면적·글자·테두리에 모두 쓸 수 있다 (흰 시트 위 6.98:1) */
-  --accent: #116271;
-  --accent-ink: #116271;
-  --accent-soft: rgba(17, 98, 113, 0.08);
-  /* 강조 그라디언트 — 워드마크·헤드라인 */
-  --gold-from: #1a7f8f;
-  --gold-to: #116271;
-  /* 금색 — 배지·구분선 같은 좁은 면적에만. 글자로 쓰면 2.19:1 이다 */
-  --gold: #c9a84c;
-  --gold-soft: rgba(201, 168, 76, 0.12);
-  /* 먹청 버튼 위 글자색 — 흰색으로 6.98:1 */
-  --on-accent: #ffffff;
-  /*
-   * 입력칸 안내 글자. 브라우저 기본값(#757575)은 이 바탕에서 4.42:1 로 살짝 미달이다.
-   * --text-dim 보다 옅으면서 4.5 를 넘는 지점을 골랐다 (바탕 4.80 · 흰칸 5.01).
-   */
-  --placeholder: #5e7377;
-}
+
 
 /*
  * 별칭 — 계정 복구(PIN·전화번호 찾기)와 admin 화면이 다른 이름 체계로 쓴다.
@@ -64,14 +40,18 @@
   --text-primary: var(--text);
   --text-secondary: var(--text-dim);
   /* 비활성 버튼 배경으로만 쓴다 — 글자색으로 쓰면 대비가 2.6:1 밖에 안 된다 */
-  --text-muted: #a3b4b7;
   /*
    * 오류 문구용. 먹청과 색상환에서 멀어 나란히 놓아도 헷갈리지 않는다.
    * 13px 문장에 쓰이므로 바탕 위 6.19:1 이 나오는 값을 골랐다.
    */
-  --danger: #b3282b;
   --radius-sm: 11px;
+  --radius-md: 18px;
   --radius-xl: 24px;
+  /* 이름만 다른 것들 — 값은 palette.css 에서 온다 */
+  --accent-subtle: var(--accent-soft);
+  --point: var(--gold);
+  --point-subtle: var(--gold-soft);
+  --warning: var(--gold);
 }
 
 /*
@@ -884,7 +864,7 @@ a {
 .auth-msg {
   margin: 14px 0 0;
   font-size: 13px;
-  color: var(--danger);
+  color: var(--danger-ink);
   word-break: keep-all;
 }
 

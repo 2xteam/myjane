@@ -61,7 +61,7 @@ function ResetPinEmailForm() {
           <h1 style={{ margin: "0 0 0.5rem", fontSize: "1.5rem", color: "var(--text-primary)" }}>
             PIN 변경
           </h1>
-          <p style={{ color: "var(--danger)", fontSize: 14 }}>유효하지 않은 링크입니다.</p>
+          <p style={{ color: "var(--danger-ink)", fontSize: 14 }}>유효하지 않은 링크입니다.</p>
           <Link href="/" style={linkStyle}>로그인으로</Link>
         </div>
       </main>
@@ -118,7 +118,7 @@ function ResetPinEmailForm() {
               {busy ? "변경 중…" : "PIN 변경"}
             </button>
 
-            {msg ? <p style={{ margin: "1rem 0 0", color: "var(--danger)", fontSize: 13 }}>{msg}</p> : null}
+            {msg ? <p style={{ margin: "1rem 0 0", color: "var(--danger-ink)", fontSize: 13 }}>{msg}</p> : null}
           </>
         )}
       </div>

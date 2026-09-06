@@ -153,7 +153,7 @@ export default function ResetPinPage() {
 
             <Link href="/" style={{ ...linkStyle, marginTop: "1rem" }}>로그인으로</Link>
 
-            {msg ? <p style={{ margin: "1rem 0 0", color: "var(--danger)", fontSize: 13 }}>{msg}</p> : null}
+            {msg ? <p style={{ margin: "1rem 0 0", color: "var(--danger-ink)", fontSize: 13 }}>{msg}</p> : null}
           </>
         )}
       </div>
