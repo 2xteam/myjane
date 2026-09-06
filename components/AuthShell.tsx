@@ -44,25 +44,6 @@ export function AuthShell({
       <main className="auth">
         <div className="auth-shell">
           <aside className="auth-story">
-            {/* 결(結)을 은유한 실 — 원본처럼 패널 위쪽을 가로지르는 넓은 호 */}
-            <svg viewBox="0 0 280 640" preserveAspectRatio="none" aria-hidden="true">
-              <g fill="none" strokeWidth="0.9">
-                <path
-                  d="M-40 150 C 60 60, 220 60, 320 150"
-                  stroke="rgba(247,200,178,0.22)"
-                />
-                <path
-                  d="M-40 178 C 70 96, 210 96, 320 178"
-                  stroke="rgba(232,201,106,0.16)"
-                />
-                <path
-                  d="M-40 120 C 80 210, 200 210, 320 120"
-                  stroke="rgba(247,200,178,0.15)"
-                />
-              </g>
-              <circle cx="236" cy="104" r="2.6" fill="#ead58c" opacity="0.8" />
-            </svg>
-
             <div className="auth-story-body">
               <p className="auth-eyebrow">{eyebrow}</p>
               <h1 className="auth-headline">{headline}</h1>

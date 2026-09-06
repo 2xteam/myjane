@@ -122,20 +122,6 @@ const NOTES = [
   },
 ];
 
-/** 실(結)을 은유한 얇은 곡선 — 여백에만 놓는다 */
-function Ornament() {
-  const stroke = "rgba(166,75,47,0.16)";
-  return (
-    <svg className="sheet-ornament" viewBox="0 0 260 150" aria-hidden="true">
-      <g fill="none" stroke={stroke} strokeWidth="1">
-        <ellipse cx="150" cy="60" rx="130" ry="42" />
-        <ellipse cx="150" cy="60" rx="96" ry="26" />
-      </g>
-      <circle cx="248" cy="52" r="3" fill="#c9a84c" opacity="0.75" />
-    </svg>
-  );
-}
-
 /** 서비스 카드 — 카테고리 시트 안에서 재사용 */
 function AppCard({ app }: { app: App }) {
   return (
@@ -188,7 +174,6 @@ export default function Home() {
       <main className="sheets">
         {/* 히어로 — 크림에서 연분홍으로 내려가는 밝은 시트 */}
         <section className="sheet sheet--hero">
-          <Ornament />
           <p className="hero-badge">✦ 공부 · 건강 · 습관 기록</p>
           <h1 className="headline">
             필요한 기록만,
@@ -205,7 +190,6 @@ export default function Home() {
 
         {/* 공부 기록 — 흰 시트 */}
         <section className="sheet">
-          <Ornament />
           <div className="center">
             <p className="eyebrow">STUDY · 공부 기록</p>
             <h2 className="headline">
