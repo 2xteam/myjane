@@ -16,24 +16,30 @@
  * 짙은 먹을 올린다(6.28:1). 참조한 배너는 흰 글자를 썼지만 그건 한 번
  * 보고 지나가는 광고이고, 여기는 매일 수치를 읽는 화면이다.
  *
- * 핵심 규칙: 순수한 검정·회색·흰색을 쓰지 않는다. 모든 중립색에 따뜻함이 섞여 있다.
+ * 핵심 규칙: 순수한 검정·회색을 쓰지 않는다. 중립색에 따뜻함이 섞여 있다.
+ * 예외는 --surface 하나 — 카드는 순수 흰색이다. 따뜻한 크림 위에서 흰 카드가
+ * 떠오르는 것이 이 스타일의 밝음을 만드는 축이고, 레퍼런스도 정확히 그렇게 한다.
  * 근거: my-obsidian-vault → 20-Design/결쩜사 디자인 시스템.md (구조),
  *       20-Design/살구 톤 팔레트.md (색과 대비 계산)
  */
 
 :root {
-  --bg: #fdf6f0;
-  --surface: #fffcf9;
-  --surface-hover: #f9e9e1;
+  /* 아래 셋은 레퍼런스 이미지에서 실측한 값이다 (히스토그램 최빈색) */
+  --bg: #fff5ef;
+  /* 흰 카드는 **순수 흰색**이다. 크림 위에서 카드가 떠오르는 것이
+     이 스타일의 밝음을 만드는 축이라, 여기서만 예외를 둔다 */
+  --surface: #ffffff;
+  --surface-hover: #fdeae2;
   --border: rgba(166, 75, 47, 0.14);
   --border-strong: rgba(166, 75, 47, 0.4);
   --text: #2c1f1a;
   --text-dim: #7a5f52;
-  /* 넓은 면적 채우기 전용 — 이 색으로 글자를 쓰지 말 것 */
-  --accent: #ef8666;
+  /* 넓은 면적 채우기 전용 — 이 색으로 글자를 쓰지 말 것.
+     레퍼런스 실측값. 이전 #ef8666 보다 채도가 높아 더 밝게 읽힌다 */
+  --accent: #ff805d;
   /* 글자·아이콘·테두리 — 크림 위 5.35:1 */
   --accent-ink: #a64b2f;
-  --accent-soft: rgba(239, 134, 102, 0.12);
+  --accent-soft: rgba(255, 128, 93, 0.12);
   /* 강조 그라디언트 — 워드마크·헤드라인.
      밝은 살구는 글자로 안 읽히니 진한 쪽 둘로만 구성한다 (3.48 → 5.35) */
   --gold-from: #d2643f;
@@ -172,8 +178,8 @@ a {
 .site-nav a.cta {
   padding: 9px 16px;
   border-radius: 999px;
-  background: linear-gradient(135deg, #f59274, #ea7a58);
-  box-shadow: 0 10px 24px rgba(166, 75, 47, 0.22);
+  background: linear-gradient(135deg, #ff8a68, #f9744f);
+  box-shadow: 0 10px 24px rgba(166, 75, 47, 0.2);
   color: var(--on-accent);
 }
 
@@ -220,9 +226,9 @@ a {
  */
 .sheet--hero {
   background:
-    radial-gradient(circle at 84% 10%, rgba(239, 134, 102, 0.2), transparent 46%),
-    radial-gradient(circle at 6% 92%, rgba(201, 168, 76, 0.12), transparent 44%),
-    linear-gradient(168deg, #fffaf6, #fbeae0 74%, #f7dbd0);
+    radial-gradient(circle at 84% 10%, rgba(255, 128, 93, 0.2), transparent 46%),
+    radial-gradient(circle at 6% 92%, rgba(201, 168, 76, 0.1), transparent 44%),
+    linear-gradient(168deg, #ffffff, #fff0e8 70%, #fde1d6);
   border: 1px solid rgba(166, 75, 47, 0.1);
   box-shadow: 0 20px 48px rgba(74, 40, 26, 0.07);
 }
@@ -269,6 +275,19 @@ a {
   font-size: clamp(27px, 5.2vw, 40px);
 }
 
+/*
+ * 히어로도 가운데로 모은다. 레퍼런스는 아이브로우·헤드라인·버튼을 전부
+ * 가운데 축에 세우고, 아래 시트들도 이미 그렇게 되어 있다.
+ * 히어로만 왼쪽 정렬이면 넓은 화면에서 오른쪽 절반이 비어 허전하다.
+ */
+.sheet--hero {
+  text-align: center;
+}
+
+.sheet--hero .btn-row {
+  justify-content: center;
+}
+
 .lead {
   margin: 14px 0 0;
   font-size: clamp(0.9rem, 2.6vw, 1rem);
@@ -292,7 +311,7 @@ a {
   padding: 7px 15px;
   margin-bottom: 20px;
   border-radius: 999px;
-  background: rgba(255, 255, 255, 0.78);
+  background: #ffffff;
   border: 1px solid rgba(166, 75, 47, 0.14);
   font-size: 12px;
   font-weight: 700;
@@ -317,14 +336,14 @@ a {
 }
 
 .btn-primary {
-  background: linear-gradient(135deg, #f59274, #ea7a58);
-  box-shadow: 0 10px 24px rgba(166, 75, 47, 0.22);
+  background: linear-gradient(135deg, #ff8a68, #f9744f);
+  box-shadow: 0 10px 24px rgba(166, 75, 47, 0.2);
   color: var(--on-accent);
 }
 
 /* 보조 버튼 — 흰 알약. 살구 버튼과 나란히 서도 순서가 헷갈리지 않는다 */
 .btn-ghost {
-  background: rgba(255, 255, 255, 0.82);
+  background: #ffffff;
   border: 1px solid rgba(166, 75, 47, 0.18);
   color: var(--accent-ink);
 }
@@ -884,8 +903,8 @@ a {
   margin-top: 10px;
   border: none;
   border-radius: 11px;
-  background: linear-gradient(135deg, #f59274, #ea7a58);
-  box-shadow: 0 10px 24px rgba(166, 75, 47, 0.22);
+  background: linear-gradient(135deg, #ff8a68, #f9744f);
+  box-shadow: 0 10px 24px rgba(166, 75, 47, 0.2);
   color: var(--on-accent);
   font-size: 15px;
   font-weight: 700;
