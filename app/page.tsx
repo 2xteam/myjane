@@ -123,8 +123,8 @@ const NOTES = [
 ];
 
 /** 실(結)을 은유한 얇은 곡선 — 여백에만 놓는다 */
-function Ornament({ light = false }: { light?: boolean }) {
-  const stroke = light ? "rgba(247,200,178,0.24)" : "rgba(166,75,47,0.16)";
+function Ornament() {
+  const stroke = "rgba(166,75,47,0.16)";
   return (
     <svg className="sheet-ornament" viewBox="0 0 260 150" aria-hidden="true">
       <g fill="none" stroke={stroke} strokeWidth="1">
@@ -186,9 +186,9 @@ export default function Home() {
       </header>
 
       <main className="sheets">
-        {/* 히어로 — 짙은 시트 (변형 A) */}
-        <section className="sheet sheet--dark">
-          <Ornament light />
+        {/* 히어로 — 크림에서 연분홍으로 내려가는 밝은 시트 */}
+        <section className="sheet sheet--hero">
+          <Ornament />
           <p className="hero-badge">✦ 공부 · 건강 · 습관 기록</p>
           <h1 className="headline">
             필요한 기록만,

@@ -106,9 +106,11 @@ a {
 }
 
 /* ────────────────────────────────────────────────────────────
- * 랜딩 — 결쩜사 구조를 따른다.
- *   옅은 크림 배경 위에 둥근 "시트"를 쌓고, 마지막에 어두운 푸터로 닫는다.
- *   시트 배경은 온백색 / 연분홍 / 짙은 먹갈 세 가지를 번갈아 쓴다.
+ * 랜딩 — 결쩜사의 시트 쌓기 구조를 따르되 **어두운 면은 쓰지 않는다.**
+ *   옅은 크림 배경 위에 둥근 "시트"를 쌓고, 연분홍 띠로 조용히 닫는다.
+ *   시트 배경은 온백색 / 연분홍 두 가지를 번갈아 쓰고, 히어로만 그 사이를
+ *   흐르는 그라디언트다. 결쩜사의 짙은 시트·어두운 푸터는 살구 톤에서
+ *   페이지를 무겁게 만들어 뺐다 → .sheet--hero, .site-footer 주석
  * 근거: my-obsidian-vault → 20-Design/결쩜사 페이지 패턴.md
  * ──────────────────────────────────────────────────────────── */
 
@@ -191,7 +193,8 @@ a {
   padding: clamp(30px, 5vw, 56px) clamp(20px, 4vw, 48px);
   border-radius: 24px;
   background: var(--surface);
-  box-shadow: 0 24px 65px rgba(74, 40, 26, 0.09);
+  /* 그림자는 옅게. 짙으면 밝은 바탕에서 시트가 무겁게 내려앉는다 */
+  box-shadow: 0 20px 48px rgba(74, 40, 26, 0.06);
 }
 
 .sheet--tint {
@@ -200,12 +203,28 @@ a {
   border: 1px solid var(--border);
 }
 
-.sheet--dark {
+/*
+ * 히어로 시트.
+ *
+ * 결쩜사는 짙은 자주 시트로 히어로를 잡고 어두운 푸터로 페이지를 닫는다.
+ * 살구 톤으로 갈면서 그 골격을 그대로 뒀더니 크림 바탕인데도 무거웠다 —
+ * 밝은 팔레트에서 어두운 면은 그 자체로 시선을 끌어당겨 분위기를 결정해 버린다.
+ *
+ * 그래서 랜딩에서는 **어두운 면을 아예 쓰지 않는다.** 참조한 프로모션 배너도
+ * 크림에서 시작해 코랄 버튼으로 끝나고, 짙은 면이 한 곳도 없다.
+ * 히어로의 존재감은 어둠이 아니라 (1) 연분홍으로 내려가는 그라디언트,
+ * (2) 큰 헤드라인, (3) 살구 버튼 세 가지로 만든다.
+ *
+ * ⚠️ 로그인·회원가입의 짙은 이야기 패널(`.auth-story`)은 그대로 둔다.
+ * 그쪽은 화면을 반으로 나눠 대조를 만드는 구조라 어두운 면이 제 몫을 한다.
+ */
+.sheet--hero {
   background:
-    radial-gradient(circle at 78% 16%, rgba(239, 134, 102, 0.18), transparent 36%),
-    linear-gradient(150deg, #241310, #3b2016 65%, #4b2a1c);
-  color: #fdf6f0;
-  box-shadow: 0 24px 65px rgba(74, 40, 26, 0.18);
+    radial-gradient(circle at 84% 10%, rgba(239, 134, 102, 0.2), transparent 46%),
+    radial-gradient(circle at 6% 92%, rgba(201, 168, 76, 0.12), transparent 44%),
+    linear-gradient(168deg, #fffaf6, #fbeae0 74%, #f7dbd0);
+  border: 1px solid rgba(166, 75, 47, 0.1);
+  box-shadow: 0 20px 48px rgba(74, 40, 26, 0.07);
 }
 
 /* 실(結) 장식 — 여백에만 놓는다 */
@@ -227,9 +246,6 @@ a {
   color: var(--accent-ink);
 }
 
-.sheet--dark .eyebrow {
-  color: #ead58c;
-}
 
 .headline {
   margin: 0;
@@ -248,8 +264,9 @@ a {
   color: transparent;
 }
 
-.sheet--dark .headline {
-  color: #fdf6f0;
+/* 히어로 헤드라인은 한 단계 크게 — 어두운 면 없이 존재감을 만드는 축이다 */
+.sheet--hero .headline {
+  font-size: clamp(27px, 5.2vw, 40px);
 }
 
 .lead {
@@ -260,15 +277,14 @@ a {
   word-break: keep-all;
 }
 
-.sheet--dark .lead {
-  color: rgba(250, 235, 226, 0.74);
-}
-
 .center {
   text-align: center;
 }
 
-/* 히어로 (변형 A: 짙은 시트) */
+/*
+ * 히어로 배지 — 연분홍 그라디언트 위에 흰 알약으로 얹는다.
+ * 참조 배너의 배지도 이 자리를 같은 방식으로 쓴다.
+ */
 .hero-badge {
   display: inline-flex;
   align-items: center;
@@ -276,16 +292,11 @@ a {
   padding: 7px 15px;
   margin-bottom: 20px;
   border-radius: 999px;
-  background: rgba(255, 255, 255, 0.1);
-  border: 1px solid rgba(247, 200, 178, 0.28);
+  background: rgba(255, 255, 255, 0.78);
+  border: 1px solid rgba(166, 75, 47, 0.14);
   font-size: 12px;
-  color: #fae3d6;
-}
-
-.hero-mark {
-  border-radius: 18px;
-  border: 1px solid rgba(247, 200, 178, 0.25);
-  margin-bottom: 22px;
+  font-weight: 700;
+  color: var(--accent-ink);
 }
 
 .btn-row {
@@ -311,10 +322,15 @@ a {
   color: var(--on-accent);
 }
 
+/* 보조 버튼 — 흰 알약. 살구 버튼과 나란히 서도 순서가 헷갈리지 않는다 */
 .btn-ghost {
-  background: rgba(255, 255, 255, 0.08);
-  border: 1px solid rgba(247, 200, 178, 0.3);
-  color: #fdf6f0;
+  background: rgba(255, 255, 255, 0.82);
+  border: 1px solid rgba(166, 75, 47, 0.18);
+  color: var(--accent-ink);
+}
+
+.btn-ghost:hover {
+  border-color: var(--border-strong);
 }
 
 /* 앱 카드 그리드 */
@@ -493,11 +509,19 @@ a {
   word-break: keep-all;
 }
 
-/* 어두운 푸터 — 밝은 페이지를 닫는다 */
+/*
+ * 푸터 — 연분홍 띠로 조용히 닫는다.
+ *
+ * 결쩜사는 어두운 푸터로 페이지를 닫지만, 그 검은 띠 하나가 밝은 인상을
+ * 되돌려 놓는다. 스크롤 끝에서 화면 절반이 어두워지기 때문이다.
+ * 대신 시트에 쓰는 연분홍을 전체 폭으로 깔고 위쪽에 실선 하나만 둔다 —
+ * 마지막 시트와 톤이 이어지면서 "여기서 끝"이라는 신호는 남는다.
+ */
 .site-footer {
   padding: clamp(34px, 5vw, 56px) 20px;
-  background: #20120d;
-  color: rgba(250, 235, 226, 0.68);
+  background: var(--surface-hover);
+  border-top: 1px solid var(--border);
+  color: var(--text-dim);
   text-align: center;
   font-size: 0.78rem;
   line-height: 2;
@@ -510,16 +534,16 @@ a {
   margin-bottom: 14px;
   font-size: 1rem;
   font-weight: 800;
-  color: #fdf6f0;
+  color: var(--text);
 }
 
 .site-footer-brand img {
   border-radius: 8px;
 }
 
-/* 어두운 푸터에서는 my 를 크림, jane 을 살구로 (앱 푸터의 워드마크와 같은 톤) */
+/* 워드마크의 jane 만 살구로 — 상단 바와 같은 톤 */
 .site-footer-brand .brand-word > span {
-  color: #f0a184;
+  color: var(--accent-ink);
 }
 
 .site-footer-logout {
@@ -529,7 +553,7 @@ a {
   font-family: inherit;
   font-size: inherit;
   font-weight: 600;
-  color: rgba(250, 235, 226, 0.86);
+  color: var(--accent-ink);
   cursor: pointer;
 }
 
@@ -538,7 +562,7 @@ a {
 }
 
 .site-footer a {
-  color: rgba(250, 235, 226, 0.86);
+  color: var(--accent-ink);
 }
 
 @media (prefers-reduced-motion: reduce) {
