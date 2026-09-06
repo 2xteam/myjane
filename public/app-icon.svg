@@ -2,7 +2,7 @@
   <!--
     myjane 포털 아이콘 — 소문자 mj.
 
-    다섯 앱과 같은 기하학(짙은 보라 타일 + 게이지 호)을 쓰고 안쪽만 다르다.
+    다섯 앱과 같은 기하학(따뜻한 짙은 타일 + 게이지 호)을 쓰고 안쪽만 다르다.
     다른 앱의 심볼은 도형인데 이것만 글자라서, 획을 호와 **같은 11** 로 맞춘다.
 
     j 의 꼬리가 게이지 호로 이어진다. 붙는 방식이 이 아이콘의 핵심이다 —
@@ -20,8 +20,8 @@
   -->
   <defs>
     <linearGradient id="tile" x1="0" y1="0" x2="1" y2="1" gradientTransform="rotate(15)">
-      <stop offset="0" stop-color="#3a1266"/>
-      <stop offset="1" stop-color="#1c0733"/>
+      <stop offset="0" stop-color="#4b2a1c"/>
+      <stop offset="1" stop-color="#241310"/>
     </linearGradient>
   </defs>
 
@@ -29,7 +29,7 @@
 
   <!-- 게이지 호 -->
   <g transform="rotate(158.96 96 106.46)">
-    <circle cx="96" cy="106.46" r="60" fill="none" stroke="#6b4a9e"
+    <circle cx="96" cy="106.46" r="60" fill="none" stroke="#c2704c"
             stroke-width="11" stroke-linecap="round" stroke-dasharray="232.6 144.4"/>
     <circle cx="96" cy="106.46" r="60" fill="none" stroke="#e8d18a"
             stroke-width="11" stroke-linecap="round" stroke-dasharray="128 249"/>
@@ -37,15 +37,15 @@
 
   <!-- m — 아치 두 개. 획 11 에서 속이 막히지 않게 아치를 24 폭으로 둔다 -->
   <path d="M52,116 L52,98 C52,90 57,86 64,86 C71,86 76,90 76,98 L76,116"
-        fill="none" stroke="#ffffff" stroke-width="11"
+        fill="none" stroke="#fff5ef" stroke-width="11"
         stroke-linecap="round" stroke-linejoin="round"/>
   <path d="M76,98 C76,90 81,86 88,86 C95,86 100,90 100,98 L100,116"
-        fill="none" stroke="#ffffff" stroke-width="11"
+        fill="none" stroke="#fff5ef" stroke-width="11"
         stroke-linecap="round" stroke-linejoin="round"/>
 
   <!-- j — 기둥이 곡선으로 그대로 이어져 호의 끝에 내접한다 -->
   <path d="M121.2,86 L121.2,112.9 A 42 42 0 0 1 40 128"
-        fill="none" stroke="#ffffff" stroke-width="11" stroke-linecap="round"/>
+        fill="none" stroke="#fff5ef" stroke-width="11" stroke-linecap="round"/>
 
   <!-- j 위의 점은 별(4갈래). 게이지 호와 같은 금색을 쓴다 -->
   <path d="M121,58.5 L122.77,64.23 L128.5,66 L122.77,67.77 L121,73.5 L119.23,67.77 L113.5,66 L119.23,64.23 Z"
