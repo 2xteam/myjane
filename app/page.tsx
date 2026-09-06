@@ -124,7 +124,7 @@ const NOTES = [
 
 /** 실(結)을 은유한 얇은 곡선 — 여백에만 놓는다 */
 function Ornament({ light = false }: { light?: boolean }) {
-  const stroke = light ? "rgba(200,184,255,0.22)" : "rgba(139,92,246,0.16)";
+  const stroke = light ? "rgba(247,200,178,0.24)" : "rgba(166,75,47,0.16)";
   return (
     <svg className="sheet-ornament" viewBox="0 0 260 150" aria-hidden="true">
       <g fill="none" stroke={stroke} strokeWidth="1">

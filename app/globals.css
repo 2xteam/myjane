@@ -1,37 +1,81 @@
 /*
- * myjane 팔레트 — 결쩜사(kyulzzumsa.co.kr)의 색 체계를 따른다.
- *   보라 #7C3AED (주 강조) + 금 #C9A84C (격식·프리미엄 강조점)
- *   밝은 오프화이트 #FDFBFF 위에 얹는 라이트 기본, 다크는 딥퍼플로 뒤집는다.
+ * myjane 팔레트 — 살구(Apricot).
+ *   따뜻한 크림 #FDF6F0 바탕 위에 살구 산호 #EF8666.
+ *   금 #C9A84C 은 배지·구분선 같은 좁은 면적에만 남긴다.
+ *   구조(시트 쌓기)는 결쩜사 패턴을 그대로 두고 색만 갈았다.
  *
- * 핵심 규칙: 순수한 검정·회색을 쓰지 않는다. 모든 중립색에 보라가 섞여 있다.
- * 근거: my-obsidian-vault → 20-Design/결쩜사 디자인 시스템.md
+ * ⚠️ 이 파일에서 가장 중요한 규칙 — 강조색은 두 단계다. 섞어 쓰면 안 된다.
+ *
+ *   --accent      #EF8666   넓은 면적을 채울 때만 (버튼 배경, 배지, 그라디언트)
+ *   --accent-ink  #A64B2F   글자·아이콘·테두리
+ *   --on-accent   #2C1F1A   살구 배경 위에 얹는 글자색 — 흰색이 아니다
+ *
+ * 살구는 밝아서 글자로 쓸 수 없다. 크림 위 2.37:1, 흰 글자로 2.54:1 —
+ * 큰 글자 기준(3:1)에도 미달한다. 그래서 글자는 색상(hue 14°)을 유지하고
+ * 명도만 낮춘 --accent-ink 로 쓰고(5.35:1), 살구 버튼 위에는 흰색 대신
+ * 짙은 먹을 올린다(6.28:1). 참조한 배너는 흰 글자를 썼지만 그건 한 번
+ * 보고 지나가는 광고이고, 여기는 매일 수치를 읽는 화면이다.
+ *
+ * 핵심 규칙: 순수한 검정·회색·흰색을 쓰지 않는다. 모든 중립색에 따뜻함이 섞여 있다.
+ * 근거: my-obsidian-vault → 20-Design/결쩜사 디자인 시스템.md (구조),
+ *       20-Design/살구 톤 팔레트.md (색과 대비 계산)
  */
 
 :root {
-  --bg: #fdfbff;
-  --surface: #ffffff;
-  --surface-hover: #f5f0fc;
-  --border: rgba(139, 92, 246, 0.14);
-  --border-strong: rgba(124, 58, 237, 0.45);
-  --text: #1a0f2e;
-  --text-dim: #6b5f8a;
-  --accent: #7c3aed;
-  --accent-ink: #7c3aed;
-  --accent-soft: rgba(139, 92, 246, 0.08);
-  /* 강조 그라디언트 — 워드마크·헤드라인 */
-  --gold-from: #8b5cf6;
-  --gold-to: #7c3aed;
+  --bg: #fdf6f0;
+  --surface: #fffcf9;
+  --surface-hover: #f9e9e1;
+  --border: rgba(166, 75, 47, 0.14);
+  --border-strong: rgba(166, 75, 47, 0.4);
+  --text: #2c1f1a;
+  --text-dim: #7a5f52;
+  /* 넓은 면적 채우기 전용 — 이 색으로 글자를 쓰지 말 것 */
+  --accent: #ef8666;
+  /* 글자·아이콘·테두리 — 크림 위 5.35:1 */
+  --accent-ink: #a64b2f;
+  --accent-soft: rgba(239, 134, 102, 0.12);
+  /* 강조 그라디언트 — 워드마크·헤드라인.
+     밝은 살구는 글자로 안 읽히니 진한 쪽 둘로만 구성한다 (3.48 → 5.35) */
+  --gold-from: #d2643f;
+  --gold-to: #a64b2f;
   /* 금색 — 배지·구분선 같은 좁은 면적에만 */
   --gold: #c9a84c;
   --gold-soft: rgba(201, 168, 76, 0.12);
-  /* 버튼 위 글자색 */
-  --on-accent: #ffffff;
+  /* 살구 버튼 위 글자색 — 먹. 흰색은 2.54:1 로 모자라다 */
+  --on-accent: #2c1f1a;
 }
 
 /*
- * 다크 모드를 두지 않는다. 결쩜사는 라이트 전용 사이트이고,
- * 흰 카드 위 보라라는 조합 자체가 이 디자인의 인상이다.
- * OS 설정을 따라가면 카드가 어두워지면서 다른 사이트처럼 보인다.
+ * 별칭 — 계정 복구(PIN·전화번호 찾기)와 admin 화면이 다른 이름 체계로 쓴다.
+ * 다른 앱에서 마크업을 가져올 때 토큰 이름까지 같이 왔는데 선언은 오지 않아서,
+ * 그동안 그 화면들은 카드 배경·입력칸 테두리가 통째로 빠진 채 렌더되고 있었다.
+ * 새로 만드는 화면은 위쪽 이름을 쓰고, 이 블록은 옮겨온 화면을 위해서만 둔다.
+ */
+:root {
+  --bg-primary: var(--bg);
+  --bg-secondary: var(--surface-hover);
+  --bg-card: var(--surface);
+  --border-subtle: var(--border);
+  --input-bg: var(--surface);
+  --input-border: var(--border-strong);
+  --text-primary: var(--text);
+  --text-secondary: var(--text-dim);
+  /* 비활성 버튼 배경으로만 쓴다 — 글자색으로 쓰면 대비가 2.5:1 밖에 안 된다 */
+  --text-muted: #b09a8e;
+  /*
+   * 오류 문구용. 살구(hue 14°)와 각도는 가깝지만 장미 쪽으로 넘어가 있고,
+   * 13px 문장에 쓰이므로 크림 위 6.1:1 이 나오는 어두운 값을 골랐다.
+   * 살구 강조색과 나란히 놓이는 자리에는 쓰지 말 것.
+   */
+  --danger: #b02742;
+  --radius-sm: 11px;
+  --radius-xl: 24px;
+}
+
+/*
+ * 다크 모드를 두지 않는다. 크림 바탕 위 살구라는 조합 자체가
+ * 이 디자인의 인상이다. OS 설정을 따라가면 바탕의 따뜻함이 사라지면서
+ * 그냥 흔한 다크 사이트가 된다.
  */
 
 /* ── 기본 ─────────────────────────────────────────── */
@@ -63,8 +107,8 @@ a {
 
 /* ────────────────────────────────────────────────────────────
  * 랜딩 — 결쩜사 구조를 따른다.
- *   옅은 라벤더 배경 위에 둥근 "시트"를 쌓고, 마지막에 어두운 푸터로 닫는다.
- *   시트 배경은 흰색 / 연보라 / 짙은 자주 세 가지를 번갈아 쓴다.
+ *   옅은 크림 배경 위에 둥근 "시트"를 쌓고, 마지막에 어두운 푸터로 닫는다.
+ *   시트 배경은 온백색 / 연분홍 / 짙은 먹갈 세 가지를 번갈아 쓴다.
  * 근거: my-obsidian-vault → 20-Design/결쩜사 페이지 패턴.md
  * ──────────────────────────────────────────────────────────── */
 
@@ -126,9 +170,9 @@ a {
 .site-nav a.cta {
   padding: 9px 16px;
   border-radius: 999px;
-  background: linear-gradient(135deg, #8150e8, #6830c8);
-  box-shadow: 0 10px 24px rgba(104, 48, 200, 0.18);
-  color: #fff;
+  background: linear-gradient(135deg, #f59274, #ea7a58);
+  box-shadow: 0 10px 24px rgba(166, 75, 47, 0.22);
+  color: var(--on-accent);
 }
 
 /* 시트 컨테이너 */
@@ -147,7 +191,7 @@ a {
   padding: clamp(30px, 5vw, 56px) clamp(20px, 4vw, 48px);
   border-radius: 24px;
   background: var(--surface);
-  box-shadow: 0 24px 65px rgba(37, 13, 62, 0.09);
+  box-shadow: 0 24px 65px rgba(74, 40, 26, 0.09);
 }
 
 .sheet--tint {
@@ -158,10 +202,10 @@ a {
 
 .sheet--dark {
   background:
-    radial-gradient(circle at 78% 16%, rgba(188, 167, 251, 0.14), transparent 36%),
-    linear-gradient(150deg, #190527, #32104f 65%, #401961);
-  color: #fff;
-  box-shadow: 0 24px 65px rgba(37, 13, 62, 0.18);
+    radial-gradient(circle at 78% 16%, rgba(239, 134, 102, 0.18), transparent 36%),
+    linear-gradient(150deg, #241310, #3b2016 65%, #4b2a1c);
+  color: #fdf6f0;
+  box-shadow: 0 24px 65px rgba(74, 40, 26, 0.18);
 }
 
 /* 실(結) 장식 — 여백에만 놓는다 */
@@ -205,7 +249,7 @@ a {
 }
 
 .sheet--dark .headline {
-  color: #fff;
+  color: #fdf6f0;
 }
 
 .lead {
@@ -217,7 +261,7 @@ a {
 }
 
 .sheet--dark .lead {
-  color: rgba(232, 222, 250, 0.72);
+  color: rgba(250, 235, 226, 0.74);
 }
 
 .center {
@@ -233,14 +277,14 @@ a {
   margin-bottom: 20px;
   border-radius: 999px;
   background: rgba(255, 255, 255, 0.1);
-  border: 1px solid rgba(200, 184, 255, 0.28);
+  border: 1px solid rgba(247, 200, 178, 0.28);
   font-size: 12px;
-  color: #e6dcff;
+  color: #fae3d6;
 }
 
 .hero-mark {
   border-radius: 18px;
-  border: 1px solid rgba(200, 184, 255, 0.25);
+  border: 1px solid rgba(247, 200, 178, 0.25);
   margin-bottom: 22px;
 }
 
@@ -262,15 +306,15 @@ a {
 }
 
 .btn-primary {
-  background: linear-gradient(135deg, #8150e8, #6830c8);
-  box-shadow: 0 10px 24px rgba(104, 48, 200, 0.18);
-  color: #fff;
+  background: linear-gradient(135deg, #f59274, #ea7a58);
+  box-shadow: 0 10px 24px rgba(166, 75, 47, 0.22);
+  color: var(--on-accent);
 }
 
 .btn-ghost {
   background: rgba(255, 255, 255, 0.08);
-  border: 1px solid rgba(200, 184, 255, 0.3);
-  color: #fff;
+  border: 1px solid rgba(247, 200, 178, 0.3);
+  color: #fdf6f0;
 }
 
 /* 앱 카드 그리드 */
@@ -311,7 +355,7 @@ a {
 .card:focus-visible {
   border-color: var(--border-strong);
   transform: translateY(-3px);
-  box-shadow: 0 18px 40px rgba(37, 13, 62, 0.12);
+  box-shadow: 0 18px 40px rgba(74, 40, 26, 0.12);
 }
 
 .card-head {
@@ -325,7 +369,7 @@ a {
   height: 46px;
   border-radius: 13px;
   flex-shrink: 0;
-  background: #fff;
+  background: var(--surface);
   border: 1px solid var(--border);
 }
 
@@ -452,8 +496,8 @@ a {
 /* 어두운 푸터 — 밝은 페이지를 닫는다 */
 .site-footer {
   padding: clamp(34px, 5vw, 56px) 20px;
-  background: #160b26;
-  color: rgba(232, 222, 250, 0.66);
+  background: #20120d;
+  color: rgba(250, 235, 226, 0.68);
   text-align: center;
   font-size: 0.78rem;
   line-height: 2;
@@ -466,16 +510,16 @@ a {
   margin-bottom: 14px;
   font-size: 1rem;
   font-weight: 800;
-  color: #fff;
+  color: #fdf6f0;
 }
 
 .site-footer-brand img {
   border-radius: 8px;
 }
 
-/* 어두운 푸터에서는 my 를 흰색, jane 을 보라로 (앱 푸터의 워드마크와 같은 톤) */
+/* 어두운 푸터에서는 my 를 크림, jane 을 살구로 (앱 푸터의 워드마크와 같은 톤) */
 .site-footer-brand .brand-word > span {
-  color: #a78bfa;
+  color: #f0a184;
 }
 
 .site-footer-logout {
@@ -485,7 +529,7 @@ a {
   font-family: inherit;
   font-size: inherit;
   font-weight: 600;
-  color: rgba(232, 222, 250, 0.85);
+  color: rgba(250, 235, 226, 0.86);
   cursor: pointer;
 }
 
@@ -494,7 +538,7 @@ a {
 }
 
 .site-footer a {
-  color: rgba(232, 222, 250, 0.85);
+  color: rgba(250, 235, 226, 0.86);
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -530,8 +574,8 @@ a {
   font-size: 1.05rem;
   font-weight: 800;
   letter-spacing: -0.02em;
-  /* my 는 검정, jane 은 보라 */
-  color: #14121a;
+  /* my 는 먹, jane 은 살구 */
+  color: var(--text);
 }
 
 .auth-brand img {
@@ -544,9 +588,9 @@ a {
   white-space: nowrap;
 }
 
-/* 워드마크의 jane 만 보라로 */
+/* 워드마크의 jane 만 살구로. 밝은 --accent 는 17px 글자에서 2.48:1 이라 잉크를 쓴다 */
 .auth-brand .brand-word > span {
-  color: var(--accent);
+  color: var(--accent-ink);
 }
 
 .auth-home {
@@ -558,7 +602,7 @@ a {
   color: var(--accent-ink);
 }
 
-/* 페이지 — 옅은 보라 배경 위에 은은한 빛 */
+/* 페이지 — 옅은 크림 배경 위에 은은한 빛 */
 .auth {
   position: relative;
   overflow: hidden;
@@ -579,7 +623,7 @@ a {
   position: absolute;
   inset: -20%;
   background:
-    linear-gradient(104deg, transparent 49.9%, rgba(139, 92, 246, 0.07) 50%,
+    linear-gradient(104deg, transparent 49.9%, rgba(239, 134, 102, 0.09) 50%,
       transparent 50.1%);
   pointer-events: none;
 }
@@ -592,7 +636,7 @@ a {
   max-width: 700px;
   border-radius: 24px;
   overflow: hidden;
-  box-shadow: 0 24px 65px rgba(37, 13, 62, 0.14);
+  box-shadow: 0 24px 65px rgba(74, 40, 26, 0.14);
 }
 
 @media (min-width: 860px) {
@@ -617,12 +661,12 @@ a {
     align-self: stretch;
     margin: 0;
     border-radius: 24px 0 0 24px;
-    box-shadow: 0 24px 65px rgba(37, 13, 62, 0.14);
+    box-shadow: 0 24px 65px rgba(74, 40, 26, 0.14);
   }
 
   .auth-shell > .auth-card {
     border-radius: 0 24px 24px 0;
-    box-shadow: 0 24px 65px rgba(37, 13, 62, 0.09);
+    box-shadow: 0 24px 65px rgba(74, 40, 26, 0.09);
   }
 }
 
@@ -632,9 +676,9 @@ a {
   overflow: hidden;
   padding: 30px 28px;
   background:
-    radial-gradient(circle at 72% 20%, rgba(188, 167, 251, 0.14), transparent 34%),
-    linear-gradient(150deg, #190527, #32104f 65%, #401961);
-  color: #fff;
+    radial-gradient(circle at 72% 20%, rgba(239, 134, 102, 0.18), transparent 34%),
+    linear-gradient(150deg, #241310, #3b2016 65%, #4b2a1c);
+  color: #fdf6f0;
   display: flex;
   flex-direction: column;
   justify-content: flex-end;
@@ -679,7 +723,7 @@ a {
   font-weight: 700;
   line-height: 1.42;
   letter-spacing: -0.8px;
-  color: #fff;
+  color: #fdf6f0;
   word-break: keep-all;
 }
 
@@ -687,7 +731,7 @@ a {
   margin: 14px 0 0;
   font-size: 12.5px;
   line-height: 1.75;
-  color: rgba(232, 222, 250, 0.72);
+  color: rgba(250, 235, 226, 0.74);
   word-break: keep-all;
 }
 
@@ -738,7 +782,7 @@ a {
   background: var(--surface);
   color: var(--text);
   font-weight: 800;
-  box-shadow: 0 4px 15px rgba(38, 13, 63, 0.08);
+  box-shadow: 0 4px 15px rgba(74, 40, 26, 0.08);
 }
 
 .auth-title {
@@ -781,7 +825,8 @@ a {
 
 .auth-input:focus {
   outline: none;
-  border-color: var(--accent);
+  /* 밝은 --accent 는 크림 위 2.37:1 로 포커스가 보이지 않는다 */
+  border-color: var(--accent-ink);
 }
 
 /* 비밀번호 보기 토글이 들어가는 입력 */
@@ -815,9 +860,9 @@ a {
   margin-top: 10px;
   border: none;
   border-radius: 11px;
-  background: linear-gradient(135deg, #8150e8, #6830c8);
-  box-shadow: 0 10px 24px rgba(104, 48, 200, 0.18);
-  color: #fff;
+  background: linear-gradient(135deg, #f59274, #ea7a58);
+  box-shadow: 0 10px 24px rgba(166, 75, 47, 0.22);
+  color: var(--on-accent);
   font-size: 15px;
   font-weight: 700;
   font-family: inherit;

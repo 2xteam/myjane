@@ -49,7 +49,7 @@ export function AuthShell({
               <g fill="none" strokeWidth="0.9">
                 <path
                   d="M-40 150 C 60 60, 220 60, 320 150"
-                  stroke="rgba(200,184,255,0.20)"
+                  stroke="rgba(247,200,178,0.22)"
                 />
                 <path
                   d="M-40 178 C 70 96, 210 96, 320 178"
@@ -57,7 +57,7 @@ export function AuthShell({
                 />
                 <path
                   d="M-40 120 C 80 210, 200 210, 320 120"
-                  stroke="rgba(200,184,255,0.14)"
+                  stroke="rgba(247,200,178,0.15)"
                 />
               </g>
               <circle cx="236" cy="104" r="2.6" fill="#ead58c" opacity="0.8" />

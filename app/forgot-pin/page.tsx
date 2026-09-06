@@ -122,7 +122,7 @@ const cardStyle: CSSProperties = {
   background: "var(--bg-card)",
   borderRadius: "var(--radius-xl)",
   padding: "2rem",
-  boxShadow: "0 25px 50px -12px rgba(0,0,0,0.4)",
+  boxShadow: "0 25px 50px -12px rgba(44,31,26,0.4)",
 };
 
 const lab: CSSProperties = {
@@ -158,7 +158,7 @@ function btnStyle(busy: boolean): CSSProperties {
     borderRadius: "var(--radius-sm)",
     border: "none",
     background: busy ? "var(--text-muted)" : "var(--accent)",
-    color: "#000",
+    color: "var(--on-accent)",
     fontWeight: 600,
     cursor: busy ? "default" : "pointer",
   };

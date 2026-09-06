@@ -27,7 +27,7 @@ export const metadata: Metadata = {
 
 export const viewport: Viewport = {
   // 라이트 전용 사이트
-  themeColor: "#fdfbff",
+  themeColor: "#fdf6f0",
 };
 
 export default function RootLayout({
