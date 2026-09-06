@@ -173,7 +173,7 @@ export default function Home() {
 
       <main className="sheets">
         {/* 히어로 — 크림에서 연분홍으로 내려가는 밝은 시트 */}
-        <section className="sheet sheet--hero">
+        <section className="sheet sheet--dark">
           <p className="hero-badge">✦ 공부 · 건강 · 습관 기록</p>
           <h1 className="headline">
             필요한 기록만,

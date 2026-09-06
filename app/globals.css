@@ -1,59 +1,51 @@
 /*
- * myjane 팔레트 — 살구(Apricot).
- *   따뜻한 크림 #FDF6F0 바탕 위에 살구 산호 #EF8666.
- *   금 #C9A84C 은 배지·구분선 같은 좁은 면적에만 남긴다.
- *   구조(시트 쌓기)는 결쩜사 패턴을 그대로 두고 색만 갈았다.
+ * myjane 팔레트 — 먹청(Petrol).
+ *   옅은 청백 #F7FBFB 바탕 위에 먹청 #116271.
+ *   금 #C9A84C 은 배지·구분선 같은 좁은 면적에만.
+ *   구조는 결쩜사 패턴 그대로 — 시트를 쌓고 **짙은 시트로 히어로를 잡고
+ *   어두운 푸터로 닫는다.**
  *
- * ⚠️ 이 파일에서 가장 중요한 규칙 — 강조색은 두 단계다. 섞어 쓰면 안 된다.
+ * 강조색이 한 단계다. 먹청은 어두워서 **글자로도 쓸 수 있다** —
+ * 바탕 위 6.69:1, 흰 시트 위 6.98:1. 흰 글자를 얹어도 6.98:1 이다.
+ * 그래서 --accent / --accent-ink 가 같은 값이고 --on-accent 는 흰색이다.
  *
- *   --accent      #EF8666   넓은 면적을 채울 때만 (버튼 배경, 배지, 그라디언트)
- *   --accent-ink  #A64B2F   글자·아이콘·테두리
- *   --on-accent   #2C1F1A   살구 배경 위에 얹는 글자색 — 흰색이 아니다
+ * (직전에 쓴 살구 #FF805D 는 밝아서 이게 안 됐다. 글자용 진한 값을 따로 두고
+ *  버튼 위에는 흰색 대신 먹을 올려야 했다. 먹청은 그 분리가 필요 없다.
+ *  밝은 강조색을 고르면 그 대가를 치른다는 기록으로 남긴다.)
  *
- * 살구는 밝아서 글자로 쓸 수 없다. 크림 위 2.37:1, 흰 글자로 2.54:1 —
- * 큰 글자 기준(3:1)에도 미달한다. 그래서 글자는 색상(hue 14°)을 유지하고
- * 명도만 낮춘 --accent-ink 로 쓰고(5.35:1), 살구 버튼 위에는 흰색 대신
- * 짙은 먹을 올린다(6.28:1). 참조한 배너는 흰 글자를 썼지만 그건 한 번
- * 보고 지나가는 광고이고, 여기는 매일 수치를 읽는 화면이다.
- *
- * 핵심 규칙: 순수한 검정·회색을 쓰지 않는다. 중립색에 따뜻함이 섞여 있다.
- * 예외는 --surface 하나 — 카드는 순수 흰색이다. 따뜻한 크림 위에서 흰 카드가
- * 떠오르는 것이 이 스타일의 밝음을 만드는 축이고, 레퍼런스도 정확히 그렇게 한다.
+ * 핵심 규칙: 순수한 검정·회색을 쓰지 않는다. 모든 중립색에 청록이 섞여 있다.
+ * 예외는 --surface 하나 — 시트는 순수 흰색이고, 바탕과의 분리는 색이 아니라
+ * **그림자**가 한다 (흰 시트 vs 바탕 1.04:1). 결쩜사 원본도 같은 방식이다.
  * 근거: my-obsidian-vault → 20-Design/결쩜사 디자인 시스템.md (구조),
- *       20-Design/살구 톤 팔레트.md (색과 대비 계산)
+ *       20-Design/먹청 톤 팔레트.md (색과 대비 계산)
  */
 
 :root {
-  /* 아래 셋은 레퍼런스 이미지에서 실측한 값이다 (히스토그램 최빈색) */
-  --bg: #fff5ef;
-  /* 흰 카드는 **순수 흰색**이다. 크림 위에서 카드가 떠오르는 것이
-     이 스타일의 밝음을 만드는 축이라, 여기서만 예외를 둔다 */
+  --bg: #f7fbfb;
+  /* 시트는 순수 흰색. 바탕과의 분리는 색이 아니라 그림자가 한다 */
   --surface: #ffffff;
-  --surface-hover: #fdeae2;
-  --border: rgba(166, 75, 47, 0.14);
-  --border-strong: rgba(166, 75, 47, 0.4);
-  --text: #2c1f1a;
-  --text-dim: #7a5f52;
-  /* 넓은 면적 채우기 전용 — 이 색으로 글자를 쓰지 말 것.
-     레퍼런스 실측값. 이전 #ef8666 보다 채도가 높아 더 밝게 읽힌다 */
-  --accent: #ff805d;
-  /* 글자·아이콘·테두리 — 크림 위 5.35:1 */
-  --accent-ink: #a64b2f;
-  --accent-soft: rgba(255, 128, 93, 0.12);
-  /* 강조 그라디언트 — 워드마크·헤드라인.
-     밝은 살구는 글자로 안 읽히니 진한 쪽 둘로만 구성한다 (3.48 → 5.35) */
-  --gold-from: #d2643f;
-  --gold-to: #a64b2f;
-  /* 금색 — 배지·구분선 같은 좁은 면적에만 */
+  --surface-hover: #e8f2f3;
+  --border: rgba(17, 98, 113, 0.14);
+  --border-strong: rgba(17, 98, 113, 0.42);
+  --text: #0f2027;
+  --text-dim: #566b70;
+  /* 먹청은 어두워서 면적·글자·테두리에 모두 쓸 수 있다 (흰 시트 위 6.98:1) */
+  --accent: #116271;
+  --accent-ink: #116271;
+  --accent-soft: rgba(17, 98, 113, 0.08);
+  /* 강조 그라디언트 — 워드마크·헤드라인 */
+  --gold-from: #1a7f8f;
+  --gold-to: #116271;
+  /* 금색 — 배지·구분선 같은 좁은 면적에만. 글자로 쓰면 2.19:1 이다 */
   --gold: #c9a84c;
   --gold-soft: rgba(201, 168, 76, 0.12);
-  /* 살구 버튼 위 글자색 — 먹. 흰색은 2.54:1 로 모자라다 */
-  --on-accent: #2c1f1a;
+  /* 먹청 버튼 위 글자색 — 흰색으로 6.98:1 */
+  --on-accent: #ffffff;
   /*
-   * 입력칸 안내 글자. 브라우저 기본값(#757575)은 크림 위 4.29:1 로 살짝 미달이다.
-   * --text-dim 보다 옅으면서 4.5 를 넘는 지점을 골랐다 (크림 4.69 · 흰 카드 5.04).
+   * 입력칸 안내 글자. 브라우저 기본값(#757575)은 이 바탕에서 4.42:1 로 살짝 미달이다.
+   * --text-dim 보다 옅으면서 4.5 를 넘는 지점을 골랐다 (바탕 4.80 · 흰칸 5.01).
    */
-  --placeholder: #85695b;
+  --placeholder: #5e7377;
 }
 
 /*
@@ -71,22 +63,20 @@
   --input-border: var(--border-strong);
   --text-primary: var(--text);
   --text-secondary: var(--text-dim);
-  /* 비활성 버튼 배경으로만 쓴다 — 글자색으로 쓰면 대비가 2.5:1 밖에 안 된다 */
-  --text-muted: #b09a8e;
+  /* 비활성 버튼 배경으로만 쓴다 — 글자색으로 쓰면 대비가 2.6:1 밖에 안 된다 */
+  --text-muted: #a3b4b7;
   /*
-   * 오류 문구용. 살구(hue 14°)와 각도는 가깝지만 장미 쪽으로 넘어가 있고,
-   * 13px 문장에 쓰이므로 크림 위 6.1:1 이 나오는 어두운 값을 골랐다.
-   * 살구 강조색과 나란히 놓이는 자리에는 쓰지 말 것.
+   * 오류 문구용. 먹청과 색상환에서 멀어 나란히 놓아도 헷갈리지 않는다.
+   * 13px 문장에 쓰이므로 바탕 위 6.19:1 이 나오는 값을 골랐다.
    */
-  --danger: #b02742;
+  --danger: #b3282b;
   --radius-sm: 11px;
   --radius-xl: 24px;
 }
 
 /*
- * 다크 모드를 두지 않는다. 크림 바탕 위 살구라는 조합 자체가
- * 이 디자인의 인상이다. OS 설정을 따라가면 바탕의 따뜻함이 사라지면서
- * 그냥 흔한 다크 사이트가 된다.
+ * 다크 모드를 두지 않는다. 밝은 바탕에 짙은 시트를 얹는 대조 자체가
+ * 이 디자인의 인상이다. OS 설정을 따라가면 그 대조가 사라진다.
  */
 
 /* ── 기본 ─────────────────────────────────────────── */
@@ -123,11 +113,9 @@ a {
 }
 
 /* ────────────────────────────────────────────────────────────
- * 랜딩 — 결쩜사의 시트 쌓기 구조를 따르되 **어두운 면은 쓰지 않는다.**
- *   옅은 크림 배경 위에 둥근 "시트"를 쌓고, 연분홍 띠로 조용히 닫는다.
- *   시트 배경은 온백색 / 연분홍 두 가지를 번갈아 쓰고, 히어로만 그 사이를
- *   흐르는 그라디언트다. 결쩜사의 짙은 시트·어두운 푸터는 살구 톤에서
- *   페이지를 무겁게 만들어 뺐다 → .sheet--hero, .site-footer 주석
+ * 랜딩 — 결쩜사 구조를 따른다.
+ *   옅은 청백 배경 위에 둥근 "시트"를 쌓고, 마지막에 어두운 푸터로 닫는다.
+ *   시트 배경은 흰색 / 옅은 청록 / 짙은 먹청 세 가지를 번갈아 쓴다.
  * 근거: my-obsidian-vault → 20-Design/결쩜사 페이지 패턴.md
  * ──────────────────────────────────────────────────────────── */
 
@@ -189,8 +177,8 @@ a {
 .site-nav a.cta {
   padding: 9px 16px;
   border-radius: 999px;
-  background: linear-gradient(135deg, #ff8a68, #f9744f);
-  box-shadow: 0 10px 24px rgba(166, 75, 47, 0.2);
+  background: linear-gradient(135deg, #14788a, #0d5866);
+  box-shadow: 0 10px 24px rgba(6, 60, 72, 0.22);
   color: var(--on-accent);
 }
 
@@ -210,8 +198,8 @@ a {
   padding: clamp(30px, 5vw, 56px) clamp(20px, 4vw, 48px);
   border-radius: 24px;
   background: var(--surface);
-  /* 그림자는 옅게. 짙으면 밝은 바탕에서 시트가 무겁게 내려앉는다 */
-  box-shadow: 0 20px 48px rgba(74, 40, 26, 0.06);
+  /* 흰 시트와 바탕은 1.04:1 이라 색으로는 안 갈린다. 분리는 이 그림자가 한다 */
+  box-shadow: 0 24px 65px rgba(6, 34, 40, 0.1);
 }
 
 .sheet--tint {
@@ -221,36 +209,17 @@ a {
 }
 
 /*
- * 히어로 시트.
+ * 짙은 시트 — 히어로. 결쩜사 패턴의 축이다.
  *
- * 결쩜사는 짙은 자주 시트로 히어로를 잡고 어두운 푸터로 페이지를 닫는다.
- * 살구 톤으로 갈면서 그 골격을 그대로 뒀더니 크림 바탕인데도 무거웠다 —
- * 밝은 팔레트에서 어두운 면은 그 자체로 시선을 끌어당겨 분위기를 결정해 버린다.
- *
- * 그래서 랜딩에서는 **어두운 면을 아예 쓰지 않는다.** 참조한 프로모션 배너도
- * 크림에서 시작해 코랄 버튼으로 끝나고, 짙은 면이 한 곳도 없다.
- * 히어로의 존재감은 어둠이 아니라 (1) 연분홍으로 내려가는 그라디언트,
- * (2) 큰 헤드라인, (3) 살구 버튼 세 가지로 만든다.
- *
- * ⚠️ 로그인·회원가입의 짙은 이야기 패널(`.auth-story`)은 그대로 둔다.
- * 그쪽은 화면을 반으로 나눠 대조를 만드는 구조라 어두운 면이 제 몫을 한다.
+ * 밝은 바탕에 짙은 면을 하나 얹어 시선을 잡는다. 이 대조가 없으면
+ * 페이지가 평평해진다.
  */
-.sheet--hero {
+.sheet--dark {
   background:
-    /*
-     * 살구 글로우는 0.14 까지만. 0.2 로 두면 겹치는 자리에서 바탕이
-     * #FDCEBE 까지 내려가 lead 문구가 4.11:1 이 된다 — 바탕을 어둡게 하기
-     * 전에도 이미 여유가 없었다.
-     */
-    radial-gradient(circle at 84% 10%, rgba(255, 128, 93, 0.14), transparent 46%),
-    radial-gradient(circle at 6% 92%, rgba(201, 168, 76, 0.1), transparent 44%),
-    /*
-     * 시작을 순수 흰색에서 뺀다. 흰색에서 출발하면 위쪽이 바래 보이는데
-     * 그게 히어로가 허옇게 읽히던 주된 이유였다.
-     */
-    linear-gradient(168deg, #fff8f3, #fce1d7 68%, #fad2c2);
-  border: 1px solid rgba(166, 75, 47, 0.1);
-  box-shadow: 0 20px 48px rgba(74, 40, 26, 0.07);
+    radial-gradient(circle at 78% 16%, rgba(95, 184, 201, 0.16), transparent 36%),
+    linear-gradient(150deg, #071c22, #0e3037 65%, #134450);
+  color: #eef7f8;
+  box-shadow: 0 24px 65px rgba(6, 34, 40, 0.2);
 }
 
 /* 시트 머리 */
@@ -260,6 +229,11 @@ a {
   font-weight: 900;
   letter-spacing: 2px;
   color: var(--accent-ink);
+}
+
+/* 짙은 시트에서는 금색. 밝은 면에서는 2.19:1 이라 못 쓰지만 여기서는 9.62:1 이다 */
+.sheet--dark .eyebrow {
+  color: #ead58c;
 }
 
 
@@ -280,21 +254,12 @@ a {
   color: transparent;
 }
 
-/* 히어로 헤드라인은 한 단계 크게 — 어두운 면 없이 존재감을 만드는 축이다 */
-.sheet--hero .headline {
-  font-size: clamp(27px, 5.2vw, 40px);
+.sheet--dark .headline {
+  color: #eef7f8;
 }
 
-/*
- * 히어로 lead 는 본문보다 어둡게 쓴다.
- *
- * --text-dim(#7a5f52)은 크림 바탕(#fff5ef)에 맞춰 고른 값이다. 히어로는
- * 연분홍으로 내려가고 살구 글로우까지 겹쳐서, 가장 어두운 자리(#FBC7B4)에서
- * --text-dim 은 3.88:1 로 떨어진다. **면이 어두워지면 글자도 어두워져야 한다.**
- * 이 값은 그 자리에서 4.84:1 이다.
- */
-.sheet--hero .lead {
-  color: #6a5145;
+.sheet--dark .lead {
+  color: rgba(230, 244, 246, 0.74);
 }
 
 .lead {
@@ -309,10 +274,7 @@ a {
   text-align: center;
 }
 
-/*
- * 히어로 배지 — 연분홍 그라디언트 위에 흰 알약으로 얹는다.
- * 참조 배너의 배지도 이 자리를 같은 방식으로 쓴다.
- */
+/* 히어로 배지 — 짙은 시트 위 반투명 알약 */
 .hero-badge {
   display: inline-flex;
   align-items: center;
@@ -320,11 +282,10 @@ a {
   padding: 7px 15px;
   margin-bottom: 20px;
   border-radius: 999px;
-  background: #ffffff;
-  border: 1px solid rgba(166, 75, 47, 0.14);
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(150, 205, 216, 0.3);
   font-size: 12px;
-  font-weight: 700;
-  color: var(--accent-ink);
+  color: #d8ecef;
 }
 
 .btn-row {
@@ -345,20 +306,20 @@ a {
 }
 
 .btn-primary {
-  background: linear-gradient(135deg, #ff8a68, #f9744f);
-  box-shadow: 0 10px 24px rgba(166, 75, 47, 0.2);
+  background: linear-gradient(135deg, #14788a, #0d5866);
+  box-shadow: 0 10px 24px rgba(6, 60, 72, 0.22);
   color: var(--on-accent);
 }
 
-/* 보조 버튼 — 흰 알약. 살구 버튼과 나란히 서도 순서가 헷갈리지 않는다 */
+/* 보조 버튼 — 짙은 시트 위에 놓이므로 반투명 + 흰 글자 */
 .btn-ghost {
-  background: #ffffff;
-  border: 1px solid rgba(166, 75, 47, 0.18);
-  color: var(--accent-ink);
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(150, 205, 216, 0.32);
+  color: #eef7f8;
 }
 
 .btn-ghost:hover {
-  border-color: var(--border-strong);
+  border-color: rgba(150, 205, 216, 0.55);
 }
 
 /* 앱 카드 그리드 */
@@ -399,7 +360,7 @@ a {
 .card:focus-visible {
   border-color: var(--border-strong);
   transform: translateY(-3px);
-  box-shadow: 0 18px 40px rgba(74, 40, 26, 0.12);
+  box-shadow: 0 18px 40px rgba(6, 34, 40, 0.13);
 }
 
 .card-head {
@@ -537,19 +498,11 @@ a {
   word-break: keep-all;
 }
 
-/*
- * 푸터 — 연분홍 띠로 조용히 닫는다.
- *
- * 결쩜사는 어두운 푸터로 페이지를 닫지만, 그 검은 띠 하나가 밝은 인상을
- * 되돌려 놓는다. 스크롤 끝에서 화면 절반이 어두워지기 때문이다.
- * 대신 시트에 쓰는 연분홍을 전체 폭으로 깔고 위쪽에 실선 하나만 둔다 —
- * 마지막 시트와 톤이 이어지면서 "여기서 끝"이라는 신호는 남는다.
- */
+/* 어두운 푸터 — 밝은 페이지를 닫는다 (결쩜사 패턴) */
 .site-footer {
   padding: clamp(34px, 5vw, 56px) 20px;
-  background: var(--surface-hover);
-  border-top: 1px solid var(--border);
-  color: var(--text-dim);
+  background: #061a1f;
+  color: rgba(230, 244, 246, 0.68);
   text-align: center;
   font-size: 0.78rem;
   line-height: 2;
@@ -562,16 +515,16 @@ a {
   margin-bottom: 14px;
   font-size: 1rem;
   font-weight: 800;
-  color: var(--text);
+  color: #eef7f8;
 }
 
 .site-footer-brand img {
   border-radius: 8px;
 }
 
-/* 워드마크의 jane 만 살구로 — 상단 바와 같은 톤 */
+/* 어두운 푸터에서는 my 를 청백, jane 을 밝은 먹청으로 */
 .site-footer-brand .brand-word > span {
-  color: var(--accent-ink);
+  color: #5fb8c9;
 }
 
 .site-footer-logout {
@@ -581,7 +534,7 @@ a {
   font-family: inherit;
   font-size: inherit;
   font-weight: 600;
-  color: var(--accent-ink);
+  color: rgba(230, 244, 246, 0.86);
   cursor: pointer;
 }
 
@@ -590,7 +543,7 @@ a {
 }
 
 .site-footer a {
-  color: var(--accent-ink);
+  color: rgba(230, 244, 246, 0.86);
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -666,7 +619,7 @@ a {
   padding: clamp(20px, 4vw, 48px) clamp(16px, 4vw, 32px) clamp(40px, 6vw, 72px);
   background:
     radial-gradient(circle at 85% 8%, var(--accent-soft), transparent 42%),
-    radial-gradient(circle at 10% 80%, var(--accent-soft), transparent 46%);
+    radial-gradient(circle at 10% 80%, var(--gold-soft), transparent 46%);
 }
 
 /*
@@ -682,7 +635,7 @@ a {
   inset: -20%;
   z-index: 0;
   background:
-    linear-gradient(104deg, transparent 49.9%, rgba(255, 128, 93, 0.09) 50%,
+    linear-gradient(104deg, transparent 49.9%, rgba(17, 98, 113, 0.09) 50%,
       transparent 50.1%);
   pointer-events: none;
 }
@@ -697,7 +650,7 @@ a {
   max-width: 700px;
   border-radius: 24px;
   overflow: hidden;
-  box-shadow: 0 20px 48px rgba(74, 40, 26, 0.07);
+  box-shadow: 0 24px 65px rgba(6, 34, 40, 0.14);
 }
 
 @media (min-width: 860px) {
@@ -722,36 +675,24 @@ a {
     align-self: stretch;
     margin: 0;
     border-radius: 24px 0 0 24px;
-    box-shadow: 0 20px 48px rgba(74, 40, 26, 0.07);
+    box-shadow: 0 24px 65px rgba(6, 34, 40, 0.14);
   }
 
   .auth-shell > .auth-card {
     border-radius: 0 24px 24px 0;
-    box-shadow: 0 20px 48px rgba(74, 40, 26, 0.07);
+    box-shadow: 0 24px 65px rgba(6, 34, 40, 0.14);
   }
 }
 
-/*
- * ── 스토리 패널 ──
- *
- * 랜딩과 같은 이유로 밝게 간다. 짙은 패널로 화면을 반 나누면 대조는 세지만,
- * 크림 바탕에서 그 절반이 분위기를 통째로 가져가 버린다.
- * 대신 **연분홍 패널 + 흰 폼 카드**로 대조를 만든다 — 랜딩의
- * "크림 바탕 위 흰 시트"와 같은 방식이고, 흰 카드가 떠오르는 인상이 이어진다.
- *
- * 그라디언트의 어두운 끝은 #fde1d6 에서 멈춘다. 더 내려가면 9px 아이브로우와
- * 12.5px 보조 문구가 4.5:1 아래로 떨어진다 (#fbd3c4 에서 4.15 / 4.24).
- */
+/* ── 스토리 패널 ── 짙은 면으로 화면을 반 나눈다 (결쩜사 패턴) */
 .auth-story {
   position: relative;
   overflow: hidden;
   padding: 30px 28px;
   background:
-    radial-gradient(circle at 76% 14%, rgba(255, 128, 93, 0.18), transparent 42%),
-    linear-gradient(168deg, #fff8f4, #fdeae2 68%, #fde1d6);
-  /* 연분홍이 크림 배경과 붙어 패널로 안 읽힌다. 랜딩의 tint 시트와 같은 실선 하나 */
-  border: 1px solid var(--border);
-  color: var(--text);
+    radial-gradient(circle at 72% 20%, rgba(95, 184, 201, 0.16), transparent 34%),
+    linear-gradient(150deg, #071c22, #0e3037 65%, #134450);
+  color: #eef7f8;
   display: flex;
   flex-direction: column;
   justify-content: flex-end;
@@ -771,13 +712,13 @@ a {
   position: relative;
 }
 
-/* eyebrow — 영문 라벨. 9px 이라 금색(2.1:1)은 못 쓰고 잉크를 쓴다 */
+/* eyebrow — 금색 영문 라벨. 짙은 패널 위라 9.62:1 로 잘 읽힌다 */
 .auth-eyebrow {
   margin: 0 0 10px;
   font-size: 9px;
   font-weight: 900;
   letter-spacing: 2px;
-  color: var(--accent-ink);
+  color: #ead58c;
 }
 
 .auth-headline {
@@ -788,7 +729,7 @@ a {
   font-weight: 700;
   line-height: 1.42;
   letter-spacing: -0.8px;
-  color: var(--text);
+  color: #eef7f8;
   word-break: keep-all;
 }
 
@@ -796,7 +737,7 @@ a {
   margin: 14px 0 0;
   font-size: 12.5px;
   line-height: 1.75;
-  color: var(--text-dim);
+  color: rgba(230, 244, 246, 0.74);
   word-break: keep-all;
 }
 
@@ -848,7 +789,7 @@ a {
   background: var(--surface);
   color: var(--text);
   font-weight: 800;
-  box-shadow: 0 4px 15px rgba(74, 40, 26, 0.08);
+  box-shadow: 0 4px 15px rgba(6, 34, 40, 0.09);
 }
 
 .auth-title {
@@ -926,8 +867,8 @@ a {
   margin-top: 10px;
   border: none;
   border-radius: 11px;
-  background: linear-gradient(135deg, #ff8a68, #f9744f);
-  box-shadow: 0 10px 24px rgba(166, 75, 47, 0.2);
+  background: linear-gradient(135deg, #14788a, #0d5866);
+  box-shadow: 0 10px 24px rgba(6, 60, 72, 0.22);
   color: var(--on-accent);
   font-size: 15px;
   font-weight: 700;

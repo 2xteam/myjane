@@ -175,7 +175,7 @@ const cardStyle: CSSProperties = {
   background: "var(--bg-card)",
   borderRadius: "var(--radius-xl)",
   padding: "2rem",
-  boxShadow: "0 25px 50px -12px rgba(44,31,26,0.4)",
+  boxShadow: "0 25px 50px -12px rgba(6,34,40,0.4)",
 };
 
 const lab: CSSProperties = {
