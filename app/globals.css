@@ -237,9 +237,18 @@ a {
  */
 .sheet--hero {
   background:
-    radial-gradient(circle at 84% 10%, rgba(255, 128, 93, 0.2), transparent 46%),
+    /*
+     * 살구 글로우는 0.14 까지만. 0.2 로 두면 겹치는 자리에서 바탕이
+     * #FDCEBE 까지 내려가 lead 문구가 4.11:1 이 된다 — 바탕을 어둡게 하기
+     * 전에도 이미 여유가 없었다.
+     */
+    radial-gradient(circle at 84% 10%, rgba(255, 128, 93, 0.14), transparent 46%),
     radial-gradient(circle at 6% 92%, rgba(201, 168, 76, 0.1), transparent 44%),
-    linear-gradient(168deg, #ffffff, #fff0e8 70%, #fde1d6);
+    /*
+     * 시작을 순수 흰색에서 뺀다. 흰색에서 출발하면 위쪽이 바래 보이는데
+     * 그게 히어로가 허옇게 읽히던 주된 이유였다.
+     */
+    linear-gradient(168deg, #fff8f3, #fce1d7 68%, #fad2c2);
   border: 1px solid rgba(166, 75, 47, 0.1);
   box-shadow: 0 20px 48px rgba(74, 40, 26, 0.07);
 }
@@ -277,16 +286,15 @@ a {
 }
 
 /*
- * 히어로도 가운데로 모은다. 레퍼런스는 아이브로우·헤드라인·버튼을 전부
- * 가운데 축에 세우고, 아래 시트들도 이미 그렇게 되어 있다.
- * 히어로만 왼쪽 정렬이면 넓은 화면에서 오른쪽 절반이 비어 허전하다.
+ * 히어로 lead 는 본문보다 어둡게 쓴다.
+ *
+ * --text-dim(#7a5f52)은 크림 바탕(#fff5ef)에 맞춰 고른 값이다. 히어로는
+ * 연분홍으로 내려가고 살구 글로우까지 겹쳐서, 가장 어두운 자리(#FBC7B4)에서
+ * --text-dim 은 3.88:1 로 떨어진다. **면이 어두워지면 글자도 어두워져야 한다.**
+ * 이 값은 그 자리에서 4.84:1 이다.
  */
-.sheet--hero {
-  text-align: center;
-}
-
-.sheet--hero .btn-row {
-  justify-content: center;
+.sheet--hero .lead {
+  color: #6a5145;
 }
 
 .lead {

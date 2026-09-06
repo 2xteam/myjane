@@ -10,6 +10,11 @@
  *
  * `distDir`은 `next.config.ts`가 `NEXT_DIST_DIR`을 읽어 정한다.
  * (윈도우 cmd에서는 `VAR=x cmd` 형식이 안 먹어서 노드로 감싼다.)
+ *
+ * ⚠️ `.next` 를 분리하는 것만으로는 부족했다. Next 는 `tsconfig.json` 의 include 에
+ * 자기 distDir 타입 경로가 없으면 그 파일을 고쳐 쓰고, 그 쓰기가 3000번 개발 서버를
+ * 재시작시켜 결국 먹통으로 만들었다. `.next-verify/types` 경로를 tsconfig 에
+ * 미리 넣어 커밋해 뒀다 — 지우면 함정이 돌아온다.
  */
 import { spawn } from "node:child_process";
 
