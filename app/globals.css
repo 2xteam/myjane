@@ -49,6 +49,11 @@
   --gold-soft: rgba(201, 168, 76, 0.12);
   /* 살구 버튼 위 글자색 — 먹. 흰색은 2.54:1 로 모자라다 */
   --on-accent: #2c1f1a;
+  /*
+   * 입력칸 안내 글자. 브라우저 기본값(#757575)은 크림 위 4.29:1 로 살짝 미달이다.
+   * --text-dim 보다 옅으면서 4.5 를 넘는 지점을 골랐다 (크림 4.69 · 흰 카드 5.04).
+   */
+  --placeholder: #85695b;
 }
 
 /*
@@ -109,6 +114,12 @@ body {
 a {
   color: inherit;
   text-decoration: none;
+}
+
+/* 브라우저 기본 placeholder 는 회색이라 따뜻한 바탕에서 어긋나고 대비도 모자라다 */
+::placeholder {
+  color: var(--placeholder);
+  opacity: 1; /* 파이어폭스는 기본 opacity 를 깎는다 */
 }
 
 /* ────────────────────────────────────────────────────────────
@@ -650,26 +661,35 @@ a {
     radial-gradient(circle at 10% 80%, var(--accent-soft), transparent 46%);
 }
 
-/* 원본 배경의 얇은 대각선 */
+/*
+ * 원본 배경의 얇은 대각선.
+ *
+ * ⚠️ z-index 0 이 필요하다. ::before 는 절대 위치라 흐름 속 형제(.auth-shell)보다
+ * 위에 그려지고, 그러면 대각선이 폼 카드를 가로질러 렌더 오류처럼 보인다.
+ * 카드가 흰색이 되면서 확실히 드러났다.
+ */
 .auth::before {
   content: "";
   position: absolute;
   inset: -20%;
+  z-index: 0;
   background:
-    linear-gradient(104deg, transparent 49.9%, rgba(239, 134, 102, 0.09) 50%,
+    linear-gradient(104deg, transparent 49.9%, rgba(255, 128, 93, 0.09) 50%,
       transparent 50.1%);
   pointer-events: none;
 }
 
 /* 스토리 패널 + 폼 카드 = 한 덩어리 */
 .auth-shell {
+  position: relative;
+  z-index: 1;
   display: grid;
   grid-template-columns: 1fr;
   width: 100%;
   max-width: 700px;
   border-radius: 24px;
   overflow: hidden;
-  box-shadow: 0 24px 65px rgba(74, 40, 26, 0.14);
+  box-shadow: 0 20px 48px rgba(74, 40, 26, 0.07);
 }
 
 @media (min-width: 860px) {
@@ -694,24 +714,36 @@ a {
     align-self: stretch;
     margin: 0;
     border-radius: 24px 0 0 24px;
-    box-shadow: 0 24px 65px rgba(74, 40, 26, 0.14);
+    box-shadow: 0 20px 48px rgba(74, 40, 26, 0.07);
   }
 
   .auth-shell > .auth-card {
     border-radius: 0 24px 24px 0;
-    box-shadow: 0 24px 65px rgba(74, 40, 26, 0.09);
+    box-shadow: 0 20px 48px rgba(74, 40, 26, 0.07);
   }
 }
 
-/* ── 스토리 패널 ── */
+/*
+ * ── 스토리 패널 ──
+ *
+ * 랜딩과 같은 이유로 밝게 간다. 짙은 패널로 화면을 반 나누면 대조는 세지만,
+ * 크림 바탕에서 그 절반이 분위기를 통째로 가져가 버린다.
+ * 대신 **연분홍 패널 + 흰 폼 카드**로 대조를 만든다 — 랜딩의
+ * "크림 바탕 위 흰 시트"와 같은 방식이고, 흰 카드가 떠오르는 인상이 이어진다.
+ *
+ * 그라디언트의 어두운 끝은 #fde1d6 에서 멈춘다. 더 내려가면 9px 아이브로우와
+ * 12.5px 보조 문구가 4.5:1 아래로 떨어진다 (#fbd3c4 에서 4.15 / 4.24).
+ */
 .auth-story {
   position: relative;
   overflow: hidden;
   padding: 30px 28px;
   background:
-    radial-gradient(circle at 72% 20%, rgba(239, 134, 102, 0.18), transparent 34%),
-    linear-gradient(150deg, #241310, #3b2016 65%, #4b2a1c);
-  color: #fdf6f0;
+    radial-gradient(circle at 76% 14%, rgba(255, 128, 93, 0.18), transparent 42%),
+    linear-gradient(168deg, #fff8f4, #fdeae2 68%, #fde1d6);
+  /* 연분홍이 크림 배경과 붙어 패널로 안 읽힌다. 랜딩의 tint 시트와 같은 실선 하나 */
+  border: 1px solid var(--border);
+  color: var(--text);
   display: flex;
   flex-direction: column;
   justify-content: flex-end;
@@ -731,13 +763,13 @@ a {
   position: relative;
 }
 
-/* eyebrow — 금색 영문 라벨 */
+/* eyebrow — 영문 라벨. 9px 이라 금색(2.1:1)은 못 쓰고 잉크를 쓴다 */
 .auth-eyebrow {
   margin: 0 0 10px;
   font-size: 9px;
   font-weight: 900;
   letter-spacing: 2px;
-  color: #ead58c;
+  color: var(--accent-ink);
 }
 
 .auth-headline {
@@ -748,7 +780,7 @@ a {
   font-weight: 700;
   line-height: 1.42;
   letter-spacing: -0.8px;
-  color: #fdf6f0;
+  color: var(--text);
   word-break: keep-all;
 }
 
@@ -756,7 +788,7 @@ a {
   margin: 14px 0 0;
   font-size: 12.5px;
   line-height: 1.75;
-  color: rgba(250, 235, 226, 0.74);
+  color: var(--text-dim);
   word-break: keep-all;
 }
 
@@ -764,6 +796,7 @@ a {
 .auth-card {
   padding: clamp(26px, 6vw, 44px) clamp(22px, 5vw, 42px);
   background: var(--surface);
+  border: 1px solid var(--border);
 }
 
 /* 출처 앱 배지 */

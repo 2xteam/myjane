@@ -145,7 +145,8 @@ const inp: CSSProperties = {
 const linkStyle: CSSProperties = {
   display: "block",
   textAlign: "center",
-  color: "var(--accent)",
+  // 밝은 --accent 는 14px 글자에서 2.47:1 이라 잉크를 쓴다
+  color: "var(--accent-ink)",
   fontSize: 14,
   textDecoration: "none",
 };
