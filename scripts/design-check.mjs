@@ -137,6 +137,30 @@ for (const app of APPS) {
     if (n) add(app, "D 순수 검정·흰색 글자", f, `${n}곳 → --on-accent · --on-dark`);
   }
 
+  // ── F. 폰트 링크 ─────────────────────────────────
+  // .headline 이 "Gowun Batang" 을 요구하는데 링크가 없으면 **조용히** 일반 명조로
+  // 떨어진다. 오류도 경고도 없다. SnapWord·SnapNote 가 그 상태였다 (2026-09-07).
+  const layout = path.join(root, "app", "layout.tsx");
+  if (existsSync(layout)) {
+    const t = await readFile(layout, "utf8");
+    const need = [
+      ["Gowun+Batang", "헤드라인 명조"],
+      ["pretendard", "본문 Pretendard"],
+      ["fonts.gstatic.com", "gstatic preconnect"],
+    ];
+    const miss = need.filter(([k]) => !t.toLowerCase().includes(k.toLowerCase())).map(([, w]) => w);
+    if (miss.length) add(app, "F 폰트 링크 누락", layout, miss.join(" · "));
+  }
+  // body 스택에 Pretendard 가 없으면 시스템 기본으로 떨어진다
+  for (const f of cssFiles) {
+    if (allowed(f)) continue;
+    const t = await readFile(f, "utf8");
+    const m = t.match(/body\s*\{[^}]*font-family:([^;]+);/s);
+    if (m && !/Pretendard/i.test(m[1])) {
+      add(app, "F 폰트 링크 누락", f, "body 스택에 Pretendard 없음");
+    }
+  }
+
   // ── E. 팔레트 리터럴이 다시 스며들었나 ────────────
   // 색은 palette.json 하나가 원본이다. globals.css 에 hex 가 있으면 안 된다.
   for (const f of cssFiles) {
@@ -154,6 +178,7 @@ const RULES = {
   "C 면적색을 글자로": "금색은 흰 시트 위 2.29:1 이다. -ink 토큰을 쓴다",
   "D 순수 검정·흰색 글자": "--on-accent (강조색 위) · --on-dark (짙은 면 위)",
   "E 토큰을 리터럴로 선언": "원본은 myjane/design/palette.json 하나다",
+  "F 폰트 링크 누락": "링크가 없으면 조용히 일반 명조·시스템 폰트로 떨어진다",
 };
 
 const byRule = new Map();
