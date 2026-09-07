@@ -12,7 +12,7 @@
     "dev:verify": "node scripts/dev-verify.mjs",
     "palette": "node scripts/sync-palette.mjs",
     "elements": "node scripts/sync-elements.mjs",
-    "design:check": "node scripts/design-check.mjs"
+    "design:check": "node scripts/design-check.mjs && node scripts/sync-elements.mjs"
   },
   "dependencies": {
     "next": "^15.2.4",

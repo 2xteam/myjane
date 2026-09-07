@@ -59,7 +59,8 @@ npm run elements -- --write  ← 여섯 앱의 app/elements.css 가 함께 갱�
 | 스크롤 진행 띠 | `.scroll-progress` | sticky 헤더 안에 `<ScrollProgress />` 하나 |
 | 형광 밑줄 | `.mark` | 밝은 시트 헤드라인 **한 화면에 한 군데** |
 | 프로세스 타임라인 | `.flow` | 3단계 이상 · 순서가 중요할 때만. 가운데 정렬 시트면 `.flow--center` |
-| 카드 라운딩 포인트 | `.sheet--point` | 히어로 · 마무리 CTA. **한 화면에 최대 2개** |
+| 라운딩 포인트 (시트) | `.sheet--point` | 히어로 · 마무리 CTA. **한 화면에 최대 2개** |
+| 라운딩 포인트 (안쪽 카드) | `.card--point` | 시트 안 카드들에 **한 벌로** 다 붙인다 |
 
 `npm run design:check` 의 규칙 G 가 남발을 막는다. 어디에 넣고 어디에 넣지
 않는지는 → my-obsidian-vault / 20-Design/여섯 앱 디자인 시스템.md

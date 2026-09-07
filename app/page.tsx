@@ -151,7 +151,7 @@ const FLOW = [
 /** 서비스 카드 — 카테고리 시트 안에서 재사용 */
 function AppCard({ app }: { app: App }) {
   return (
-    <a className="card" href={app.href}>
+    <a className="card card--point" href={app.href}>
       <div className="card-head">
         <Image
           className="card-icon"
@@ -312,7 +312,7 @@ export default function Home() {
 
           <div className="features">
             {NOTES.map((f) => (
-              <div className="feature" key={f.title}>
+              <div className="feature card--point" key={f.title}>
                 <div className="feature-icon" aria-hidden="true">
                   {f.icon}
                 </div>

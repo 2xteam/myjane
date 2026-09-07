@@ -264,10 +264,32 @@
  * 기준은 → 20-Design/여섯 앱 디자인 시스템.md
  * ──────────────────────────────────────────────────────────── */
 
-.sheet--point {
-  /* 다섯 앱의 .sheet 는 var(--radius-lg)(=24px), myjane 은 24px 리터럴이다.
-     넷으로 나눠 쓰면 어느 쪽이 바뀌어도 비율이 유지된다 */
-  --el-r: var(--radius-lg, 24px);
-  /* 순서는 좌상 · 우상 · 우하 · 좌하 */
-  border-radius: calc(var(--el-r) / 4) var(--el-r) calc(var(--el-r) / 4) var(--el-r);
+/* 두 모서리만 **덮어쓴다.** 나머지 둘은 요소가 원래 갖던 값을 그대로 쓴다 —
+   그래서 반경이 다른 것들에 같은 규칙을 쓸 수 있다. 시트는 24px, 안쪽 카드는
+   앱마다 10~18px 로 다르다. border-radius 를 통째로 쓰면 카드의 원래 둥글기까지
+   시트 기준으로 덮어써 버린다. */
+.sheet--point,
+.card--point {
+  border-top-left-radius: var(--el-cut);
+  border-bottom-right-radius: var(--el-cut);
 }
+
+/* 시트는 반경의 1/4 — 24px 이면 6px 이다 */
+.sheet--point {
+  --el-cut: calc(var(--radius-lg, 24px) / 4);
+}
+
+/* 안쪽 카드는 3px 고정이다. 카드 반경(10~18px)의 1/4 은 2~4px 라서 눈에 거의
+   안 보인다 — 비율을 지키면 요소가 사라진다. 0px(완전 직각)도 대봤는데 시트의
+   6px 과 너무 멀어져 카드만 다른 언어를 쓰는 것처럼 보였다.
+   → 근거 이미지는 [[A 디자인 요소 추가]] */
+.card--point {
+  --el-cut: 3px;
+}
+
+/* ⚠️ 안쪽 카드에 붙일 때 인라인 `borderRadius` 를 함께 두면 안 된다.
+   인라인 shorthand 는 우선순위가 가장 높고 네 모서리를 모두 세우므로 위
+   longhand 두 줄을 덮어써 깎임이 **조용히** 사라진다. 다섯 앱의 featureStyle ·
+   modeStyle 은 그래서 남는 두 모서리만 longhand 로 적는다.
+   myjane 은 카드 반경이 globals.css 에 있어서 (elements.css 가 나중에 실리므로)
+   손댈 것이 없다. */
