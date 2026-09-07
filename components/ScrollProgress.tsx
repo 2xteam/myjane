@@ -5,9 +5,14 @@ import { useEffect, useRef } from "react";
 /**
  * 헤더 아래에 차오르는 스크롤 진행 띠.
  *
- * `.site-top` 안에 두면 `position: absolute` 로 그 아래 변에 붙는다.
- * 모양은 `app/elements.css` 의 `.scroll-progress` 가 갖고, 여기서는
- * `--scroll-progress`(0~1)만 넣는다.
+ * **sticky 헤더 안에** 두면 `position: absolute` 로 그 아래 변에 붙는다.
+ * 헤더가 sticky 가 아니면 스크롤과 함께 화면 밖으로 나간다.
+ *
+ * 모양은 `.scroll-progress` 가 갖고 여기서는 `--scroll-progress`(0~1)만 넣는다.
+ * 그 CSS 의 원본은 **`myjane/design/elements.css`** 다 — 앱의 `app/elements.css`
+ * 는 생성 파일이니 고치지 말고 `npm run elements -- --write` 를 쓴다.
+ *
+ * ⚠️ 이 파일도 여섯 앱에 복사본이다. 고치면 여섯 개를 함께 고친다.
  *
  * 구현 주의 세 가지 —
  *

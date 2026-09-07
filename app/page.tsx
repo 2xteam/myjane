@@ -336,7 +336,8 @@ export default function Home() {
             </h2>
           </div>
 
-          <ol className="flow">
+          {/* 이 시트는 헤드라인이 가운데 정렬이라 --center 를 붙인다 */}
+          <ol className="flow flow--center">
             {FLOW.map((step, i) => (
               <li className="flow-step" key={step.title}>
                 <span className="flow-num" aria-hidden="true">

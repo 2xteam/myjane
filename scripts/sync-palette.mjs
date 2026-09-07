@@ -48,6 +48,10 @@ const NAMES = {
     accent: "--accent",
     accentHover: "--accent-hover",
     accentSubtle: "--accent-subtle",
+    // 글자용 강조색. 없어서 다섯 앱은 면적용 --accent 를 글자로 쓸 수밖에 없었다
+    accentInk: "--accent-ink",
+    // 형광 밑줄과 금색 알약의 배경. elements.css 가 여섯 앱에서 같은 이름을 쓴다
+    goldSoft: "--gold-soft",
     point: "--point",
     pointSubtle: "--point-subtle",
     pointInk: "--point-ink",

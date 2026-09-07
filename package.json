@@ -11,6 +11,7 @@
     "icons": "node scripts/make-icons.mjs",
     "dev:verify": "node scripts/dev-verify.mjs",
     "palette": "node scripts/sync-palette.mjs",
+    "elements": "node scripts/sync-elements.mjs",
     "design:check": "node scripts/design-check.mjs"
   },
   "dependencies": {

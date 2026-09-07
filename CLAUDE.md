@@ -43,6 +43,30 @@ cd C:/Dev/myjane && npm run design:check
 - `components/Sheet.tsx` 는 다섯 앱에 **복사본**이다. 고치면 다섯 앱을 함께 고친다
 - 아이콘은 여섯 개가 한 가족이다. 하나만 바꾸지 않는다
 
+### 포인트 요소 넷 — CSS 원본도 한 곳이다
+
+```
+design/elements.css          ← 여기만 고친다
+npm run elements -- --write  ← 여섯 앱의 app/elements.css 가 함께 갱신된다
+```
+
+`app/elements.css` 는 **생성 파일**이다. `npm run elements` 는 쓰지 않고 검사만
+하며, 앱마다 `layout.tsx` 의 import 순서와 `ScrollProgress.tsx` 존재,
+다섯 앱 `Sheet.tsx` 가 아직 같은지까지 함께 본다.
+
+| 요소 | 클래스 | 쓰는 법 |
+|---|---|---|
+| 스크롤 진행 띠 | `.scroll-progress` | sticky 헤더 안에 `<ScrollProgress />` 하나 |
+| 형광 밑줄 | `.mark` | 밝은 시트 헤드라인 **한 화면에 한 군데** |
+| 프로세스 타임라인 | `.flow` | 3단계 이상 · 순서가 중요할 때만. 가운데 정렬 시트면 `.flow--center` |
+| 카드 라운딩 포인트 | `.sheet--point` | 히어로 · 마무리 CTA. **한 화면에 최대 2개** |
+
+`npm run design:check` 의 규칙 G 가 남발을 막는다. 어디에 넣고 어디에 넣지
+않는지는 → my-obsidian-vault / 20-Design/여섯 앱 디자인 시스템.md
+
+⚠️ `elements.css` 는 `layout.tsx` 에서 **globals.css 다음 줄**이라야 한다.
+`@import` 로 넣으면 `.sheet--point` 가 `.sheet` 에 **조용히** 진다.
+
 ## 색을 바꿀 때
 
 **`app/palette.css` 를 직접 고치지 말 것.** 생성 파일이다.

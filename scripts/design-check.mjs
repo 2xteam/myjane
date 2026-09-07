@@ -33,6 +33,22 @@ const ALLOW = [
 ];
 const allowed = (p) => ALLOW.find((a) => p.includes(a.match));
 
+/**
+ * 주석을 지운 사본. 규칙 B~D 는 이 사본을 본다.
+ *
+ * 왜 필요한가 — 2026-09-07 에 elements.css 의 주석에 적은
+ * `var(--radius-lg)` 와 `var(--x)` 를 검사기가 실제 사용으로 읽어
+ * "미정의 변수 7건" 을 냈다. 설명을 쓰면 검사기가 화내는 도구는
+ * 설명을 안 쓰게 만든다.
+ *
+ * 문자열 안의 `/*` 까지 가리지는 않는다 — 우리 코드에는 없다.
+ */
+function stripComments(t) {
+  return t
+    .replace(/\/\*[\s\S]*?\*\//g, " ") // /* ... */  (CSS · JS 공용)
+    .replace(/(^|[\s;{}])\/\/[^\r\n]*/g, "$1"); // // ...  (JS 한 줄)
+}
+
 function walk(dir, exts, out = []) {
   if (!existsSync(dir)) return out;
   for (const name of readdirSync(dir)) {
@@ -55,7 +71,8 @@ function walk(dir, exts, out = []) {
  */
 const BASELINE = {
   "C 면적색을 글자로": {
-    count: 46,
+    // 2026-09-07 주석을 검사에서 빼면서 46 → 45 로 줄었다. 되돌아가면 실패한다.
+    count: 45,
     why:
       "--danger 를 오류 문구에 쓰는 자리. --danger-ink 로 바꾸면 색이 조금 어두워진다" +
       " (#e0455f → #a83447). --success 는 색상까지 130°로 밀어야 해서 개선 표시의" +
@@ -100,7 +117,7 @@ for (const app of APPS) {
   const used = new Set();
   const declared = new Set();
   for (const f of [...cssFiles, ...codeFiles]) {
-    const t = await readFile(f, "utf8");
+    const t = stripComments(await readFile(f, "utf8"));
     for (const m of t.matchAll(/var\((--[a-z0-9-]+)\)/g)) used.add(m[1]);
     if (f.endsWith(".css")) for (const m of t.matchAll(/^\s*(--[a-z0-9-]+):/gm)) declared.add(m[1]);
     // theme.ts 가 런타임에 심는 것도 선언으로 본다
@@ -120,7 +137,7 @@ for (const app of APPS) {
   ];
   for (const f of [...cssFiles, ...codeFiles]) {
     if (allowed(f)) continue;
-    const t = await readFile(f, "utf8");
+    const t = stripComments(await readFile(f, "utf8"));
     for (const [area, ink] of INK_PAIRS) {
       const re = new RegExp(`color:\\s*"?var\\(${area}\\)`, "g");
       const n = (t.match(re) || []).length;
