@@ -2,6 +2,7 @@ import type { ReactNode } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import type { AppInfo } from "@/lib/apps";
+import { ScrollProgress } from "@/components/ScrollProgress";
 
 /**
  * 인증 화면 껍데기.
@@ -39,6 +40,9 @@ export function AuthShell({
         <Link href="/" className="auth-home">
           ← 메인으로
         </Link>
+        {/* 스크롤 진행 띠 — 헤더가 sticky 라서 그 아래 변에 붙는다.
+            루트 페이지에만 두면 페이지마다 껍데기가 달라 보인다 */}
+        <ScrollProgress />
       </header>
 
       <main className="auth">

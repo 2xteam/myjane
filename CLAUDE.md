@@ -56,7 +56,7 @@ npm run elements -- --write  ← 여섯 앱의 app/elements.css 가 함께 갱�
 
 | 요소 | 클래스 | 쓰는 법 |
 |---|---|---|
-| 스크롤 진행 띠 | `.scroll-progress` | sticky 헤더 안에 `<ScrollProgress />` 하나 |
+| 스크롤 진행 띠 | `.scroll-progress` | **모든 페이지**의 헤더 안에 하나 — `AuthShell` · `LegalShell` · `app/page.tsx` |
 | 형광 밑줄 | `.mark` | 밝은 시트 헤드라인 **한 화면에 한 군데** |
 | 프로세스 타임라인 | `.flow` | 3단계 이상 · 순서가 중요할 때만. 가운데 정렬 시트면 `.flow--center` |
 | 라운딩 포인트 | `.sheet--point` | 히어로 · 마무리 CTA · **카드를 담은 시트**. 안쪽 카드는 그대로 둔다 |

@@ -55,6 +55,10 @@ const NAMES = {
     point: "--point",
     pointSubtle: "--point-subtle",
     pointInk: "--point-ink",
+    // 스크롤 진행 띠의 두 끝. 그라디언트가 **현재 폭에 맞춰** 그려지므로
+    // 띠가 짧아도 양쪽 테마색이 늘 보이고 가운데가 부드럽게 섞인다
+    progressFrom: "--progress-from",
+    progressTo: "--progress-to",
     gold: "--gold",
     onAccent: "--on-accent",
     danger: "--danger",
@@ -84,6 +88,10 @@ const NAMES = {
     goldSoft: "--gold-soft",
     // 금색 알약의 글자용. 면적용(--gold)을 글자로 쓰면 카드 위에서 1.9:1 이다
     pointInk: "--point-ink",
+    // 스크롤 진행 띠의 두 끝. 그라디언트가 **현재 폭에 맞춰** 그려지므로
+    // 띠가 짧아도 양쪽 테마색이 늘 보이고 가운데가 부드럽게 섞인다
+    progressFrom: "--progress-from",
+    progressTo: "--progress-to",
     onAccent: "--on-accent",
     placeholder: "--placeholder",
     textMuted: "--text-muted",
@@ -144,20 +152,24 @@ console.log("── 대비 검사 ──");
 let failed = 0;
 let skipped = 0;
 for (const [fgRef, bgRef, min, label] of palette.checks) {
-  const fg = rgb(resolve(fgRef));
+  // 앞도 뒤도 배열을 받는다. 배열은 **그라디언트의 양 끝**이라는 뜻이고,
+  // 모든 조합 중 가장 나쁜 값을 본다. 진행 띠처럼 칠 자체가 그라디언트인
+  // 자리가 생겨서 앞쪽에도 배열을 허용했다 (전에는 뒤쪽만 됐다).
+  const fgRaw = resolve(fgRef);
+  const fgs = (Array.isArray(fgRaw) ? fgRaw : [fgRaw]).map((f) => rgb(resolve(f)));
   const bgRaw = resolve(bgRef);
   const bgs = (Array.isArray(bgRaw) ? bgRaw : [bgRaw]).map((b) => rgb(resolve(b)));
-  if (!fg || bgs.some((b) => !b)) {
+  if (fgs.some((f) => !f) || bgs.some((b) => !b)) {
     skipped++;
     console.log(`  · ${label} — 알파가 섞여 계산 불가, 렌더에서 재야 한다`);
     continue;
   }
-  const worst = Math.min(...bgs.map((b) => ratio(fg, b)));
+  const worst = Math.min(...fgs.flatMap((f) => bgs.map((b) => ratio(f, b))));
   const ok = worst >= min;
   if (!ok) failed++;
   console.log(
     `  ${ok ? "✓" : "✗"} ${worst.toFixed(2).padStart(5)} / ${min}  ${label}` +
-      (ok ? "" : `   (${fgRef} on ${JSON.stringify(bgRef)})`),
+      (ok ? "" : `   (${JSON.stringify(fgRef)} on ${JSON.stringify(bgRef)})`),
   );
 }
 console.log(

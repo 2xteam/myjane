@@ -38,6 +38,8 @@
       "point": "#c9a84c",
       "pointSubtle": "rgba(201, 168, 76, 0.12)",
       "pointInk": "#725c1a",
+      "progressFrom": "#116271",
+      "progressTo": "#a8842f",
       "gold": "#c9a84c",
       "goldSoft": "rgba(201, 168, 76, 0.12)",
       "onAccent": "#ffffff",
@@ -72,6 +74,8 @@
       "point": "#e8c96a",
       "pointSubtle": "rgba(232, 201, 106, 0.14)",
       "pointInk": "#e8c96a",
+      "progressFrom": "#5fb8c9",
+      "progressTo": "#e8c96a",
       "gold": "#ead58c",
       "goldSoft": "rgba(232, 201, 106, 0.14)",
       "onAccent": "#04161b",
@@ -170,6 +174,9 @@
     ["surfaces.onDark", "surfaces.footerBg", 4.5, "어두운 푸터 위 글자"],
     ["surfaces.goldOnDark", "surfaces.sheetDark", 4.5, "짙은 시트 위 금색 아이브로우"],
     ["surfaces.accentOnDark", "surfaces.footerBg", 4.5, "푸터의 jane 워드마크 (보라 시절 3.32로 미달)"],
-    ["light.onAccent", ["surfaces.btnFrom", "surfaces.btnTo"], 4.5, "먹청 버튼 위 글자"]
+    ["light.onAccent", ["surfaces.btnFrom", "surfaces.btnTo"], 4.5, "먹청 버튼 위 글자"],
+    [["light.progressFrom", "light.progressTo"], "light.bg", 3.0, "진행 띠 vs 헤더 배경 (비텍스트 3.0)"],
+    [["light.progressFrom", "light.progressTo"], "light.card", 3.0, "진행 띠 vs 흰 헤더"],
+    [["dark.progressFrom", "dark.progressTo"], "dark.bg", 3.0, "다크 진행 띠 vs 헤더 배경"]
   ]
 }

@@ -56,13 +56,27 @@
  * sticky 가 아니었다 — 다섯 앱의 랜딩 헤더와 맞추면서 함께 바꿨다.
  * ──────────────────────────────────────────────────────────── */
 
-/* myjane 의 랜딩 헤더에만 필요하다. 다섯 앱은 headerStyle 인라인으로 이미
-   sticky 라서 이 클래스를 붙이지 않는다 — 진행 띠는 sticky 헤더가 만든
-   컨테이닝 블록에 absolute 로 붙으므로 클래스가 없어도 동작한다 */
-.site-top {
+/* 진행 띠를 담는 헤더는 **자리를 지켜야** 한다. absolute 인 띠가 그 안에
+   붙으므로, 헤더가 스크롤과 함께 올라가 버리면 띠도 같이 사라진다.
+
+   앱마다 사정이 다르다 —
+     myjane 랜딩 `.site-top`      원래 sticky 가 아니었다. 여기서 만든다
+     myjane 로그인·법적 `.auth-topbar`  같다
+     다섯 앱 랜딩 headerStyle     인라인으로 이미 sticky
+     다섯 앱 앱화면 `.topnav`     이미 position: fixed
+   뒤의 둘은 손대지 않는다. */
+.site-top,
+.auth-topbar {
   position: sticky;
   top: 0;
   z-index: 40;
+}
+
+/* 다섯 앱 앱화면의 상단 줄. `.topnav` 은 이미 fixed 지만 햄버거를 열면 메뉴만큼
+   키가 자란다 — 띠는 높이가 고정된 이 줄 안에 붙어야 제자리에 있다.
+   그래서 여기에 컨테이닝 블록을 만든다. */
+.topnav-bar {
+  position: relative;
 }
 
 .scroll-progress {
@@ -82,7 +96,18 @@
   display: block;
   height: 100%;
   width: 100%;
-  background: var(--accent);
+  /* 두 테마색 사이를 잇는다. 띠는 **폭 100% 로 칠한 뒤 scaleX 로 줄이므로**
+     그라디언트도 함께 눌린다 — 그래서 띠가 30% 든 90% 든 양쪽 끝 색이 늘
+     보이고 가운데만 부드럽게 섞인다. 고정 폭 그라디언트를 마스크로 드러내면
+     초반에 왼쪽 색만 보여서 전혀 다른 느낌이 된다.
+     결쩜사는 width 를 %로 직접 줬는데(같은 결과), scaleX 는 레이아웃을
+     다시 계산하지 않아 스크롤 중에 더 싸다.
+     근거: my-obsidian-vault → 50-Plans/A 디자인 요소 추가.md */
+  background: linear-gradient(
+    90deg,
+    var(--progress-from) 0%,
+    var(--progress-to) 100%
+  );
   transform-origin: 0 50%;
   transform: scaleX(var(--scroll-progress, 0));
   transition: transform 0.08s linear;
