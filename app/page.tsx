@@ -151,7 +151,7 @@ const FLOW = [
 /** 서비스 카드 — 카테고리 시트 안에서 재사용 */
 function AppCard({ app }: { app: App }) {
   return (
-    <a className="card card--point" href={app.href}>
+    <a className="card" href={app.href}>
       <div className="card-head">
         <Image
           className="card-icon"
@@ -215,8 +215,8 @@ export default function Home() {
           <HeroActions />
         </section>
 
-        {/* 건강 기록 — 흰 시트 */}
-        <section className="sheet">
+        {/* 건강 기록 — 흰 시트. 카드를 담은 시트라 모서리를 깎는다 */}
+        <section className="sheet sheet--point">
           <div className="center">
             <p className="eyebrow">HEALTH · 건강 기록</p>
             <h2 className="headline">
@@ -238,7 +238,7 @@ export default function Home() {
         </section>
 
         {/* 성향 기록 — 연분홍 시트 */}
-        <section className="sheet sheet--tint">
+        <section className="sheet sheet--tint sheet--point">
           <div className="center">
             <p className="eyebrow">TYPE · 성향 기록</p>
             <h2 className="headline">
@@ -259,7 +259,7 @@ export default function Home() {
         </section>
 
         {/* 공부 기록 — 흰 시트 */}
-        <section className="sheet">
+        <section className="sheet sheet--point">
           <div className="center">
             <p className="eyebrow">STUDY · 공부 기록</p>
             <h2 className="headline">
@@ -281,7 +281,7 @@ export default function Home() {
         </section>
 
         {/* 습관 기록 — 연분홍 시트 */}
-        <section className="sheet sheet--tint">
+        <section className="sheet sheet--tint sheet--point">
           <div className="center">
             <p className="eyebrow">HABIT · 습관 기록</p>
             <h2 className="headline">
@@ -302,7 +302,7 @@ export default function Home() {
         </section>
 
         {/* 공통 안내 — 흰 시트 (앞의 습관 기록이 연분홍이라서 색을 바꾼다) */}
-        <section className="sheet">
+        <section className="sheet sheet--point">
           <div className="center">
             <p className="eyebrow">ABOUT MYJANE</p>
             <h2 className="headline">
@@ -312,7 +312,7 @@ export default function Home() {
 
           <div className="features">
             {NOTES.map((f) => (
-              <div className="feature card--point" key={f.title}>
+              <div className="feature" key={f.title}>
                 <div className="feature-icon" aria-hidden="true">
                   {f.icon}
                 </div>
