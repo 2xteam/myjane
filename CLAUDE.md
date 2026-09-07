@@ -29,6 +29,20 @@
 - `/admin` 은 앱 DB를 직접 읽지 않고 **각 앱의 `/api/admin/*`** 을 부른다
 - 필수 환경 변수: `MONGODB_URI` `SESSION_SECRET` `ADMIN_API_SECRET` `SMTP_*`
 
+## 디자인을 만질 때
+
+**먼저 검사부터 돌린다.**
+
+```bash
+cd C:/Dev/myjane && npm run design:check
+```
+
+규칙 · 이유 · 현재 기준선 → my-obsidian-vault / 20-Design/여섯 앱 디자인 시스템.md
+
+- 시트의 **원형 장식은 쓰지 않는다** (2026-09-07 에 여섯 앱에서 걷었다)
+- `components/Sheet.tsx` 는 다섯 앱에 **복사본**이다. 고치면 다섯 앱을 함께 고친다
+- 아이콘은 여섯 개가 한 가족이다. 하나만 바꾸지 않는다
+
 ## 색을 바꿀 때
 
 **`app/palette.css` 를 직접 고치지 말 것.** 생성 파일이다.

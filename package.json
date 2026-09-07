@@ -10,7 +10,8 @@
     "lint": "next lint",
     "icons": "node scripts/make-icons.mjs",
     "dev:verify": "node scripts/dev-verify.mjs",
-    "palette": "node scripts/sync-palette.mjs"
+    "palette": "node scripts/sync-palette.mjs",
+    "design:check": "node scripts/design-check.mjs"
   },
   "dependencies": {
     "next": "^15.2.4",
