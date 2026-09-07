@@ -76,10 +76,11 @@
 
 .mark,
 .headline .mark {
-  /* 아래 38% 만 칠한다 — 글자의 baseline 아래를 덮는 높이다 */
+  /* 아래 30% 만 칠한다. 62% 로 잡았더니 띠가 글자 가운데를 지나 두꺼웠다 —
+     한글은 라틴보다 글자가 아래에 앉아서 형광펜 자리가 더 낮다 */
   background: linear-gradient(
-    transparent 62%,
-    color-mix(in srgb, var(--gold) 38%, transparent) 62%
+    transparent 70%,
+    color-mix(in srgb, var(--gold) 38%, transparent) 70%
   );
   /* 띠가 글자 좌우로 살짝 삐져나오게 — 형광펜처럼 보인다 */
   padding: 0 2px;
@@ -101,9 +102,12 @@
  * 번호로 묶으면 없는 순서를 만들어낸다.
  * ──────────────────────────────────────────────────────────── */
 
+/* 헤드라인은 가운데 정렬인데 단계는 왼쪽 정렬이다. 폭을 묶어 가운데에 놓지
+   않으면 시트 왼쪽으로 쏠려 보인다 — 오른쪽에 빈 자리가 절반쯤 남는다 */
 .flow {
   list-style: none;
-  margin: 26px 0 0;
+  max-width: 560px;
+  margin: 26px auto 0;
   padding: 0;
 }
 
