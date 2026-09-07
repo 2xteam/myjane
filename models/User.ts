@@ -73,6 +73,25 @@ const UserSchema = new Schema(
      */
     pendingEmail: { type: String, trim: true, lowercase: true, default: null },
 
+    /**
+     * ── 약관·개인정보 동의 (여섯 앱 공용) ──
+     *
+     * 가입 화면의 체크박스만으로는 반쪽이다 — API 를 직접 부르면 그대로
+     * 통과한다. 그래서 가입 라우트(`myjane/app/api/auth/register`)가 동의 값을
+     * 받아 검증하고, 통과한 시각을 여기에 남긴다.
+     *
+     * `agreedPolicyVersion` 은 동의한 문서의 개정일이다. 방침을 고치면 값이
+     * 달라지므로 재동의를 받아야 할 사람을 나중에 골라낼 수 있다.
+     * → myjane/app/legal/*
+     *
+     * ⚠️ **비어 있다고 로그인을 막지 말 것.** 이 필드가 생기기 전에 가입한
+     * 회원은 값이 없다. 여섯 앱이 공유하는 컬렉션이라 막으면 쓰던 사람이
+     * 전부 갇힌다. `email` 을 required 로 걸면 안 되는 것과 같은 이유다.
+     */
+    termsAgreedAt: { type: Date, default: null },
+    privacyAgreedAt: { type: Date, default: null },
+    agreedPolicyVersion: { type: String, default: null },
+
     tokens: { type: Number, default: 0 },
     createdAt: { type: Date, default: Date.now },
     lastLoginAt: { type: Date },

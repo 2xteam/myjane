@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import { Suspense, useCallback, useMemo, useState } from "react";
+import { Suspense, useCallback, useMemo, useState, type CSSProperties } from "react";
 import { AuthShell, AuthTabs } from "@/components/AuthShell";
 import { buildReturnUrl, getApp } from "@/lib/apps";
 import { saveSession, type SessionUser } from "@/lib/session";
@@ -58,6 +58,16 @@ function SignupForm() {
   const [gender, setGender] = useState("");
   const [birthYear, setBirthYear] = useState("");
 
+  /*
+   * 약관·개인정보 동의. 둘 다 필수라 하나로 묶을 수도 있지만 나눠 둔다 —
+   * 무엇에 동의하는지가 다르고, 나중에 선택 동의(마케팅 등)가 붙으면
+   * 같은 자리에 한 줄만 더하면 된다.
+   * ⚠️ 화면에서만 막는다. 가입 라우트는 아직 동의 값을 받지 않는다
+   *    → my-obsidian-vault / 50-Plans/C 법적 페이지.md
+   */
+  const [agreeTerms, setAgreeTerms] = useState(false);
+  const [agreePrivacy, setAgreePrivacy] = useState(false);
+
   const [busy, setBusy] = useState(false);
   const [msg, setMsg] = useState<string | null>(null);
   /** 가입이 끝난 뒤의 안내 화면. 바로 앱으로 보내면 인증 메일 안내를 놓친다 */
@@ -68,6 +78,11 @@ function SignupForm() {
   const submit = useCallback(async () => {
     if (password !== passwordConfirm) {
       setMsg("입력한 두 비밀번호가 일치하지 않아요.");
+      return;
+    }
+
+    if (!agreeTerms || !agreePrivacy) {
+      setMsg("이용약관과 개인정보 수집·이용에 동의해 주세요.");
       return;
     }
 
@@ -88,6 +103,9 @@ function SignupForm() {
           ...(heightCm ? { heightCm: Number(heightCm) } : {}),
           ...(gender ? { gender } : {}),
           ...(birthYear ? { birthYear: Number(birthYear) } : {}),
+          // 라우트도 이 값을 검증한다 — 화면에서만 막으면 반쪽이다
+          agreeTerms,
+          agreePrivacy,
           signupFrom: app?.key ?? null,
         }),
       });
@@ -121,6 +139,8 @@ function SignupForm() {
     gender,
     birthYear,
     app,
+    agreeTerms,
+    agreePrivacy,
   ]);
 
   const goOn = useCallback(() => {
@@ -371,12 +391,54 @@ function SignupForm() {
             ) : null}
 
             {/*
-              ⚠️ 약관·개인정보 동의 체크박스가 들어갈 자리.
+              약관·개인정보 동의 (C 작업).
 
-              문구와 링크가 C 작업(app/legal/*)의 결과물이라 여기서 먼저 만들면
-              두 벌이 된다. C 가 페이지를 올린 뒤 이 자리에 체크박스를 넣는다.
+              globals.css 에 클래스를 새로 만들지 않는다 — A 작업이 같은 파일을
+              고치고 있다. 선언된 토큰을 쓰는 인라인 스타일로 둔다.
+              쿠키는 필수 쿠키 하나뿐이라 동의 대상이 아니다 → 안내 링크만 건다.
               → my-obsidian-vault / 50-Plans/C 법적 페이지.md
             */}
+            <div style={consentBoxStyle}>
+              <label style={consentRowStyle}>
+                <input
+                  type="checkbox"
+                  checked={agreeTerms}
+                  onChange={(e) => setAgreeTerms(e.target.checked)}
+                  style={consentCheckStyle}
+                />
+                <span>
+                  <Link href="/legal/terms" target="_blank" style={consentLinkStyle}>
+                    이용약관
+                  </Link>
+                  에 동의합니다
+                  <Mark required />
+                </span>
+              </label>
+
+              <label style={consentRowStyle}>
+                <input
+                  type="checkbox"
+                  checked={agreePrivacy}
+                  onChange={(e) => setAgreePrivacy(e.target.checked)}
+                  style={consentCheckStyle}
+                />
+                <span>
+                  <Link href="/legal/privacy" target="_blank" style={consentLinkStyle}>
+                    개인정보 수집·이용
+                  </Link>
+                  에 동의합니다
+                  <Mark required />
+                </span>
+              </label>
+
+              <p style={consentNoteStyle}>
+                쿠키는 로그인 유지에 필요한 하나만 씁니다. 분석·광고 쿠키를 쓰지
+                않아 따로 동의를 받지 않습니다 —{" "}
+                <Link href="/legal/cookies" target="_blank" style={consentLinkStyle}>
+                  쿠키 안내
+                </Link>
+              </p>
+            </div>
 
             <button type="submit" className="auth-btn" disabled={busy}>
               {busy ? "만드는 중…" : "가입하고 시작하기"}
@@ -404,3 +466,50 @@ export default function SignupPage() {
     </Suspense>
   );
 }
+
+/*
+ * 동의 영역 — globals.css 를 건드리지 않으려고 인라인 토큰으로 둔다 (A 작업 중).
+ * 필수/선택은 <Mark /> 가 글자로 적는다. 색만으로 구분하지 않는다.
+ */
+const consentBoxStyle: CSSProperties = {
+  margin: "18px 0 4px",
+  padding: "14px 16px",
+  border: "1px solid var(--border)",
+  borderRadius: "var(--radius-sm)",
+  background: "var(--surface-hover)",
+};
+
+const consentRowStyle: CSSProperties = {
+  display: "flex",
+  alignItems: "flex-start",
+  gap: 9,
+  margin: "6px 0",
+  fontSize: "0.84rem",
+  lineHeight: 1.7,
+  color: "var(--text)",
+  cursor: "pointer",
+  wordBreak: "keep-all",
+};
+
+const consentCheckStyle: CSSProperties = {
+  marginTop: 4,
+  width: 16,
+  height: 16,
+  flexShrink: 0,
+  accentColor: "var(--accent)",
+  cursor: "pointer",
+};
+
+const consentLinkStyle: CSSProperties = {
+  color: "var(--accent-ink)",
+  fontWeight: 700,
+  textDecoration: "underline",
+};
+
+const consentNoteStyle: CSSProperties = {
+  margin: "10px 0 0",
+  fontSize: "0.76rem",
+  lineHeight: 1.7,
+  color: "var(--text-muted)",
+  wordBreak: "keep-all",
+};

@@ -4,6 +4,7 @@ import bcrypt from "bcryptjs";
 import { connectDB } from "@/lib/db";
 import { IS_TOKEN_SYSTEM_ENABLED } from "@/lib/constants";
 import { issueEmailToken, normalizeEmail } from "@/lib/emailVerification";
+import { POLICY_VERSION } from "@/lib/legalVersion";
 import { passwordProblem } from "@/lib/password";
 import { normalizePhone } from "@/lib/phone";
 import { signSessionToken } from "@/lib/sessionToken";
@@ -42,6 +43,9 @@ export async function POST(req: Request) {
       /** 예전 형식 — 한 칸에 이메일·전화번호를 아무거나 받던 시절의 이름 */
       secret?: string;
       secretConfirm?: string;
+      /** 약관·개인정보 동의. 둘 다 true 라야 가입된다 */
+      agreeTerms?: boolean;
+      agreePrivacy?: boolean;
       /** 어느 앱에서 가입했는지 */
       signupFrom?: string;
       /** 앱별 초기값 — 모두 선택이다. 없으면 나중에 그 앱에서 받는다 */
@@ -87,6 +91,19 @@ export async function POST(req: Request) {
         { status: 400 },
       );
     }
+
+    /*
+      ⚠️ 동의는 **여기서도** 본다. 가입 화면에서만 막으면 이 라우트를 직접
+      부르는 쪽이 그대로 통과한다. 동의 시각은 아래에서 남긴다.
+      → myjane/app/legal/* · my-obsidian-vault / 50-Plans/C 법적 페이지.md
+    */
+    if (body.agreeTerms !== true || body.agreePrivacy !== true) {
+      return NextResponse.json(
+        { ok: false, error: "이용약관과 개인정보 수집·이용에 동의해 주세요." },
+        { status: 400 },
+      );
+    }
+    const agreedAt = new Date();
 
     /*
       전화번호는 선택이다. 넣었으면 형식만 보고 연락처로 저장한다.
@@ -173,6 +190,9 @@ export async function POST(req: Request) {
       if (gender !== null && existing.gender === null) existing.gender = gender;
       if (birthYear !== null && existing.birthYear === null) existing.birthYear = birthYear;
       existing.lastLoginAt = new Date();
+      existing.termsAgreedAt = agreedAt;
+      existing.privacyAgreedAt = agreedAt;
+      existing.agreedPolicyVersion = POLICY_VERSION;
 
       const mailSent = await sendVerification(existing, email);
       await existing.save();
@@ -218,6 +238,9 @@ export async function POST(req: Request) {
       birthYear,
       createdAt: new Date(),
       lastLoginAt: new Date(),
+      termsAgreedAt: agreedAt,
+      privacyAgreedAt: agreedAt,
+      agreedPolicyVersion: POLICY_VERSION,
     });
 
     /*

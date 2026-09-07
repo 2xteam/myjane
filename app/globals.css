@@ -52,6 +52,12 @@
   --point: var(--gold);
   --point-subtle: var(--gold-soft);
   --warning: var(--gold);
+  /*
+   * 긴 글의 한 줄 길이. 법적 페이지처럼 문단이 이어지는 화면에 쓴다.
+   * 시트 폭(1180px)을 그대로 쓰면 한 줄이 너무 길어 눈이 줄을 놓친다.
+   * typelog 이 같은 이름으로 같은 값을 쓴다.
+   */
+  --content-reading: 760px;
 }
 
 /*
@@ -934,4 +940,220 @@ a {
   .auth-note {
     margin-top: 120px;
   }
+}
+
+/* ────────────────────────────────────────────────────────────
+ * 법적 페이지 (개인정보처리방침 · 이용약관 · 쿠키 안내)
+ *
+ * 랜딩과 같은 시트 구조를 쓰되, 읽는 글이라 두 가지가 다르다.
+ *   · 폭을 --content-reading(760px)으로 좁힌다 — 시트 폭은 한 줄이 너무 길다
+ *   · 시트 안이 헤드라인 한 줄이 아니라 본문 덩어리다 (.legal-body)
+ * 근거: my-obsidian-vault → 50-Plans/C 법적 페이지.md
+ * ──────────────────────────────────────────────────────────── */
+
+.legal {
+  min-height: 100dvh;
+  background:
+    radial-gradient(circle at 88% 4%, var(--accent-soft), transparent 38%),
+    radial-gradient(circle at 4% 78%, var(--accent-soft), transparent 42%);
+}
+
+.legal-sheets {
+  max-width: var(--content-reading);
+  margin: 0 auto;
+  padding: clamp(20px, 4vw, 40px) clamp(16px, 4.2vw, 40px) clamp(40px, 6vw, 72px);
+  display: flex;
+  flex-direction: column;
+  gap: clamp(18px, 2.6vw, 26px);
+}
+
+/* 페이지 사이 이동 — 세 페이지가 서로를 가리킨다 */
+.legal-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  max-width: var(--content-reading);
+  margin: 0 auto;
+  padding: 0 clamp(16px, 4.2vw, 40px);
+}
+
+.legal-tabs a {
+  padding: 7px 14px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: var(--surface);
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: var(--text-dim);
+  text-decoration: none;
+}
+
+.legal-tabs a:hover {
+  border-color: var(--border-strong);
+  color: var(--text);
+}
+
+.legal-tabs a[aria-current="page"] {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: var(--on-accent);
+}
+
+/* 본문 덩어리 — 시트 안에 들어간다 */
+.legal-body {
+  font-size: 0.9rem;
+  line-height: 1.9;
+  color: var(--text-dim);
+  word-break: keep-all;
+}
+
+.legal-body > :first-child {
+  margin-top: 0;
+}
+
+.legal-body h2 {
+  margin: 30px 0 10px;
+  font-family: "Gowun Batang", serif;
+  font-size: 1.12rem;
+  font-weight: 700;
+  line-height: 1.5;
+  color: var(--text);
+}
+
+.legal-body h3 {
+  margin: 20px 0 6px;
+  font-size: 0.9rem;
+  font-weight: 800;
+  color: var(--text);
+}
+
+.legal-body p {
+  margin: 10px 0;
+}
+
+.legal-body ul,
+.legal-body ol {
+  margin: 10px 0;
+  padding-left: 1.15rem;
+}
+
+.legal-body li {
+  margin: 5px 0;
+}
+
+.legal-body strong {
+  color: var(--text);
+  font-weight: 700;
+}
+
+.legal-body a {
+  color: var(--accent-ink);
+}
+
+/* 표 — 수집 항목·위탁업체. 좁은 화면에서는 가로로 민다 */
+.legal-table-wrap {
+  margin: 14px 0;
+  overflow-x: auto;
+}
+
+.legal-table {
+  width: 100%;
+  min-width: 460px;
+  border-collapse: collapse;
+  font-size: 0.83rem;
+  line-height: 1.7;
+}
+
+.legal-table th,
+.legal-table td {
+  padding: 9px 12px;
+  border-bottom: 1px solid var(--border);
+  text-align: left;
+  vertical-align: top;
+}
+
+.legal-table th {
+  background: var(--surface-hover);
+  font-weight: 800;
+  color: var(--text);
+  white-space: nowrap;
+}
+
+.legal-table tbody th {
+  background: transparent;
+  border-right: 1px solid var(--border);
+}
+
+/*
+ * 아직 정하지 않은 값 — 초안 상태 표시.
+ * 공개 전에 사람이 채워야 하는 자리라 눈에 걸리게 둔다.
+ * 오류 문구용 색을 쓰지만 글자용 토큰(--danger-ink)이다.
+ */
+.legal-todo {
+  display: inline-block;
+  padding: 1px 8px;
+  border-radius: 999px;
+  background: var(--danger-subtle);
+  font-size: 0.76rem;
+  font-weight: 800;
+  line-height: 1.7;
+  color: var(--danger-ink);
+  /*
+   * 줄바꿈을 막지 않는다. 라벨이 긴 것들이 있어서(건강정보·국외 이전,
+   * 만 14세 미만 …) 좁은 화면에서 시트의 overflow:hidden 에 잘려 나갔다.
+   * 잘리면 공개 전에 확인해야 할 항목이 안 보인다.
+   */
+  word-break: keep-all;
+}
+
+/* 민감정보처럼 따로 세워야 하는 덩어리 */
+.legal-callout {
+  margin: 16px 0;
+  padding: 16px 18px;
+  border: 1px solid var(--border);
+  border-left: 3px solid var(--accent);
+  border-radius: var(--radius-sm);
+  background: var(--accent-soft);
+}
+
+.legal-callout > :first-child {
+  margin-top: 0;
+}
+
+.legal-callout > :last-child {
+  margin-bottom: 0;
+}
+
+/* 초안 알림 — 세 페이지 맨 위 */
+.legal-draft {
+  max-width: var(--content-reading);
+  margin: 0 auto;
+  padding: 14px clamp(16px, 4.2vw, 40px) 0;
+}
+
+.legal-draft p {
+  margin: 0;
+  padding: 12px 16px;
+  border: 1px solid var(--danger-subtle);
+  border-radius: var(--radius-sm);
+  background: var(--danger-subtle);
+  font-size: 0.81rem;
+  line-height: 1.7;
+  color: var(--danger-ink);
+  word-break: keep-all;
+}
+
+.legal-updated {
+  margin: 14px 0 0;
+  font-size: 0.78rem;
+  color: var(--text-muted);
+}
+
+/* 푸터의 법적 페이지 링크 줄 */
+.site-footer-legal {
+  margin-top: 10px;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 6px 14px;
 }

@@ -378,6 +378,16 @@ export default function Home() {
         <div>
           <FooterAuth />
         </div>
+        {/*
+          법적 고지 — 세 페이지는 포털에만 둔다. 다섯 앱 푸터도 여기를 가리킨다.
+          .site-footer-legal 은 globals.css 에 이미 있다 (다섯 앱과 같은 이름).
+          → my-obsidian-vault / 50-Plans/C 법적 페이지.md
+        */}
+        <div className="site-footer-legal">
+          <Link href="/legal/privacy">개인정보처리방침</Link>
+          <Link href="/legal/terms">이용약관</Link>
+          <Link href="/legal/cookies">쿠키 안내</Link>
+        </div>
         <div>© {new Date().getFullYear()} myjane. All rights reserved.</div>
       </footer>
     </div>
