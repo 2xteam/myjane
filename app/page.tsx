@@ -6,6 +6,7 @@ import {
   HeaderAuth,
   HeroActions,
 } from "@/components/LandingAuth";
+import { ScrollProgress } from "@/components/ScrollProgress";
 
 /**
  * myjane 포털 랜딩.
@@ -122,6 +123,31 @@ const NOTES = [
   },
 ];
 
+/**
+ * 시작하는 순서 — 3단계.
+ *
+ * 순서가 실제로 있는 것만 번호로 묶는다. 계정이 없으면 서비스를 고를 수 없고,
+ * 서비스를 고르지 않으면 올릴 곳이 없다 — 그래서 번호가 의미를 갖는다.
+ * 순서가 없는 항목(NOTES)은 그대로 격자로 둔다.
+ */
+const FLOW = [
+  {
+    badges: [{ text: "1분", point: false }],
+    title: "계정을 하나 만들어요",
+    body: "이메일과 비밀번호만 있으면 돼요. 전화번호는 넣지 않아도 됩니다.",
+  },
+  {
+    badges: [{ text: "골라서", point: false }],
+    title: "쓸 서비스만 열어요",
+    body: "여섯 개를 다 열 필요가 없어요. 열지 않은 서비스는 아무것도 쌓이지 않아요.",
+  },
+  {
+    badges: [{ text: "설정 없음", point: true }],
+    title: "사진 한 장으로 첫 기록",
+    body: "교재든 시험지든 결과지든, 찍어서 올리면 읽어서 정리해요.",
+  },
+];
+
 /** 서비스 카드 — 카테고리 시트 안에서 재사용 */
 function AppCard({ app }: { app: App }) {
   return (
@@ -169,11 +195,12 @@ export default function Home() {
         <nav className="site-nav">
           <HeaderAuth />
         </nav>
+        <ScrollProgress />
       </header>
 
       <main className="sheets">
         {/* 히어로 — 크림에서 연분홍으로 내려가는 밝은 시트 */}
-        <section className="sheet sheet--dark">
+        <section className="sheet sheet--dark sheet--point">
           <p className="hero-badge">✦ 공부 · 건강 · 습관 기록</p>
           <h1 className="headline">
             필요한 기록만,
@@ -278,7 +305,9 @@ export default function Home() {
         <section className="sheet">
           <div className="center">
             <p className="eyebrow">ABOUT MYJANE</p>
-            <h2 className="headline">묶어둔 건 계정뿐이에요</h2>
+            <h2 className="headline">
+              묶어둔 건 <span className="mark">계정뿐이에요</span>
+            </h2>
           </div>
 
           <div className="features">
@@ -294,6 +323,44 @@ export default function Home() {
               </div>
             ))}
           </div>
+        </section>
+
+        {/* 시작하는 순서 — 앞의 ABOUT MYJANE 이 흰 시트라서 색을 바꾼다 */}
+        <section className="sheet sheet--tint">
+          <div className="center">
+            <p className="eyebrow">HOW IT WORKS · 시작하는 순서</p>
+            <h2 className="headline">
+              세 단계면
+              <br />
+              <span>첫 기록이 남아요</span>
+            </h2>
+          </div>
+
+          <ol className="flow">
+            {FLOW.map((step, i) => (
+              <li className="flow-step" key={step.title}>
+                <span className="flow-num" aria-hidden="true">
+                  {String(i + 1).padStart(2, "0")}
+                </span>
+                <div>
+                  <div className="flow-badges">
+                    {step.badges.map((b) => (
+                      <span
+                        className={
+                          b.point ? "flow-badge flow-badge--point" : "flow-badge"
+                        }
+                        key={b.text}
+                      >
+                        {b.text}
+                      </span>
+                    ))}
+                  </div>
+                  <h3>{step.title}</h3>
+                  <p>{step.body}</p>
+                </div>
+              </li>
+            ))}
+          </ol>
         </section>
 
         {/* 마무리 CTA — 로그인 상태에서는 나오지 않는다 */}

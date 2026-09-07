@@ -78,6 +78,8 @@ const NAMES = {
     accentHover: "--gold-to",
     gold: "--gold",
     goldSoft: "--gold-soft",
+    // 금색 알약의 글자용. 면적용(--gold)을 글자로 쓰면 카드 위에서 1.9:1 이다
+    pointInk: "--point-ink",
     onAccent: "--on-accent",
     placeholder: "--placeholder",
     textMuted: "--text-muted",

@@ -78,7 +78,7 @@ export function ClosingCta() {
   if (!ready || user) return null;
 
   return (
-    <section className="sheet center">
+    <section className="sheet center sheet--point">
       <p className="eyebrow">START</p>
       <h2 className="headline">첫 기록을 남겨볼까요?</h2>
       <p className="lead">가입은 몇 칸이면 돼요. 서비스에 따라 전화번호와 PIN, 또는 이메일을 씁니다.</p>

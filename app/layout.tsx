@@ -1,5 +1,9 @@
 import type { Metadata, Viewport } from "next";
 import "./globals.css";
+// globals.css **다음에** 온다 — .sheet--point 처럼 특이도가 같은 규칙이
+// globals.css 의 .sheet 를 이겨야 한다. globals.css 안에서 @import 하면
+// (import 는 파일 맨 앞이라야 하므로) 늘 먼저 들어가 진다.
+import "./elements.css";
 
 const SITE_URL = "https://www.myjane.co.kr";
 
