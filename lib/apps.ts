@@ -5,15 +5,23 @@
  * 세션 쿠키는 `.myjane.co.kr` 도메인으로 저장되므로 서브도메인 전체에서 그대로 읽힌다.
  */
 
-export type AppKey = "snapword" | "snapnote" | "fitlog" | "2hbk";
+export type AppKey = "snapword" | "snapnote" | "fitlog" | "2hbk" | "typelog";
 
 export type AppInfo = {
   key: AppKey;
   name: string;
   origin: string;
   icon: string;
-  /** 회원가입 시 신체 프로필(키·성별·출생연도)을 함께 받는다 */
+  /**
+   * 가입 직후 이 앱에 필요한 값을 **선택으로** 함께 받는다.
+   *
+   * ⚠️ 필수가 아니다. 넣지 않아도 가입은 끝나고, 그 앱에서 쓰려는 순간에
+   * 다시 받는다. FitLog 는 프로필이 없으면 추출을 거부하는 게이트가 따로 있고,
+   * 여기서 미리 받아 두면 그 순간을 안 만나게 하는 것이 목적이다.
+   */
   needsBodyProfile?: boolean;
+  /** 2hbk 의 표시 이름. 없으면 `userId` 로 대신 보인다 */
+  needsNickname?: boolean;
   /**
    * 세션 쿠키의 **서명 토큰**이 있어야 동작하는 앱.
    *
@@ -55,7 +63,24 @@ export const APPS: Record<AppKey, AppInfo> = {
     name: "2hbk",
     origin: "https://2hbk.myjane.co.kr",
     icon: "/2hbk-icon.png",
+    needsNickname: true,
     requiresSessionToken: true,
+    particle: "로",
+  },
+  typelog: {
+    key: "typelog",
+    name: "TypeLog",
+    origin: "https://typelog.myjane.co.kr",
+    icon: "/typelog-icon.png",
+    /*
+      TypeLog 의 API 도 쿠키의 `id` 를 믿지 않고 **서명 토큰**을 검증한다
+      (`typelog/lib/auth.ts`). 그래서 토큰 없는 세션으로는 아무것도 못 한다 —
+      2hbk 와 같다. 이 표시가 없으면 포털이 토큰 없는 세션을 그대로 돌려보내고,
+      앱에서는 화면만 열린 채 API 가 401 로 떨어진다
+      → my-obsidian-vault / 30-Patterns/인증과 세션 공유.md
+    */
+    requiresSessionToken: true,
+    // "타입로그"는 받침 없이 끝나 `으로`가 어색하다
     particle: "로",
   },
 };

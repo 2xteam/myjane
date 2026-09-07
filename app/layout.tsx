@@ -4,6 +4,7 @@ import "./globals.css";
 // globals.css 의 .sheet 를 이겨야 한다. globals.css 안에서 @import 하면
 // (import 는 파일 맨 앞이라야 하므로) 늘 먼저 들어가 진다.
 import "./elements.css";
+import { EmailPrompt } from "@/components/EmailPrompt";
 
 const SITE_URL = "https://www.myjane.co.kr";
 
@@ -60,7 +61,14 @@ export default function RootLayout({
           href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard-dynamic-subset.min.css"
         />
       </head>
-      <body>{children}</body>
+      <body>
+        {children}
+        {/*
+          이메일 안내 띠. 로그인한 사람에게 해당될 때만, 하루에 한 번만 보인다.
+          해당 없으면 아무것도 그리지 않는다 → components/EmailPrompt.tsx
+        */}
+        <EmailPrompt />
+      </body>
     </html>
   );
 }

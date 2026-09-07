@@ -1,8 +1,6 @@
 import { NextResponse } from "next/server";
-import { connectDB } from "@/lib/db";
-import { SESSION_KEY } from "@/lib/session";
-import { verifySessionToken } from "@/lib/sessionToken";
-import { getUserModel, type UserDocument } from "@/models/User";
+import { getSessionUser } from "@/lib/serverSession";
+import type { UserDocument } from "@/models/User";
 
 /**
  * 통합 admin 접근 권한 확인.
@@ -22,42 +20,9 @@ export type Admin = {
   role: AdminRole;
 };
 
-function readCookie(req: Request, name: string): string | null {
-  const header = req.headers.get("cookie");
-  if (!header) return null;
-  const prefix = name + "=";
-  for (const part of header.split(";")) {
-    const trimmed = part.trim();
-    if (!trimmed.startsWith(prefix)) continue;
-    try {
-      return decodeURIComponent(trimmed.slice(prefix.length));
-    } catch {
-      return null;
-    }
-  }
-  return null;
-}
-
-function readToken(req: Request): string | null {
-  const auth = req.headers.get("authorization");
-  if (auth?.startsWith("Bearer ")) return auth.slice(7).trim();
-
-  const raw = readCookie(req, SESSION_KEY);
-  if (!raw) return null;
-  try {
-    const parsed = JSON.parse(raw) as { token?: unknown };
-    return typeof parsed.token === "string" ? parsed.token : null;
-  } catch {
-    return null;
-  }
-}
-
 export async function getAdmin(req: Request): Promise<Admin | null> {
-  const claims = verifySessionToken(readToken(req));
-  if (!claims) return null;
-
-  await connectDB();
-  const doc = await getUserModel().findOne({ userId: claims.u }).exec();
+  // 쿠키·토큰을 읽는 부분은 일반 회원 확인과 같다 → lib/serverSession.ts
+  const doc = await getSessionUser(req);
   if (!doc) return null;
 
   const role = doc.adminRole;
