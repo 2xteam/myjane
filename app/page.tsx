@@ -188,6 +188,49 @@ export default function Home() {
           <HeroActions />
         </section>
 
+        {/* 건강 기록 — 흰 시트 */}
+        <section className="sheet">
+          <div className="center">
+            <p className="eyebrow">HEALTH · 건강 기록</p>
+            <h2 className="headline">
+              몸의 변화는
+              <br />
+              <span>숫자로 남겨요</span>
+            </h2>
+            <p className="lead">
+              측정 결과지를 찍으면 수치를 읽어 날짜별로 정리해요. 다른 기록과는 별개로
+              동작합니다.
+            </p>
+          </div>
+
+          <nav className="apps apps--solo" aria-label="건강 기록 서비스">
+            {HEALTH_APPS.map((app) => (
+              <AppCard key={app.name} app={app} />
+            ))}
+          </nav>
+        </section>
+
+        {/* 성향 기록 — 연분홍 시트 */}
+        <section className="sheet sheet--tint">
+          <div className="center">
+            <p className="eyebrow">TYPE · 성향 기록</p>
+            <h2 className="headline">
+              지금의 나를
+              <br />
+              <span>한 줄로 남겨요</span>
+            </h2>
+            <p className="lead">
+              몇 가지 질문에 답하면 나와 가까운 타입이 나와요. 다시 해보면 지난 회차와 비교할 수 있어요.
+            </p>
+          </div>
+
+          <nav className="apps apps--solo" aria-label="성향 기록 서비스">
+            {TYPE_APPS.map((app) => (
+              <AppCard key={app.name} app={app} />
+            ))}
+          </nav>
+        </section>
+
         {/* 공부 기록 — 흰 시트 */}
         <section className="sheet">
           <div className="center">
@@ -210,30 +253,8 @@ export default function Home() {
           </nav>
         </section>
 
-        {/* 건강 기록 — 연보라 시트 */}
+        {/* 습관 기록 — 연분홍 시트 */}
         <section className="sheet sheet--tint">
-          <div className="center">
-            <p className="eyebrow">HEALTH · 건강 기록</p>
-            <h2 className="headline">
-              몸의 변화는
-              <br />
-              <span>숫자로 남겨요</span>
-            </h2>
-            <p className="lead">
-              측정 결과지를 찍으면 수치를 읽어 날짜별로 정리해요. 공부 기록과는
-              별개로 동작합니다.
-            </p>
-          </div>
-
-          <nav className="apps apps--solo" aria-label="건강 기록 서비스">
-            {HEALTH_APPS.map((app) => (
-              <AppCard key={app.name} app={app} />
-            ))}
-          </nav>
-        </section>
-
-        {/* 습관 기록 — 흰 시트 */}
-        <section className="sheet">
           <div className="center">
             <p className="eyebrow">HABIT · 습관 기록</p>
             <h2 className="headline">
@@ -253,28 +274,7 @@ export default function Home() {
           </nav>
         </section>
 
-        {/* 성향 기록 — 연보라 시트 */}
-        <section className="sheet sheet--tint">
-          <div className="center">
-            <p className="eyebrow">TYPE · 성향 기록</p>
-            <h2 className="headline">
-              지금의 나를
-              <br />
-              <span>한 줄로 남겨요</span>
-            </h2>
-            <p className="lead">
-              몇 가지 질문에 답하면 나와 가까운 타입이 나와요. 다시 해보면 지난 회차와 비교할 수 있어요.
-            </p>
-          </div>
-
-          <nav className="apps apps--solo" aria-label="성향 기록 서비스">
-            {TYPE_APPS.map((app) => (
-              <AppCard key={app.name} app={app} />
-            ))}
-          </nav>
-        </section>
-
-        {/* 공통 안내 — 흰 시트 (앞의 성향 기록이 연보라라서 색을 바꾼다) */}
+        {/* 공통 안내 — 흰 시트 (앞의 습관 기록이 연분홍이라서 색을 바꾼다) */}
         <section className="sheet">
           <div className="center">
             <p className="eyebrow">ABOUT MYJANE</p>
@@ -310,7 +310,7 @@ export default function Home() {
         <div>
           <FooterAuth />
         </div>
-        <div>© {new Date().getFullYear()} MyJane. All rights reserved.</div>
+        <div>© {new Date().getFullYear()} myjane. All rights reserved.</div>
       </footer>
     </div>
   );
