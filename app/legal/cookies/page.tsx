@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { LegalShell, LegalSection, Todo } from "@/components/LegalShell";
+import { LegalShell, LegalSection } from "@/components/LegalShell";
 import { POLICY_VERSION } from "@/lib/legalVersion";
 
 /**

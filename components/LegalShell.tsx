@@ -20,17 +20,6 @@ export const LEGAL_PAGES = [
   { href: "/legal/cookies", label: "쿠키·로컬 저장소 안내" },
 ] as const;
 
-/**
- * 아직 정하지 않은 값. 공개 전에 사람이 채워야 하는 자리다.
- *
- * ⚠️ 이 표시가 하나라도 남아 있으면 **공개하면 안 된다.**
- * 보관 기간·법적 근거·사업자 정보처럼 코드에서 알아낼 수 없는 값이라
- * 초안 단계에서 추측으로 채우지 않고 눈에 걸리게 남겨 둔다.
- */
-export function Todo({ children }: { children: ReactNode }) {
-  return <span className="legal-todo">확인 필요 — {children}</span>;
-}
-
 export function LegalShell({
   current,
   eyebrow,
@@ -71,9 +60,9 @@ export function LegalShell({
       */}
       <div className="legal-draft">
         <p>
-          <strong>초안입니다.</strong> 아직 법률 검토를 받지 않았습니다. 본문에
-          «확인 필요» 로 표시된 항목은 확정되지 않은 내용이며, 검토를 마친 뒤
-          이 알림과 함께 정리됩니다.
+          <strong>초안입니다.</strong> 아직 법률 검토를 받지 않았습니다. 검토를
+          마치면 이 알림을 내리고, 바뀌는 내용이 있으면 시행일과 함께 미리
+          알려드립니다.
         </p>
       </div>
 

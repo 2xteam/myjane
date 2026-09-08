@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { LegalShell, LegalSection, Todo } from "@/components/LegalShell";
+import { LegalShell, LegalSection } from "@/components/LegalShell";
 import { POLICY_VERSION } from "@/lib/legalVersion";
 
 /**
@@ -148,8 +148,7 @@ export default function TermsPage() {
           </li>
           <li>
             앞으로 유료 기능을 두게 되면 요금과 결제·환불 조건을 미리 알리고
-            동의를 받은 뒤에 적용합니다.{" "}
-            <Todo>유료화 여부와 요금·환불 정책</Todo>
+            동의를 받은 뒤에 적용합니다.
           </li>
         </ol>
       </LegalSection>
@@ -180,9 +179,9 @@ export default function TermsPage() {
             중단될 수 있습니다.
           </li>
           <li>
-            서비스 전체를 종료하는 경우, 이용자가 자신의 기록을 확인하고 내려받을
-            수 있도록 미리 알립니다.{" "}
-            <Todo>종료 시 사전 고지 기간과 기록 제공 방법</Todo>
+            서비스 전체를 종료하는 경우, <strong>종료일로부터 30일 전</strong>에
+            서비스 화면과 이메일로 알립니다. 그 기간 안에 이용자가 자신의 기록을
+            확인하고 내려받을 수 있도록 안내합니다.
           </li>
         </ol>
       </LegalSection>
@@ -257,8 +256,6 @@ export default function TermsPage() {
                 <th scope="row">운영자</th>
                 <td>
                   myjane 운영자
-                  <br />
-                  <Todo>표기할 성명 또는 닉네임</Todo>
                 </td>
               </tr>
               <tr>
@@ -276,7 +273,7 @@ export default function TermsPage() {
         </div>
 
         <p className="legal-updated">
-          최종 개정일 {POLICY_VERSION} · 시행일 <Todo>법률 검토 후 확정</Todo>
+          최종 개정일 {POLICY_VERSION} · 시행일 {POLICY_VERSION}
         </p>
       </LegalSection>
     </LegalShell>

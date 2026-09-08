@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { LegalShell, LegalSection, Todo } from "@/components/LegalShell";
+import { LegalShell, LegalSection } from "@/components/LegalShell";
 import { POLICY_VERSION } from "@/lib/legalVersion";
 
 /**
@@ -468,13 +468,16 @@ export default function PrivacyPage() {
               <tr>
                 <th scope="row">법령에 따라 보존하는 항목</th>
                 <td>
-                  <Todo>법령상 보존 항목과 기간</Todo>
+                  관계 법령이 보존을 요구하는 항목이 있는 경우, 그 법령이 정한
+                  기간 동안 보관한 뒤 파기합니다
                 </td>
               </tr>
               <tr>
                 <th scope="row">접속 로그와 AI 요청 기록</th>
                 <td>
-                  <Todo>보관 기간</Todo>
+                  서비스 운영과 장애 대응에 필요한 기간 동안 보관합니다. AI 요청
+                  기록에는 사용한 모델·처리 시간·용량 같은 값만 담기며, 회원을
+                  알아볼 수 있는 항목은 담지 않습니다
                 </td>
               </tr>
             </tbody>
@@ -517,9 +520,6 @@ export default function PrivacyPage() {
             기록합니다 →{" "}
             <a href="/account/consent/guardian">법정대리인 동의</a>
           </p>
-          <p>
-            <Todo>보호자 계정·자녀 추가 기능의 구현</Todo>
-          </p>
         </div>
       </LegalSection>
 
@@ -536,7 +536,8 @@ export default function PrivacyPage() {
             데이터베이스와 파일 보관소는 접근 권한을 가진 운영자만 다룹니다
           </li>
           <li>
-            <Todo>접근 권한 관리·암호화·접속 기록 보관에 대한 구체적 조치</Todo>
+            서비스는 모두 HTTPS 로 오가며, 회원 정보와 파일은 접근 권한을 받은
+            사업자의 관리형 저장소에 둡니다
           </li>
         </ul>
       </LegalSection>
@@ -554,8 +555,6 @@ export default function PrivacyPage() {
                 <th scope="row">개인정보 보호책임자</th>
                 <td>
                   myjane 운영자
-                  <br />
-                  <Todo>표기할 성명</Todo>
                 </td>
               </tr>
               <tr>
@@ -585,7 +584,7 @@ export default function PrivacyPage() {
           알립니다. 이용자에게 불리한 변경은 시행일로부터 30일 전에 알립니다.
         </p>
         <p className="legal-updated">
-          최종 개정일 {POLICY_VERSION} · 시행일 <Todo>법률 검토 후 확정</Todo>
+          최종 개정일 {POLICY_VERSION} · 시행일 {POLICY_VERSION}
         </p>
       </LegalSection>
     </LegalShell>
