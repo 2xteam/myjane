@@ -65,6 +65,17 @@ function SignupForm() {
    * ⚠️ 화면에서만 막는다. 가입 라우트는 아직 동의 값을 받지 않는다
    *    → my-obsidian-vault / 50-Plans/C 법적 페이지.md
    */
+  /*
+    만 14세 이상 확인.
+
+    방침에 "만 14세 미만 가입은 받지 않습니다" 라고 적어 공개했는데 확인하는
+    자리가 없으면 그 문장이 지켜지지 않는다. 생년월일을 받는 대신 확인만
+    받는다 — 나이를 확인하려고 더 많은 개인정보를 받는 것은 앞뒤가 안 맞는다.
+    보호자 계정·자녀 추가가 준비되면 이 자리를 그쪽으로 바꾼다.
+    → app/legal/privacy 6항 · my-obsidian-vault / 50-Plans/C 법적 페이지.md
+  */
+  const [isOver14, setIsOver14] = useState(false);
+
   const [agreeTerms, setAgreeTerms] = useState(false);
   const [agreePrivacy, setAgreePrivacy] = useState(false);
 
@@ -78,6 +89,13 @@ function SignupForm() {
   const submit = useCallback(async () => {
     if (password !== passwordConfirm) {
       setMsg("입력한 두 비밀번호가 일치하지 않아요.");
+      return;
+    }
+
+    if (!isOver14) {
+      setMsg(
+        "만 14세 미만은 가입하실 수 없어요. 보호자께서 대신 이용해 주세요.",
+      );
       return;
     }
 
@@ -141,6 +159,7 @@ function SignupForm() {
     app,
     agreeTerms,
     agreePrivacy,
+    isOver14,
   ]);
 
   const goOn = useCallback(() => {
@@ -402,6 +421,19 @@ function SignupForm() {
               <label style={consentRowStyle}>
                 <input
                   type="checkbox"
+                  checked={isOver14}
+                  onChange={(e) => setIsOver14(e.target.checked)}
+                  style={consentCheckStyle}
+                />
+                <span>
+                  만 14세 이상입니다
+                  <Mark required />
+                </span>
+              </label>
+
+              <label style={consentRowStyle}>
+                <input
+                  type="checkbox"
                   checked={agreeTerms}
                   onChange={(e) => setAgreeTerms(e.target.checked)}
                   style={consentCheckStyle}
@@ -453,6 +485,10 @@ function SignupForm() {
                   </li>
                   <li>
                     <strong>보관</strong> — 탈퇴하시면 6개월 뒤 폐기합니다
+                  </li>
+                  <li>
+                    <strong>만 14세 미만</strong>은 아직 가입하실 수 없어요.
+                    보호자 계정에 자녀를 추가하는 방식을 준비하고 있습니다
                   </li>
                   <li>
                     <strong>FitLog 을 쓰실 때</strong> — 인바디·피검사 기록은
