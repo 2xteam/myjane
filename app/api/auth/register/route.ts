@@ -190,6 +190,7 @@ export async function POST(req: Request) {
       if (gender !== null && existing.gender === null) existing.gender = gender;
       if (birthYear !== null && existing.birthYear === null) existing.birthYear = birthYear;
       existing.lastLoginAt = new Date();
+      existing.passwordChangedAt = agreedAt;
       existing.termsAgreedAt = agreedAt;
       existing.privacyAgreedAt = agreedAt;
       existing.agreedPolicyVersion = POLICY_VERSION;
@@ -238,6 +239,7 @@ export async function POST(req: Request) {
       birthYear,
       createdAt: new Date(),
       lastLoginAt: new Date(),
+      passwordChangedAt: agreedAt,
       termsAgreedAt: agreedAt,
       privacyAgreedAt: agreedAt,
       agreedPolicyVersion: POLICY_VERSION,

@@ -56,6 +56,9 @@ export async function POST(req: Request) {
     }
 
     user.password = await bcrypt.hash(password, 10);
+    /* 갱신 안내의 기준 시각. 바꿨으니 여기서 다시 3개월을 센다 */
+    user.passwordChangedAt = new Date();
+    user.passwordPromptSnoozedUntil = null;
     // `pin` 은 그대로 둔다 — 위 주석 참고
     await user.save();
 

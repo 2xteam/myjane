@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import bcrypt from "bcryptjs";
+import { canRestore, restoreDaysLeft } from "@/lib/accountLifecycle";
 import { connectDB } from "@/lib/db";
 import { parseIdentifier } from "@/lib/identifier";
 import { signSessionToken } from "@/lib/sessionToken";
@@ -96,6 +97,33 @@ export async function POST(req: Request) {
     }
 
     const user = matches[0];
+
+    /*
+      탈퇴한 계정이다.
+
+      비밀번호는 맞았으므로 **본인이다.** 그래서 "틀렸다" 가 아니라 탈퇴 상태임을
+      알리고 되살릴 길을 안내한다. 세션은 내주지 않는다 — 되살리기 화면만
+      쓸 수 있어야 한다.
+
+      보관 기간이 지났으면 되살릴 수 없다. 정리 작업이 아직 돌지 않아 문서가
+      남아 있을 뿐이라 남아 있느냐가 아니라 **기간**으로 가른다.
+      → lib/accountLifecycle.ts · app/api/cron/purge
+    */
+    if (user.withdrawnAt) {
+      const left = restoreDaysLeft(user);
+      return NextResponse.json(
+        {
+          ok: false,
+          withdrawn: true,
+          canRestore: canRestore(user),
+          restoreDaysLeft: left,
+          error: canRestore(user)
+            ? `탈퇴한 계정입니다. ${left}일 안에는 계정을 되살릴 수 있어요.`
+            : "탈퇴한 계정입니다. 되살릴 수 있는 기간이 지났습니다.",
+        },
+        { status: 403 },
+      );
+    }
 
     /*
       `userId`가 없으면 지금 만들어 준다.

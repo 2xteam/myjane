@@ -92,6 +92,35 @@ const UserSchema = new Schema(
     privacyAgreedAt: { type: Date, default: null },
     agreedPolicyVersion: { type: String, default: null },
 
+    /**
+     * ── 비밀번호 갱신 안내 (여섯 앱 공용) ──
+     *
+     * 3개월이 지나면 포털에서 "바꾸시겠어요?" 를 띄운다.
+     *
+     * ⚠️ **강제하지 않는다.** 주기적 강제 변경은 NIST SP 800-63B 가 권장하지
+     * 않는다 — 사람이 pw1! → pw2! 로 바꿔서 오히려 약해진다. 그래서 안내만 하고,
+     * "3개월 연장" 을 누르면 `passwordPromptSnoozedUntil` 을 3개월 뒤로 민다.
+     *
+     * `passwordChangedAt` 이 비어 있으면 `createdAt` 을 기준으로 본다 —
+     * 이 필드가 생기기 전에 가입한 사람에게 가입일부터 세는 것이 맞다.
+     */
+    passwordChangedAt: { type: Date, default: null },
+    passwordPromptSnoozedUntil: { type: Date, default: null },
+
+    /**
+     * ── 탈퇴 (여섯 앱 공용) ──
+     *
+     * **지우지 않고 표시만 남긴다.** 방침에 "6개월 보관한 뒤 폐기하고 그 안에는
+     * 되살릴 수 있다" 고 적었기 때문이다. 값이 있으면 탈퇴한 계정이다.
+     *
+     * 실제 삭제는 포털의 정리 작업이 한다 → myjane/app/api/cron/purge
+     * 되살리면 이 값을 다시 null 로 되돌린다.
+     *
+     * ⚠️ 탈퇴는 **여섯 서비스 공통**이다. 한 앱에서 탈퇴하면 여섯 곳이 함께 닫힌다.
+     * 로그인 라우트가 이 값을 보고 막는다 — 앱마다 따로 검사하지 않는다.
+     */
+    withdrawnAt: { type: Date, default: null },
+
     tokens: { type: Number, default: 0 },
     createdAt: { type: Date, default: Date.now },
     lastLoginAt: { type: Date },

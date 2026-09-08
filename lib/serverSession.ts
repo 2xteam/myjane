@@ -66,6 +66,15 @@ export async function getSessionUser(req: Request): Promise<UserDocument | null>
  */
 export async function requireSessionUser(
   req: Request,
+  options: {
+    /**
+     * 탈퇴한 계정도 통과시킨다.
+     *
+     * **탈퇴·되살리기 라우트에서만 쓴다.** 되살리려면 그 계정으로 들어와야
+     * 하는데 기본값으로 막으면 스스로 되돌릴 길이 없어진다.
+     */
+    allowWithdrawn?: boolean;
+  } = {},
 ): Promise<{ user: UserDocument } | { error: NextResponse }> {
   const user = await getSessionUser(req);
   if (!user) {
@@ -76,5 +85,24 @@ export async function requireSessionUser(
       ),
     };
   }
+
+  /*
+    탈퇴한 계정은 **기본적으로 막는다.** 여기 한 곳에서 막아야 여섯 앱의
+    모든 라우트가 함께 닫힌다. 라우트마다 검사하게 두면 반드시 빠뜨린다.
+    → lib/accountLifecycle.ts
+  */
+  if (user.withdrawnAt && !options.allowWithdrawn) {
+    return {
+      error: NextResponse.json(
+        {
+          ok: false,
+          error: "탈퇴한 계정입니다. 되살리시려면 myjane 에서 계정을 복구해 주세요.",
+          withdrawn: true,
+        },
+        { status: 403 },
+      ),
+    };
+  }
+
   return { user };
 }
