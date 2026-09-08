@@ -90,6 +90,14 @@ export default function PrivacyPage() {
                 </td>
               </tr>
               <tr>
+                <th scope="row">동의 기록</th>
+                <td>
+                  약관·개인정보 수집·이용 동의 시각과 동의한 문서의 개정일,
+                  그리고 <strong>따로 받는 동의</strong>(건강정보 · 국외 이전 ·
+                  법정대리인)의 동의 시각
+                </td>
+              </tr>
+              <tr>
                 <th scope="row">상태</th>
                 <td>
                   가입 일시, 마지막 로그인 일시, 가입한 서비스, 보유 토큰 수,
@@ -270,10 +278,28 @@ export default function PrivacyPage() {
             </li>
           </ul>
           <p>
-            이 처리가 국외 이전에 해당하는지, 그리고 민감정보인 만큼 다른 항목과
-            분리해 별도의 동의를 받아야 하는지 확인하고 있습니다.
-            <br />
-            <Todo>건강정보 처리·국외 이전에 대한 별도 동의 여부와 그 절차</Todo>
+            <strong>
+              이 두 가지는 가입 동의와 분리해서 따로 동의를 받습니다.
+            </strong>{" "}
+            건강에 관한 정보는 법이 정한 민감정보이고, OpenAI 는 미국에 있어
+            국외 이전에 해당합니다.
+          </p>
+          <ul>
+            <li>
+              <strong>건강정보 처리 동의</strong> — FitLog 의 기록 기능을 처음
+              쓰실 때 받습니다
+            </li>
+            <li>
+              <strong>국외 이전 동의</strong> — 사진에서 값을 읽어 오는 기능이나
+              AI 대화를 처음 쓰실 때 받습니다
+            </li>
+          </ul>
+          <p>
+            <strong>동의하지 않으셔도 됩니다.</strong> 건강정보에 동의하지
+            않으시면 FitLog 의 기록 기능만 이용하실 수 없고, 국외 이전에 동의하지
+            않으시면 사진 자동 인식과 AI 대화만 이용하실 수 없습니다. 나머지
+            서비스와 직접 입력하는 기록은 모두 그대로 쓰실 수 있습니다. 동의는{" "}
+            <a href="/account/consent/health">언제든 철회</a>할 수 있습니다.
           </p>
         </div>
 
@@ -356,12 +382,53 @@ export default function PrivacyPage() {
           위탁받은 곳이 위탁 목적 외로 개인정보를 처리하지 않도록 계약과 안내에
           반영하고 있으며, 위탁 내용이 바뀌면 이 방침을 통해 알립니다.
         </p>
+        <h3>국외 이전</h3>
         <p>
-          위 사업자 중 일부는 국외에 서버를 두고 있습니다. 국외 이전 사실과
-          이전받는 자·국가·이전 항목·보유 기간을 어떻게 고지하고 동의받을지
-          확인하고 있습니다.
-          <br />
-          <Todo>국외 이전 고지·동의 항목과 사업자별 소재 국가</Todo>
+          위 사업자 중 아래는 국외에 있습니다. <strong>OpenAI 로의 이전은
+          가입 동의와 분리해 따로 동의를 받습니다.</strong>
+        </p>
+        <div className="legal-table-wrap">
+          <table className="legal-table">
+            <thead>
+              <tr>
+                <th scope="col">이전받는 자</th>
+                <th scope="col">국가</th>
+                <th scope="col">이전 항목</th>
+                <th scope="col">동의</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <th scope="row">OpenAI, L.L.C.</th>
+                <td>미국</td>
+                <td>
+                  올리신 사진(결과지·단어장·문제)과 AI 대화 내용. FitLog 상담
+                  이용 시 저장된 인바디·피검사 수치
+                </td>
+                <td>
+                  <a href="/account/consent/overseas">별도 동의</a>
+                </td>
+              </tr>
+              <tr>
+                <th scope="row">Vercel Inc.</th>
+                <td>미국</td>
+                <td>접속 로그, 페이지 요청 기록</td>
+                <td>서비스 제공에 필요</td>
+              </tr>
+              <tr>
+                <th scope="row">Cloudflare, Inc.</th>
+                <td>
+                  <Todo>파일 보관 지역</Todo>
+                </td>
+                <td>이미지 파일</td>
+                <td>서비스 제공에 필요</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <p>
+          이전 시기와 방법 — 해당 기능을 이용하시는 그때 인터넷을 통해
+          전송됩니다. 보유 기간은 위 5항과 같습니다.
         </p>
         <p>
           법령에 따른 경우를 제외하고, 개인정보를 제3자에게 제공하지 않습니다.
@@ -458,10 +525,12 @@ export default function PrivacyPage() {
             </li>
           </ul>
           <p>
-            보호자께서 자녀를 추가하시는 것이 법정대리인의 동의에 해당하는지,
-            그리고 그 동의 사실을 어떤 형태로 남겨야 하는지 확인하고 있습니다.
-            <br />
-            <Todo>법정대리인 동의로 인정되는 형태와 그 기록 방법</Todo>
+            <strong>
+              자녀를 추가하실 때 법정대리인 동의를 따로 받고, 동의하신 시각을
+              기록합니다.
+            </strong>{" "}
+            동의하지 않으시면 자녀를 추가할 수 없고, 보호자 본인의 이용에는
+            영향이 없습니다 → <a href="/account/consent/guardian">법정대리인 동의</a>
           </p>
         </div>
       </LegalSection>

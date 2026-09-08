@@ -104,6 +104,28 @@ const UserSchema = new Schema(
      * `passwordChangedAt` 이 비어 있으면 `createdAt` 을 기준으로 본다 —
      * 이 필드가 생기기 전에 가입한 사람에게 가입일부터 세는 것이 맞다.
      */
+    /**
+     * ── 분리해서 받는 동의 (여섯 앱 공용) ──
+     *
+     * 가입 동의(`termsAgreedAt` · `privacyAgreedAt`)와 **따로** 받는다.
+     * 법이 분리를 요구하는 것들이고, 필요한 기능을 쓰는 순간에만 묻는다.
+     * 가입 화면에 다 몰아넣으면 SnapWord 만 쓸 사람에게 건강정보 동의를
+     * 받게 되고, 필수로 묶으면 동의를 거부할 자유가 없어진다.
+     *
+     *   healthDataAgreedAt        민감정보(건강정보) 처리 — FitLog 을 쓸 때
+     *   overseasTransferAgreedAt  국외 이전 — 사진·대화가 OpenAI(미국)로 나갈 때
+     *                             ⚠️ FitLog 만이 아니다. SnapWord 단어장 사진과
+     *                             SnapNote 문제 사진도 같은 경로로 나간다
+     *   guardianAgreedAt          법정대리인 동의 — 보호자가 자녀를 추가할 때
+     *
+     * ⚠️ **비어 있다고 로그인을 막지 말 것.** 해당 기능만 막는다.
+     * 건강정보에 동의하지 않아도 SnapWord·2hbk 는 그대로 쓸 수 있어야 한다.
+     * → myjane/lib/consents.ts · my-obsidian-vault / 50-Plans/C 법적 페이지.md
+     */
+    healthDataAgreedAt: { type: Date, default: null },
+    overseasTransferAgreedAt: { type: Date, default: null },
+    guardianAgreedAt: { type: Date, default: null },
+
     passwordChangedAt: { type: Date, default: null },
     passwordPromptSnoozedUntil: { type: Date, default: null },
 
