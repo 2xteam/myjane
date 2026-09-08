@@ -431,13 +431,43 @@ function SignupForm() {
                 </span>
               </label>
 
-              <p style={consentNoteStyle}>
-                쿠키는 로그인 유지에 필요한 하나만 씁니다. 분석·광고 쿠키를 쓰지
-                않아 따로 동의를 받지 않습니다 —{" "}
-                <Link href="/legal/cookies" target="_blank" style={consentLinkStyle}>
-                  쿠키 안내
-                </Link>
-              </p>
+              {/*
+                동의 내용을 요약해 보여 준다. 링크만 걸어 두면 아무도 열어 보지
+                않고 체크만 한다 — 무엇에 동의하는지는 이 자리에서 읽혀야 한다.
+                전문은 링크로 간다.
+              */}
+              <div style={consentSummaryStyle}>
+                <p style={consentSummaryHeadStyle}>동의하시는 내용</p>
+                <ul style={consentListStyle}>
+                  <li>
+                    <strong>받는 것</strong> — 이름, 이메일, 비밀번호(필수)
+                    {" · "}전화번호(선택)
+                  </li>
+                  <li>
+                    <strong>쓰는 곳</strong> — 계정 확인과 로그인 유지, 비밀번호
+                    찾기 메일, 기록 저장
+                  </li>
+                  <li>
+                    <strong>맡기는 곳</strong> — 호스팅·데이터베이스·파일 보관,
+                    메일 발송(Google), 사진에서 값 읽기와 AI 대화(OpenAI)
+                  </li>
+                  <li>
+                    <strong>보관</strong> — 탈퇴하시면 6개월 뒤 폐기합니다
+                  </li>
+                  <li>
+                    <strong>FitLog 을 쓰실 때</strong> — 인바디·피검사 기록은
+                    건강정보입니다. 결과지 사진에서 값을 읽어 올 때 그 사진이
+                    OpenAI 로 전달됩니다
+                  </li>
+                </ul>
+                <p style={consentNoteStyle}>
+                  쿠키는 로그인 유지에 필요한 하나만 씁니다. 분석·광고 쿠키를
+                  쓰지 않아 따로 동의를 받지 않습니다 —{" "}
+                  <Link href="/legal/cookies" target="_blank" style={consentLinkStyle}>
+                    쿠키 안내
+                  </Link>
+                </p>
+              </div>
             </div>
 
             <button type="submit" className="auth-btn" disabled={busy}>
@@ -511,5 +541,28 @@ const consentNoteStyle: CSSProperties = {
   fontSize: "0.76rem",
   lineHeight: 1.7,
   color: "var(--text-muted)",
+  wordBreak: "keep-all",
+};
+
+const consentSummaryStyle: CSSProperties = {
+  marginTop: 12,
+  paddingTop: 12,
+  borderTop: "1px solid var(--border)",
+};
+
+const consentSummaryHeadStyle: CSSProperties = {
+  margin: "0 0 6px",
+  fontSize: 11,
+  fontWeight: 900,
+  letterSpacing: "0.08em",
+  color: "var(--text-muted)",
+};
+
+const consentListStyle: CSSProperties = {
+  margin: 0,
+  paddingLeft: "1.05rem",
+  fontSize: "0.78rem",
+  lineHeight: 1.75,
+  color: "var(--text-dim)",
   wordBreak: "keep-all",
 };

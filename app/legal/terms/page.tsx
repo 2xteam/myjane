@@ -255,14 +255,20 @@ export default function TermsPage() {
               <tr>
                 <th scope="row">운영자</th>
                 <td>
-                  <Todo>표기할 이름 또는 닉네임</Todo>
+                  myjane 운영자
+                  <br />
+                  <Todo>표기할 성명 또는 닉네임</Todo>
                 </td>
               </tr>
               <tr>
-                <th scope="row">연락처</th>
+                <th scope="row">이메일</th>
                 <td>
-                  <Todo>이메일 주소</Todo>
+                  <a href="mailto:myjane0602@gmail.com">myjane0602@gmail.com</a>
                 </td>
+              </tr>
+              <tr>
+                <th scope="row">전화</th>
+                <td>010-4922-0202</td>
               </tr>
             </tbody>
           </table>

@@ -496,14 +496,20 @@ export default function PrivacyPage() {
               <tr>
                 <th scope="row">개인정보 보호책임자</th>
                 <td>
-                  <Todo>성명·직위</Todo>
+                  myjane 운영자
+                  <br />
+                  <Todo>표기할 성명</Todo>
                 </td>
               </tr>
               <tr>
-                <th scope="row">연락처</th>
+                <th scope="row">이메일</th>
                 <td>
-                  <Todo>이메일·전화번호</Todo>
+                  <a href="mailto:myjane0602@gmail.com">myjane0602@gmail.com</a>
                 </td>
+              </tr>
+              <tr>
+                <th scope="row">전화</th>
+                <td>010-4922-0202</td>
               </tr>
 
             </tbody>

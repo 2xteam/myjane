@@ -174,9 +174,8 @@ export default function CookiesPage() {
           </li>
         </ul>
         <p>
-          쿠키에 관한 문의는 개인정보처리방침의 연락처로 주시기 바랍니다.
-          <br />
-          <Todo>담당자 연락처</Todo>
+          쿠키에 관한 문의는{" "}
+          <a href="mailto:myjane0602@gmail.com">myjane0602@gmail.com</a> 로 주시기 바랍니다.
         </p>
         <p>
           함께 보기 — <a href="/legal/privacy">개인정보처리방침</a> ·{" "}
