@@ -121,6 +121,19 @@ const UserSchema = new Schema(
      */
     withdrawnAt: { type: Date, default: null },
 
+    /**
+     * 탈퇴 확인 메일의 토큰. 발급 후 30분에 만료되고 **한 번 쓰면 폐기**한다.
+     *
+     * 비밀번호와 확인 문구만으로 닫지 않는다 — 남의 브라우저를 잠깐 만진
+     * 사람이 계정을 닫을 수 있고, 되돌리려면 6개월 안에 알아차려야 한다.
+     * 메일함까지 가져야 닫히게 한다.
+     *
+     * ⚠️ 이메일이 없는 계정(전화번호+PIN)은 이 단계를 쓸 수 없다.
+     * 그때는 비밀번호·PIN 확인까지만 받는다 → myjane/app/api/account/withdraw
+     */
+    withdrawToken: { type: String },
+    withdrawTokenExpires: { type: Date },
+
     tokens: { type: Number, default: 0 },
     createdAt: { type: Date, default: Date.now },
     lastLoginAt: { type: Date },

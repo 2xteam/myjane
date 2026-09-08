@@ -1,7 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { useCallback, useEffect, useState } from "react";
+import { Suspense, useCallback, useEffect, useState } from "react";
+import { useSearchParams } from "next/navigation";
 import type { CSSProperties } from "react";
 import { AuthShell } from "@/components/AuthShell";
 import { clearSession, loadSession } from "@/lib/session";
@@ -31,12 +32,24 @@ type Status = {
 };
 
 export default function WithdrawPage() {
+  return (
+    <Suspense fallback={null}>
+      <WithdrawInner />
+    </Suspense>
+  );
+}
+
+function WithdrawInner() {
+  const params = useSearchParams();
+  const token = params.get("token");
   const [status, setStatus] = useState<Status | null>(null);
   const [secret, setSecret] = useState("");
   const [confirm, setConfirm] = useState("");
   const [busy, setBusy] = useState(false);
   const [msg, setMsg] = useState<string | null>(null);
   const [done, setDone] = useState<{ purgeAt: string | null } | null>(null);
+  /* 확인 메일을 보낸 뒤 — 아직 탈퇴된 것이 아니다 */
+  const [sentTo, setSentTo] = useState<string | null>(null);
 
   const load = useCallback(async () => {
     try {
@@ -52,14 +65,41 @@ export default function WithdrawPage() {
     }
   }, []);
 
+  /* 메일 링크로 들어왔다 — 세션이 없어도 토큰만으로 확정한다 */
+  const confirmToken = useCallback(async (t: string) => {
+    setBusy(true);
+    try {
+      const res = await fetch("/api/account/withdraw", {
+        method: "PATCH",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ token: t }),
+      });
+      const json = (await res.json()) as { ok: boolean; error?: string; purgeAt?: string };
+      if (!json.ok) {
+        setMsg(json.error ?? "확인에 실패했어요.");
+        return;
+      }
+      clearSession();
+      setDone({ purgeAt: json.purgeAt ?? null });
+    } catch {
+      setMsg("확인에 실패했어요.");
+    } finally {
+      setBusy(false);
+    }
+  }, []);
+
   useEffect(() => {
+    if (token) {
+      void confirmToken(token);
+      return;
+    }
     /* 로그인하지 않았으면 부르지 않는다 — 401 만 늘어난다 */
     if (!loadSession()) {
       setMsg("로그인이 필요해요.");
       return;
     }
     void load();
-  }, [load]);
+  }, [token, confirmToken, load]);
 
   const submit = useCallback(async () => {
     setBusy(true);
@@ -74,9 +114,19 @@ export default function WithdrawPage() {
         ok: boolean;
         error?: string;
         purgeAt?: string;
+        needsEmailConfirm?: boolean;
+        email?: string;
       };
       if (!json.ok) {
         setMsg(json.error ?? "탈퇴 처리에 실패했어요.");
+        return;
+      }
+      /*
+        메일을 보냈을 뿐 아직 닫히지 않았다. 세션을 지우면 안 된다 —
+        링크를 누르기 전에 마음이 바뀔 수 있고, 그때 되돌아올 자리가 없어진다.
+      */
+      if (json.needsEmailConfirm) {
+        setSentTo(json.email ?? null);
         return;
       }
       /*
@@ -110,6 +160,28 @@ export default function WithdrawPage() {
       setBusy(false);
     }
   }, [load]);
+
+  if (sentTo) {
+    return (
+      <AuthShell
+        eyebrow="ACCOUNT · 탈퇴"
+        headline={<>확인 메일을 보냈어요</>}
+        storySub={<>아직 탈퇴되지 않았습니다.</>}
+      >
+        <p style={bodyStyle}>
+          <strong>{sentTo}</strong> 로 확인 메일을 보냈어요. 메일의 링크를 누르면
+          탈퇴가 완료됩니다. 링크는 <strong>30분</strong> 동안 유효해요.
+        </p>
+        <p style={bodyStyle}>
+          메일이 오지 않으면 스팸함을 확인해 주세요. 링크를 누르지 않으시면
+          계정은 그대로 유지됩니다.
+        </p>
+        <div className="auth-links">
+          <Link href="/">돌아가기</Link>
+        </div>
+      </AuthShell>
+    );
+  }
 
   if (done) {
     return (
