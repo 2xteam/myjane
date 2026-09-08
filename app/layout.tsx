@@ -5,6 +5,7 @@ import "./globals.css";
 // (import 는 파일 맨 앞이라야 하므로) 늘 먼저 들어가 진다.
 import "./elements.css";
 import { EmailPrompt } from "@/components/EmailPrompt";
+import { PasswordPrompt } from "@/components/PasswordPrompt";
 
 const SITE_URL = "https://www.myjane.co.kr";
 
@@ -68,6 +69,12 @@ export default function RootLayout({
           해당 없으면 아무것도 그리지 않는다 → components/EmailPrompt.tsx
         */}
         <EmailPrompt />
+        {/*
+          비밀번호 갱신 안내 띠. 3개월이 지났을 때만 뜨고 강제하지 않는다.
+          이메일 안내가 뜰 상황이면 스스로 접는다 — 띠를 둘 겹치지 않는다
+          → components/PasswordPrompt.tsx
+        */}
+        <PasswordPrompt />
       </body>
     </html>
   );

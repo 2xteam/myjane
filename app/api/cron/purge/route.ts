@@ -15,9 +15,9 @@ export const maxDuration = 60;
  *
  * 하루 한 번 Vercel Cron 이 부른다 → vercel.json 의 `crons`
  *
- * ⚠️ **앱 데이터는 여기서 지우지 못한다.** 회원 문서는 포털이 갖고 있지만
- * 단어장·오답노트·검사 기록은 각 앱 DB 에 있고, 결과지 사진은 R2 에 있다.
- * 그 정리는 각 앱이 해야 한다 — 아래 "남은 것" 참고.
+ * 앱 데이터(단어장·오답노트·검사 기록)와 R2 파일은 각 앱의
+ * `/api/admin/purge-user` 를 불러 치운다. 포털이 앱 DB 를 직접 읽지 않는
+ * 통합 admin 규칙을 그대로 따른다.
  *
  * → my-obsidian-vault / 50-Plans/C 법적 페이지.md
  */
@@ -28,10 +28,20 @@ export const maxDuration = 60;
  * 주소는 환경 변수로 둔다 — 미리보기 배포에서 운영 데이터를 지우면 안 된다.
  * 변수가 없으면 그 앱은 **건너뛴다.** 지울 곳을 짐작하지 않는다.
  *
- * ⚠️ 지금 `/api/admin/purge-user` 가 있는 곳은 2hbk 뿐이다. 나머지 앱은
- * 그 라우트를 만들면 여기에 한 줄씩 더한다.
+ * ⚠️ **앱마다 사용자를 가리키는 키가 다르다.** 실측한 값이다 (2026-09-08).
+ *   SnapWord · SnapNote   회원 Mongo `_id` (ObjectId 로 변환해 쓴다)
+ *   FitLog · TypeLog      회원 Mongo `_id` 의 **문자열**
+ *   2hbk                  도메인 식별자 `userId` (`user_xxx`)
+ * 그래서 각 줄이 무엇을 받는지(`sends`)를 함께 적는다. 하나로 뭉뚱그리면
+ * 한쪽이 **조용히 안 지워진다.**
  */
-const PURGE_TARGETS = [{ key: "2hbk", env: "APP_2HBK_ORIGIN" }] as const;
+const PURGE_TARGETS = [
+  { key: "SnapWord", env: "APP_SNAPWORD_ORIGIN", sends: "id" },
+  { key: "SnapNote", env: "APP_SNAPNOTE_ORIGIN", sends: "id" },
+  { key: "FitLog", env: "APP_FITLOG_ORIGIN", sends: "id" },
+  { key: "2hbk", env: "APP_2HBK_ORIGIN", sends: "userId" },
+  { key: "TypeLog", env: "APP_TYPELOG_ORIGIN", sends: "id" },
+] as const;
 
 /**
  * Vercel Cron 인지 확인한다.
@@ -87,10 +97,14 @@ export async function GET(req: Request) {
       실패는 로그로 남기고 다음에 손으로 치운다.
     */
     for (const d of doomed) {
-      if (!d.userId) continue;
       for (const app of PURGE_TARGETS) {
         const base = process.env[app.env];
         if (!base) continue;
+        /* 2hbk 는 도메인 식별자가 없는 계정은 애초에 데이터가 없다 */
+        if (app.sends === "userId" && !d.userId) continue;
+        /* 그 앱이 쓰는 키만 보낸다 — 위 표 참고 */
+        const payload =
+          app.sends === "userId" ? { userId: d.userId } : { id: String(d._id) };
         try {
           const res = await fetch(`${base.replace(/\/+$/, "")}/api/admin/purge-user`, {
             method: "POST",
@@ -98,7 +112,7 @@ export async function GET(req: Request) {
               "content-type": "application/json",
               authorization: `Bearer ${process.env.ADMIN_API_SECRET ?? ""}`,
             },
-            body: JSON.stringify({ userId: d.userId }),
+            body: JSON.stringify(payload),
           });
           if (!res.ok) {
             console.error(`[purge] ${app.key} 정리 실패 ${res.status} — ${d.userId}`);
