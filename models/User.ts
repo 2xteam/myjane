@@ -74,6 +74,16 @@ const UserSchema = new Schema(
     pendingEmail: { type: String, trim: true, lowercase: true, default: null },
 
     /**
+     * 계정 찾기·비밀번호 재설정 메일의 **재발송 쿨다운** 기준 시각.
+     *
+     * ⚠️ 없으면 메일 폭탄이 된다. 그 메일은 **아무나 남의 주소로 쏠 수 있다** —
+     * 이메일만 넣으면 그 주소로 발송되기 때문이다. 인증 메일의
+     * `emailTokenSentAt` 과 같은 역할이고, 흐름이 달라 필드를 나눠 둔다.
+     * → myjane/lib/authMailCooldown.ts
+     */
+    authMailSentAt: { type: Date, default: null },
+
+    /**
      * ── 약관·개인정보 동의 (여섯 앱 공용) ──
      *
      * 가입 화면의 체크박스만으로는 반쪽이다 — API 를 직접 부르면 그대로

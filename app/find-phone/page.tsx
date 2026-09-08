@@ -2,15 +2,49 @@
 
 import type { CSSProperties } from "react";
 import Link from "next/link";
-import { useCallback, useState } from "react";
+import { Suspense, useCallback, useEffect, useState } from "react";
+import { useSearchParams } from "next/navigation";
 
-type Step = "form" | "done";
+type Step = "form" | "done" | "result";
 
 export default function FindPhonePage() {
+  return (
+    <Suspense fallback={null}>
+      <FindPhoneInner />
+    </Suspense>
+  );
+}
+
+function FindPhoneInner() {
+  const params = useSearchParams();
+  const token = params.get("token");
+  const [phone, setPhone] = useState<string | null>(null);
   const [step, setStep] = useState<Step>("form");
   const [email, setEmail] = useState("");
   const [busy, setBusy] = useState(false);
   const [msg, setMsg] = useState<string | null>(null);
+
+  /*
+    메일의 링크로 들어왔다. 전화번호는 **여기서만** 보여 준다 —
+    메일 본문에 적지 않는 이유가 그것이다 → app/api/auth/find-phone
+  */
+  useEffect(() => {
+    if (!token) return;
+    void (async () => {
+      try {
+        const res = await fetch(`/api/auth/find-phone?token=${encodeURIComponent(token)}`);
+        const json = (await res.json()) as { ok: boolean; phone?: string; error?: string };
+        if (!json.ok || !json.phone) {
+          setMsg(json.error ?? "링크가 만료되었어요. 다시 요청해 주세요.");
+          return;
+        }
+        setPhone(json.phone);
+        setStep("result");
+      } catch {
+        setMsg("네트워크 오류입니다.");
+      }
+    })();
+  }, [token]);
 
   const submit = useCallback(async () => {
     setBusy(true);
@@ -48,10 +82,34 @@ export default function FindPhonePage() {
           전화번호 찾기
         </h1>
 
-        {step === "done" ? (
+        {step === "result" ? (
+          <>
+            <p style={{ margin: "1rem 0 0.5rem", color: "var(--text-secondary)", fontSize: 14 }}>
+              이 계정에 등록된 전화번호예요.
+            </p>
+            <div
+              style={{
+                margin: "0 0 1rem",
+                padding: "16px",
+                borderRadius: 12,
+                background: "var(--bg-secondary)",
+                textAlign: "center",
+                fontSize: 20,
+                fontWeight: 700,
+                letterSpacing: 2,
+                color: "var(--text-primary)",
+              }}
+            >
+              {phone}
+            </div>
+            <Link href="/login" style={linkStyle}>로그인으로</Link>
+          </>
+        ) : step === "done" ? (
           <>
             <p style={{ margin: "1rem 0", color: "var(--text-secondary)", fontSize: 14, lineHeight: 1.6 }}>
-              등록된 전화번호를 이메일로 발송했습니다.<br />이메일을 확인해 주세요.
+              입력하신 이메일로 등록된 계정이 있으면 확인 링크를 보내드렸어요.
+              <br />
+              메일의 버튼을 누르시면 전화번호를 보여드립니다.
             </p>
             <Link href="/" style={linkStyle}>로그인으로</Link>
           </>

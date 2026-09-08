@@ -1,5 +1,6 @@
 import crypto from "node:crypto";
 import { sendMail } from "@/lib/mail";
+import { authMail } from "@/lib/mailTemplate";
 import type { UserDocument } from "@/models/User";
 
 /**
@@ -43,8 +44,7 @@ export async function issueWithdrawToken(
 /**
  * 탈퇴 확인 메일.
  *
- * 메일 HTML 은 CSS 변수를 쓸 수 없어 색을 리터럴로 적는다 —
- * `scripts/design-check.mjs` 가 `api/auth` 와 함께 이 자리를 예외로 둔다.
+ * 틀과 색은 `lib/mailTemplate.ts` 에서 온다. 이 메일만 버튼을 붉게 쓴다.
  *
  * ⚠️ **본인이 요청하지 않았을 때 무엇을 해야 하는지**를 분명히 쓴다.
  * 이 메일은 계정이 닫히기 직전에 가는 마지막 신호다.
@@ -54,27 +54,23 @@ async function sendWithdrawMail(to: string, name: string, token: string) {
   await sendMail(
     to,
     "[myjane] 회원 탈퇴 확인",
-    `<div style="font-family:sans-serif;max-width:480px;margin:0 auto;padding:24px;">
-      <h2 style="color:#116271;margin:0 0 16px;">myjane</h2>
-      <p>안녕하세요, <strong>${name}</strong>님.</p>
-      <p><strong>회원 탈퇴</strong>를 요청하셨습니다. 아래 버튼을 누르면 탈퇴가 완료됩니다.</p>
-      <div style="background:#fdf0f2;border:1px solid #f3d4da;border-radius:12px;padding:14px 16px;margin:18px 0;">
-        <p style="margin:0 0 6px;font-weight:700;color:#a83447;">탈퇴하면 이렇게 됩니다</p>
-        <ul style="margin:0;padding-left:18px;color:#4b5563;font-size:13px;line-height:1.7;">
-          <li>myjane · SnapWord · SnapNote · FitLog · 2hbk · TypeLog <strong>여섯 서비스가 함께 닫힙니다</strong></li>
-          <li>기록은 <strong>6개월 동안 보관한 뒤 폐기</strong>합니다</li>
-          <li>그 6개월 안에는 로그인 화면에서 되살릴 수 있습니다</li>
-        </ul>
-      </div>
-      <div style="text-align:center;margin:24px 0;">
-        <a href="${url}" style="display:inline-block;padding:14px 32px;background:#a83447;color:#ffffff;font-weight:700;border-radius:12px;text-decoration:none;font-size:15px;">
-          탈퇴 확인하기
-        </a>
-      </div>
-      <p style="color:#888;font-size:13px;">이 링크는 30분 동안 유효합니다.</p>
-      <p style="color:#a83447;font-size:13px;font-weight:700;">본인이 요청하지 않으셨다면 이 링크를 누르지 마시고, 비밀번호를 바꿔 주세요. 누군가 회원님의 계정에 접근했을 수 있습니다.</p>
-      <p style="color:#aaa;font-size:11px;margin-top:24px;word-break:break-all;">링크가 동작하지 않으면 아래 URL을 브라우저에 붙여넣기 하세요:<br/>${url}</p>
-    </div>`,
+    authMail({
+      name,
+      danger: true,
+      body:
+        "<p><strong>회원 탈퇴</strong>를 요청하셨습니다. 아래 버튼을 누르면 탈퇴가 완료됩니다.</p>" +
+        '<div style="background:#fdf0f2;border:1px solid #f3d4da;border-radius:12px;padding:14px 16px;margin:18px 0;">' +
+        '<p style="margin:0 0 6px;font-weight:700;color:#a83447;">탈퇴하면 이렇게 됩니다</p>' +
+        '<ul style="margin:0;padding-left:18px;color:#566b70;font-size:13px;line-height:1.7;">' +
+        "<li>myjane · SnapWord · SnapNote · FitLog · 2hbk · TypeLog <strong>여섯 서비스가 함께 닫힙니다</strong></li>" +
+        "<li>기록은 <strong>6개월 동안 보관한 뒤 폐기</strong>합니다</li>" +
+        "<li>그 6개월 안에는 로그인 화면에서 되살릴 수 있습니다</li>" +
+        "</ul></div>",
+      action: { label: "탈퇴 확인하기", url },
+      notes: ["이 링크는 30분 동안 유효하며, 한 번 사용하면 만료됩니다."],
+      warn:
+        "본인이 요청하지 않으셨다면 이 링크를 누르지 마시고, 비밀번호를 바꿔 주세요. 누군가 회원님의 계정에 접근했을 수 있습니다.",
+    }),
   );
 }
 

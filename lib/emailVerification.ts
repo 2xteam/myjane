@@ -1,6 +1,7 @@
 import crypto from "node:crypto";
 import { parseIdentifier } from "@/lib/identifier";
 import { sendMail } from "@/lib/mail";
+import { authMail } from "@/lib/mailTemplate";
 import type { UserDocument } from "@/models/User";
 
 /**
@@ -82,30 +83,26 @@ function verifyUrl(token: string): string {
 }
 
 /**
- * 인증 메일. `forgot-pin` 의 본문과 같은 틀이다.
+ * 인증 메일. 틀과 색은 `lib/mailTemplate.ts` 한 곳에서 온다 —
+ * 본문마다 따로 적어 두었더니 브랜드와 색이 갈렸다.
  *
- * 메일 HTML 은 CSS 변수를 쓸 수 없어 색을 리터럴로 적는다 —
- * `scripts/design-check.mjs` 가 `api/auth` 와 함께 이 자리를 예외로 둔다.
+ * ⚠️ `name` 은 사람이 정한 값이다. `authMail` 이 안에서 이스케이프한다.
  */
 async function sendVerificationMail(to: string, name: string, token: string) {
   const url = verifyUrl(token);
   await sendMail(
     to,
     "[myjane] 이메일 인증",
-    `<div style="font-family:sans-serif;max-width:480px;margin:0 auto;padding:24px;">
-      <h2 style="color:#2ee8ae;margin:0 0 16px;">myjane</h2>
-      <p>안녕하세요, <strong>${name}</strong>님.</p>
-      <p>아래 버튼을 눌러 이메일 주소를 확인해 주세요.</p>
-      <div style="text-align:center;margin:24px 0;">
-        <a href="${url}" style="display:inline-block;padding:14px 32px;background:#2ee8ae;color:#000;font-weight:700;border-radius:12px;text-decoration:none;font-size:15px;">
-          이메일 인증하기
-        </a>
-      </div>
-      <p style="color:#888;font-size:13px;">이 링크는 30분 동안 유효합니다.</p>
-      <p style="color:#888;font-size:13px;">인증하지 않아도 로그인은 됩니다. 다만 비밀번호를 잊었을 때 재설정 링크를 받으려면 인증이 필요해요.</p>
-      <p style="color:#888;font-size:13px;">본인이 요청하지 않으셨다면 이 메일을 무시하셔도 됩니다.</p>
-      <p style="color:#aaa;font-size:11px;margin-top:24px;word-break:break-all;">링크가 동작하지 않으면 아래 URL을 브라우저에 붙여넣기 하세요:<br/>${url}</p>
-    </div>`,
+    authMail({
+      name,
+      body: "<p>아래 버튼을 눌러 이메일 주소를 확인해 주세요.</p>",
+      action: { label: "이메일 인증하기", url },
+      notes: [
+        "이 링크는 30분 동안 유효하며, 한 번 사용하면 만료됩니다.",
+        "인증하지 않아도 로그인은 됩니다. 다만 비밀번호를 잊었을 때 재설정 링크를 받으려면 인증이 필요해요.",
+      ],
+      warn: "본인이 요청하지 않으셨다면 이 메일을 무시하셔도 됩니다.",
+    }),
   );
 }
 
