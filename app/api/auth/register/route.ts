@@ -206,8 +206,7 @@ export async function POST(req: Request) {
           user: {
             id: String(existing._id),
             name: existing.nickname ?? existing.name ?? name,
-            phone: "",
-            nickname: existing.nickname ?? nickname,
+              nickname: existing.nickname ?? nickname,
             userId,
             hasEmail: true,
           },
@@ -267,7 +266,6 @@ export async function POST(req: Request) {
         user: {
           id: String(user._id),
           name,
-          phone: "",
           nickname,
           userId,
           hasEmail: true,

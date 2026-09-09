@@ -160,6 +160,11 @@ const UserSchema = new Schema(
      * → my-obsidian-vault / 50-Plans/E 개인정보 보호 보강.md 5번
      */
     sessionVersion: { type: Number, default: 0 },
+    /**
+     * 전화번호+PIN 계정을 이메일 계정으로 전환하는 중 — 대기 주소가 인증되면 PIN 을 지운다.
+     * 포털 /api/auth/migrate-pin 이 켜고 verify-email 이 끈다. 다른 앱은 읽지 않는다.
+     */
+    pinRetireOnVerify: { type: Boolean, default: false },
 
     /**
      * 탈퇴 확인 메일의 토큰. 발급 후 30분에 만료되고 **한 번 쓰면 폐기**한다.

@@ -24,13 +24,13 @@ function ResetPinEmailForm() {
       setBusy(false);
       return;
     }
-    if (newPin.length < 4) {
-      setMsg("새 PIN은 4자 이상이어야 합니다.");
+    if (newPin.length < 8) {
+      setMsg("새 비밀번호는 8자 이상이어야 합니다.");
       setBusy(false);
       return;
     }
     if (newPin !== newPin2) {
-      setMsg("새 PIN과 PIN 확인이 일치하지 않습니다.");
+      setMsg("새 비밀번호와 확인이 일치하지 않습니다.");
       setBusy(false);
       return;
     }
@@ -39,11 +39,11 @@ function ResetPinEmailForm() {
       const res = await fetch("/api/auth/reset-pin-email", {
         method: "POST",
         headers: { "content-type": "application/json" },
-        body: JSON.stringify({ token, newPin, newPinConfirm: newPin2 }),
+        body: JSON.stringify({ token, newPassword: newPin, newPasswordConfirm: newPin2 }),
       });
       const json = (await res.json()) as { ok: boolean; error?: string };
       if (!res.ok || !json.ok) {
-        setMsg(json.error ?? "PIN 변경에 실패했습니다.");
+        setMsg(json.error ?? "비밀번호 변경에 실패했습니다.");
         return;
       }
       setDone(true);
@@ -59,10 +59,10 @@ function ResetPinEmailForm() {
       <main style={mainStyle}>
         <div style={cardStyle}>
           <h1 style={{ margin: "0 0 0.5rem", fontSize: "1.5rem", color: "var(--text-primary)" }}>
-            PIN 변경
+            비밀번호 변경
           </h1>
           <p style={{ color: "var(--danger-ink)", fontSize: 14 }}>유효하지 않은 링크입니다.</p>
-          <Link href="/" style={linkStyle}>로그인으로</Link>
+          <Link href="/login" style={linkStyle}>로그인으로</Link>
         </div>
       </main>
     );
@@ -72,24 +72,24 @@ function ResetPinEmailForm() {
     <main style={mainStyle}>
       <div style={cardStyle}>
         <h1 style={{ margin: "0 0 0.25rem", fontSize: "1.5rem", color: "var(--text-primary)" }}>
-          PIN 변경
+          비밀번호 변경
         </h1>
 
         {done ? (
           <>
             <p style={{ margin: "1rem 0", color: "var(--text-secondary)", fontSize: 14, lineHeight: 1.6 }}>
-              PIN이 변경되었습니다.<br />새 PIN으로 로그인해 주세요.
+              비밀번호가 변경되었습니다.<br />이메일과 새 비밀번호로 로그인해 주세요.
             </p>
-            <Link href="/" style={linkStyle}>로그인으로</Link>
+            <Link href="/login" style={linkStyle}>로그인으로</Link>
           </>
         ) : (
           <>
             <p style={{ margin: "0 0 1.25rem", color: "var(--text-secondary)", fontSize: 14 }}>
-              새로운 PIN을 입력해 주세요.
+              새로운 비밀번호를 입력해 주세요.
             </p>
 
             <label style={lab}>
-              새 PIN (4자 이상)
+              새 비밀번호 (8자 이상, 영문과 숫자)
               <input
                 type="password"
                 value={newPin}
@@ -100,7 +100,7 @@ function ResetPinEmailForm() {
             </label>
 
             <label style={lab}>
-              새 PIN 확인
+              새 비밀번호 확인
               <input
                 type="password"
                 value={newPin2}
@@ -115,7 +115,7 @@ function ResetPinEmailForm() {
               disabled={busy}
               style={btnStyle(busy)}
             >
-              {busy ? "변경 중…" : "PIN 변경"}
+              {busy ? "변경 중…" : "비밀번호 변경"}
             </button>
 
             {msg ? <p style={{ margin: "1rem 0 0", color: "var(--danger-ink)", fontSize: 13 }}>{msg}</p> : null}

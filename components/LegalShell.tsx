@@ -58,14 +58,6 @@ export function LegalShell({
         초안 알림. 법률 검토를 받기 전이라는 사실을 읽는 사람에게 먼저 알린다.
         검토가 끝나면 이 블록을 지운다.
       */}
-      <div className="legal-draft">
-        <p>
-          <strong>초안입니다.</strong> 아직 법률 검토를 받지 않았습니다. 검토를
-          마치면 이 알림을 내리고, 바뀌는 내용이 있으면 시행일과 함께 미리
-          알려드립니다.
-        </p>
-      </div>
-
       <nav className="legal-tabs" aria-label="법적 고지">
         {LEGAL_PAGES.map((p) => (
           <Link

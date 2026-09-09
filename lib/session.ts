@@ -1,10 +1,7 @@
 export type SessionUser = {
   id: string;
   name: string;
-  /** 전화번호+PIN 계열 앱이 쓰는 값. 이메일로 가입한 계정은 빈 문자열이다 */
-  phone: string;
-  /** 아래 셋은 이메일 로그인 앱(2hbk)이 쓰는 선택 필드 */
-  email?: string;
+  /** 아래 둘은 이메일 로그인 앱(2hbk)이 쓰는 선택 필드 */
   nickname?: string;
   userId?: string;
   /**
@@ -96,7 +93,7 @@ function readBestPayload(): StoredPayload | null {
  * 옛 세션(쿠키 안에 토큰)도 이행기 동안 인정한다 → 30-Patterns/인증과 세션 공유.md
  */
 export function hasUsableSession(): boolean {
-  return Boolean(readBestPayload()?.token) || getCookieValues(SESSION_MARK_COOKIE).includes("1");
+  return getCookieValues(SESSION_MARK_COOKIE).includes("1");
 }
 
 /** 세션에 담긴 앱 서버용 서명 토큰 (옛 형식). 새 로그인에서는 null 이다 — 서버는 쿠키로 확인한다 */
@@ -129,7 +126,7 @@ function deleteCookie(name: string) {
 function isSessionUser(x: unknown): x is SessionUser {
   if (!x || typeof x !== "object") return false;
   const o = x as Record<string, unknown>;
-  return typeof o.id === "string" && typeof o.phone === "string";
+  return typeof o.id === "string";
 }
 
 function readPayload(raw: string): StoredPayload | null {
@@ -212,10 +209,21 @@ export function loadSession(): SessionUser | null {
       return null;
     }
 
+    /* 옛 형식(전화번호·이메일·토큰이 든 쿠키)이면 즉시 떼어 다시 쓴다. 토큰은 서버가 더 읽지 않는다 */
+    if (payload.token || "email" in payload.user || "phone" in payload.user) {
+      saveSession(payload.user);
+      return stripSensitive(payload.user);
+    }
     return payload.user;
   } catch {
     return null;
   }
+}
+
+/** 표시용 쿠키에 남으면 안 되는 값을 뗀다 */
+function stripSensitive(u: SessionUser): SessionUser {
+  const { id, name, nickname, userId, hasEmail } = u;
+  return { id, name, ...(nickname !== undefined ? { nickname } : {}), ...(userId !== undefined ? { userId } : {}), ...(hasEmail !== undefined ? { hasEmail } : {}) };
 }
 
 export function saveSession(user: SessionUser, token?: string) {
@@ -226,9 +234,14 @@ export function saveSession(user: SessionUser, token?: string) {
     사람이 바뀌었으면 남의 토큰을 물려줄 수 없으니 버린다.
     → 30-Patterns/인증과 세션 공유.md
   */
-  const kept = readBestPayload();
-  const carried =
-    token ?? (kept && kept.user.id === user.id ? kept.token : undefined);
+  /*
+    2026-09-09 부터 토큰은 HttpOnly `snap_session` 에만 있다. 이 쿠키에는 **넣지 않는다.**
+    `token` 인자는 옛 호출부 호환용이고 무시한다 — 표시용 쿠키에 전화번호·이메일·토큰이 남지 않게
+    받은 객체에서 그 셋을 떼고 저장한다.
+  */
+  void token;
+  const carried: string | undefined = undefined;
+  user = stripSensitive(user);
 
   const expiresAt = Date.now() + SESSION_TTL_SEC * 1000;
   const body: StoredPayload = {

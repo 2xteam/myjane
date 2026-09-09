@@ -1,13 +1,15 @@
 import { NextResponse } from "next/server";
 import bcrypt from "bcryptjs";
 import { connectDB } from "@/lib/db";
+import { passwordProblem } from "@/lib/password";
 import { getUserModel } from "@/models/User";
 
 export const runtime = "nodejs";
 
 export async function POST(req: Request) {
   try {
-    let body: { token?: string; newPin?: string; newPinConfirm?: string };
+    /* 2026-09-09 부터 이 링크는 **비밀번호**를 정한다. 옛 키(newPin)도 받아 준다 */
+    let body: { token?: string; newPassword?: string; newPasswordConfirm?: string; newPin?: string; newPinConfirm?: string };
     try {
       body = await req.json();
     } catch {
@@ -18,8 +20,9 @@ export async function POST(req: Request) {
     }
 
     const token = typeof body.token === "string" ? body.token : "";
-    const newPin = typeof body.newPin === "string" ? body.newPin : "";
-    const newPinConfirm = typeof body.newPinConfirm === "string" ? body.newPinConfirm : "";
+    const newPassword = typeof body.newPassword === "string" ? body.newPassword : typeof body.newPin === "string" ? body.newPin : "";
+    const newPasswordConfirm =
+      typeof body.newPasswordConfirm === "string" ? body.newPasswordConfirm : typeof body.newPinConfirm === "string" ? body.newPinConfirm : "";
 
     if (!token) {
       return NextResponse.json(
@@ -28,16 +31,12 @@ export async function POST(req: Request) {
       );
     }
 
-    if (newPin.length < 4) {
-      return NextResponse.json(
-        { ok: false, error: "새 PIN은 4자 이상이어야 합니다." },
-        { status: 400 },
-      );
-    }
+    const problem = passwordProblem(newPassword);
+    if (problem) return NextResponse.json({ ok: false, error: problem }, { status: 400 });
 
-    if (newPin !== newPinConfirm) {
+    if (newPassword !== newPasswordConfirm) {
       return NextResponse.json(
-        { ok: false, error: "새 PIN과 PIN 확인이 일치하지 않습니다." },
+        { ok: false, error: "새 비밀번호와 확인이 일치하지 않습니다." },
         { status: 400 },
       );
     }
@@ -56,7 +55,9 @@ export async function POST(req: Request) {
       );
     }
 
-    user.pin = await bcrypt.hash(newPin, 10);
+    user.password = await bcrypt.hash(newPassword, 10);
+    user.passwordChangedAt = new Date();
+    user.passwordPromptSnoozedUntil = null;
     user.pinResetToken = undefined as unknown as string;
     user.pinResetExpires = undefined as unknown as Date;
     /* 지금까지 발급한 세션 토큰을 전부 폐기한다 → lib/sessionToken.ts 의 sv */

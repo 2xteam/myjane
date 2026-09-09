@@ -31,4 +31,4 @@ export function parseIdentifier(input: string): Identifier {
 }
 
 /** 사람이 읽을 안내 문구 — 입력칸 하나로 합쳐 놓았으니 무엇이 가능한지 알려야 한다 */
-export const IDENTIFIER_HINT = "이메일 또는 전화번호로 로그인할 수 있어요.";
+export const IDENTIFIER_HINT = "이메일과 비밀번호로 로그인해요. 전화번호·PIN은 더 쓰지 않습니다.";

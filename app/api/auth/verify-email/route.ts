@@ -87,6 +87,16 @@ export async function POST(req: Request) {
       user.pendingEmail = null;
     }
 
+    /*
+      전화번호+PIN 계정의 전환(/api/auth/migrate-pin). 주소가 확인됐으니 PIN 을 지운다 —
+      이제 이 계정은 이메일+비밀번호로만 들어온다. 남아 있던 세션도 끊는다.
+    */
+    if (user.pinRetireOnVerify) {
+      user.pin = null;
+      user.pinRetireOnVerify = false;
+      user.sessionVersion = (user.sessionVersion ?? 0) + 1;
+    }
+
     user.emailVerified = true;
     user.emailToken = undefined as unknown as string;
     user.emailTokenExpires = undefined as unknown as Date;

@@ -3,12 +3,12 @@
 import type { CSSProperties } from "react";
 import Link from "next/link";
 import { useCallback, useState } from "react";
+import { CONTACT_EMAIL } from "@/lib/contact";
 
 type Step = "form" | "done";
 
 export default function ForgotPinPage() {
   const [step, setStep] = useState<Step>("form");
-  const [phone, setPhone] = useState("");
   const [email, setEmail] = useState("");
   const [busy, setBusy] = useState(false);
   const [msg, setMsg] = useState<string | null>(null);
@@ -17,11 +17,6 @@ export default function ForgotPinPage() {
     setBusy(true);
     setMsg(null);
 
-    if (!phone.trim()) {
-      setMsg("전화번호를 입력해 주세요.");
-      setBusy(false);
-      return;
-    }
     if (!email.trim()) {
       setMsg("이메일을 입력해 주세요.");
       setBusy(false);
@@ -32,7 +27,7 @@ export default function ForgotPinPage() {
       const res = await fetch("/api/auth/forgot-pin", {
         method: "POST",
         headers: { "content-type": "application/json" },
-        body: JSON.stringify({ phone, email }),
+        body: JSON.stringify({ email }),
       });
       const json = (await res.json()) as { ok: boolean; error?: string };
       if (!res.ok || !json.ok) {
@@ -45,37 +40,27 @@ export default function ForgotPinPage() {
     } finally {
       setBusy(false);
     }
-  }, [phone, email]);
+  }, [email]);
 
   return (
     <main style={mainStyle}>
       <div style={cardStyle}>
         <h1 style={{ margin: "0 0 0.25rem", fontSize: "1.5rem", color: "var(--text-primary)" }}>
-          PIN 찾기
+          비밀번호 찾기
         </h1>
 
         {step === "done" ? (
           <>
             <p style={{ margin: "1rem 0", color: "var(--text-secondary)", fontSize: 14, lineHeight: 1.6 }}>
-              PIN 변경 링크를 이메일로 발송했습니다.<br />이메일을 확인하여 PIN을 변경해 주세요.
+              입력하신 주소로 가입된 계정이 있으면 비밀번호 재설정 링크를 보냈어요.<br />메일함(스팸함 포함)을 확인해 주세요. 링크는 30분 동안 유효합니다.
             </p>
-            <Link href="/" style={linkStyle}>로그인으로</Link>
+            <Link href="/login" style={linkStyle}>로그인으로</Link>
           </>
         ) : (
           <>
             <p style={{ margin: "0 0 1.25rem", color: "var(--text-secondary)", fontSize: 14 }}>
-              가입 시 등록한 전화번호와 이메일을 입력하면 PIN 변경 링크를 이메일로 보내드립니다.
+              가입한 이메일을 입력하면 비밀번호 재설정 링크를 보내드립니다.
             </p>
-
-            <label style={lab}>
-              전화번호
-              <input
-                value={phone}
-                onChange={(e) => setPhone(e.target.value)}
-                placeholder="01012345678"
-                style={inp}
-              />
-            </label>
 
             <label style={lab}>
               이메일
@@ -95,10 +80,20 @@ export default function ForgotPinPage() {
               disabled={busy}
               style={btnStyle(busy)}
             >
-              {busy ? "발송 중…" : "PIN 변경 링크 발송"}
+              {busy ? "발송 중…" : "재설정 링크 발송"}
             </button>
 
-            <Link href="/" style={{ ...linkStyle, marginTop: "1rem" }}>로그인으로</Link>
+            <div style={noteStyle}>
+              <strong>전화번호와 PIN으로만 쓰셨나요?</strong>
+              <br />
+              이메일이 없는 계정은 링크를 받을 수 없어요. PIN을 알고 있다면{" "}
+              <Link href="/migrate" style={{ color: "var(--accent-ink)" }}>이메일 계정으로 전환</Link>
+              하시고, PIN도 잊으셨다면{" "}
+              <a href={`mailto:${CONTACT_EMAIL}`} style={{ color: "var(--accent-ink)" }}>{CONTACT_EMAIL}</a>
+              로 가입 전화번호와 함께 메일을 보내 주세요. 이메일을 등록해 드리고 회신합니다.
+            </div>
+
+            <Link href="/login" style={{ ...linkStyle, marginTop: "1rem" }}>로그인으로</Link>
 
             {msg ? <p style={{ margin: "1rem 0 0", color: "var(--danger-ink)", fontSize: 13 }}>{msg}</p> : null}
           </>
@@ -140,6 +135,16 @@ const inp: CSSProperties = {
   background: "var(--input-bg)",
   color: "var(--text-primary)",
   fontSize: 16,
+};
+
+const noteStyle: CSSProperties = {
+  marginTop: "1rem",
+  padding: "0.85rem 1rem",
+  borderRadius: "var(--radius-sm)",
+  background: "var(--bg-primary)",
+  color: "var(--text-secondary)",
+  fontSize: 13,
+  lineHeight: 1.6,
 };
 
 const linkStyle: CSSProperties = {

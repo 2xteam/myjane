@@ -4,7 +4,6 @@ import { connectDB } from "@/lib/db";
 import { authMailOnCooldown } from "@/lib/authMailCooldown";
 import { sendMail } from "@/lib/mail";
 import { authMail } from "@/lib/mailTemplate";
-import { normalizePhone } from "@/lib/phone";
 import { getUserModel } from "@/models/User";
 
 export const runtime = "nodejs";
@@ -37,25 +36,25 @@ const sameAnswer = () =>
 
 export async function POST(req: Request) {
   try {
-    let body: { phone?: string; email?: string };
+    let body: { email?: string };
     try {
       body = await req.json();
     } catch {
       return NextResponse.json({ ok: false, error: "JSON 본문이 필요합니다." }, { status: 400 });
     }
 
-    const phone = typeof body.phone === "string" ? normalizePhone(body.phone) : "";
     const email = typeof body.email === "string" ? body.email.trim().toLowerCase() : "";
 
-    if (!phone || !email) {
-      return NextResponse.json(
-        { ok: false, error: "전화번호와 이메일을 입력해 주세요." },
-        { status: 400 },
-      );
+    if (!email) {
+      return NextResponse.json({ ok: false, error: "이메일을 입력해 주세요." }, { status: 400 });
     }
 
+    /*
+      2026-09-09 부터 **이메일만** 받는다. 전에는 전화번호+이메일 조합으로 찾았는데,
+      이메일로 가입해 전화번호가 없는 계정은 영영 일치하지 않아 메일이 오지 않았다.
+    */
     await connectDB();
-    const user = await getUserModel().findOne({ phone, email }).exec();
+    const user = await getUserModel().findOne({ email, withdrawnAt: null }).exec();
 
     /* 없어도 같은 답 — 있는지 없는지 알려주지 않는다 */
     if (!user) return sameAnswer();
@@ -75,10 +74,10 @@ export async function POST(req: Request) {
     try {
       await sendMail(
         email,
-        "[myjane] 비밀번호·PIN 재설정",
+        "[myjane] 비밀번호 재설정",
         authMail({
           name: user.name ?? user.nickname ?? "회원",
-          body: "<p>아래 버튼을 눌러 비밀번호 또는 PIN을 새로 정하실 수 있습니다.</p>",
+          body: "<p>아래 버튼을 눌러 비밀번호를 새로 정하실 수 있습니다.</p>",
           action: { label: "재설정하기", url: resetUrl },
           notes: ["이 링크는 30분 동안 유효하며, 한 번 사용하면 만료됩니다."],
           warn: "본인이 요청하지 않으셨다면 이 링크를 누르지 마시고 이 메일을 무시해 주세요.",

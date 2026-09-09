@@ -15,7 +15,7 @@ import { SESSION_KEY } from "@/lib/session";
  *   snap_user      화면 표시용 (id · 이름 · 닉네임). 여전히 JS 쿠키지만 전화번호·이메일·토큰은 빠졌다
  *
  * 세 쿠키는 같은 도메인(`NEXT_PUBLIC_COOKIE_DOMAIN`)·같은 수명(30일)이다.
- * 이행기에는 옛 `snap_user.token` 도 읽는다 → readSessionTokenFromRequest()
+ * 옛 형식(`snap_user` 안의 토큰)은 읽지 않는다 → readSessionTokenFromRequest()
  *
  * 여섯 저장소에 같은 파일이 있다. 고치면 함께 고친다.
  * → my-obsidian-vault / 50-Plans/E 개인정보 보호 보강.md 5번
@@ -112,8 +112,9 @@ export function readCookieValues(req: Request, name: string): string[] {
  *
  *   1. `Authorization: Bearer …`
  *   2. `snap_session` (HttpOnly)
- *   3. 옛 `snap_user` 의 `token` — **이행기 호환.** 새 로그인은 여기에 토큰을 넣지 않는다.
- *      옛 쿠키가 30일 뒤 모두 만료되면 이 갈래를 지운다
+ *
+ * 옛 `snap_user` 안의 `token` 은 **읽지 않는다** (2026-09-09 이행기 없이 바로 끊었다 — 사용자 결정).
+ * 그 형식의 세션은 로그인 화면으로 돌아가 한 번 다시 로그인한다.
  */
 export function readSessionTokenFromRequest(req: Request): string | null {
   const auth = req.headers.get("authorization");
@@ -130,13 +131,5 @@ export function readSessionTokenFromRequest(req: Request): string | null {
     if (v) return v;
   }
 
-  for (const raw of readCookieValues(req, SESSION_KEY)) {
-    try {
-      const parsed = JSON.parse(raw) as { token?: unknown };
-      if (typeof parsed.token === "string" && parsed.token) return parsed.token;
-    } catch {
-      /* 다음 쿠키 */
-    }
-  }
   return null;
 }

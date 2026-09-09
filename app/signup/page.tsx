@@ -140,7 +140,7 @@ function SignupForm() {
       }
       // 토큰을 함께 저장해야 2hbk 같은 앱이 이 세션을 쓸 수 있다
       saveSession(json.user, json.token);
-      setDone({ email: json.user.email ?? email, mailSent: json.mailSent !== false });
+      setDone({ email, mailSent: json.mailSent !== false });
     } catch {
       setMsg("네트워크 오류입니다.");
     } finally {

@@ -54,7 +54,21 @@ export async function POST(req: Request) {
     const id = parseIdentifier(identifierRaw);
     if (id.kind === "unknown") {
       return NextResponse.json(
-        { ok: false, error: "이메일 또는 전화번호 형식이 아닙니다." },
+        { ok: false, error: "이메일 형식이 아닙니다." },
+        { status: 400 },
+      );
+    }
+    /*
+      2026-09-09 부터 로그인은 **이메일로만** 된다(사용자 결정). 전화번호+PIN 계정은
+      /migrate 에서 이메일 계정으로 전환한 뒤 들어온다. 서버에서 막지 않으면 화면 문구만 바뀐 셈이다.
+    */
+    if (id.kind === "phone") {
+      return NextResponse.json(
+        {
+          ok: false,
+          migrate: true,
+          error: "이제 이메일로만 로그인할 수 있어요. 전화번호·PIN으로 쓰셨다면 이메일 계정으로 전환해 주세요.",
+        },
         { status: 400 },
       );
     }
@@ -67,14 +81,11 @@ export async function POST(req: Request) {
       없는 계정도 똑같이 센다. 응답 문장도 아래 401 과 같은 자리에서 나가므로
       계정이 있는지 없는지 이 라우트로는 알 수 없다 → lib/loginThrottle.ts
     */
-    const keys = throttleKeys(req, id.kind === "email" ? id.email : id.phone);
+    const keys = throttleKeys(req, id.email);
     const throttled = await checkThrottle(keys);
     if (throttled) return throttled;
 
-    const candidates =
-      id.kind === "email"
-        ? await User.find({ email: id.email }).exec()
-        : await User.find({ phone: id.phone }).exec();
+    const candidates = await User.find({ email: id.email }).exec();
 
     // 계정마다 비밀번호와 PIN 중 있는 것으로 맞춰 본다.
     // 한 사람이 둘 다 가진 경우(이메일이 겹쳐 병합한 계정)는 어느 쪽이든 통과한다
@@ -161,7 +172,6 @@ export async function POST(req: Request) {
         user: {
           id: String(user._id),
           name: user.nickname ?? user.name ?? "",
-          phone: "",
           nickname: user.nickname ?? "",
           userId: user.userId,
           hasEmail: Boolean(user.email),

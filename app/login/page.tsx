@@ -19,9 +19,7 @@ import {
  * `?from=snapword&next=/home` 으로 호출된다.
  * 인증 후 `.myjane.co.kr` 쿠키를 저장하고 원래 앱으로 돌려보낸다.
  *
- * 입력칸은 **하나**다 — 이메일이든 전화번호든, 비밀번호든 PIN이든 받는다.
- * 앱마다 로그인 수단이 달라 화면을 갈라 뒀는데, 사람에게 "당신은 어느 쪽
- * 회원이냐"를 묻는 셈이라 합쳤다 → lib/identifier.ts
+ * 2026-09-09 부터 **이메일+비밀번호만** 받는다. 전화번호+PIN 계정은 /migrate 에서 전환한다.
  */
 function LoginForm() {
   const router = useRouter();
@@ -127,7 +125,7 @@ function LoginForm() {
       >
         <div className="auth-field">
           <label className="auth-label" htmlFor="identifier">
-            이메일 또는 전화번호
+            이메일
           </label>
           <input
             id="identifier"
@@ -135,13 +133,14 @@ function LoginForm() {
             autoComplete="username"
             value={identifier}
             onChange={(e) => setIdentifier(e.target.value)}
-            placeholder="name@example.com 또는 01012345678"
+            type="email"
+            placeholder="name@example.com"
           />
         </div>
 
         <div className="auth-field">
           <label className="auth-label" htmlFor="secret">
-            비밀번호 또는 PIN
+            비밀번호
           </label>
           <div className="auth-input-wrap">
             <input
@@ -179,7 +178,8 @@ function LoginForm() {
           <Link href={withQs("/forgot-pin")}>비밀번호를 잊으셨나요?</Link>
         </div>
         <div>
-          <Link href={withQs("/find-phone")}>전화번호 찾기</Link>
+          전화번호·PIN으로 쓰셨나요?{" "}
+          <Link href={withQs("/migrate")}>이메일 계정으로 전환</Link>
         </div>
       </div>
     </AuthShell>
