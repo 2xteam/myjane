@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { connectDB } from "@/lib/db";
 import { SESSION_KEY } from "@/lib/session";
 import { verifySessionToken } from "@/lib/sessionToken";
+import { readSessionTokenFromRequest } from "@/lib/sessionCookie";
 import { getUserModel, type UserDocument } from "@/models/User";
 
 /**
@@ -35,26 +36,23 @@ function readCookie(req: Request, name: string): string | null {
 
 /** `Authorization: Bearer …` 를 먼저 보고, 없으면 세션 쿠키의 `token` 을 꺼낸다 */
 export function readSessionToken(req: Request): string | null {
-  const auth = req.headers.get("authorization");
-  if (auth?.startsWith("Bearer ")) return auth.slice(7).trim();
-
-  const raw = readCookie(req, SESSION_KEY);
-  if (!raw) return null;
-  try {
-    const parsed = JSON.parse(raw) as { token?: unknown };
-    return typeof parsed.token === "string" ? parsed.token : null;
-  } catch {
-    return null;
-  }
+  return readSessionTokenFromRequest(req);
 }
 
 /** 서명이 유효한 세션이 가리키는 회원 문서. 없으면 `null` */
 export async function getSessionUser(req: Request): Promise<UserDocument | null> {
-  const claims = verifySessionToken(readSessionToken(req));
+  const claims = verifySessionToken(readSessionTokenFromRequest(req));
   if (!claims) return null;
 
   await connectDB();
-  return getUserModel().findOne({ userId: claims.u }).exec();
+  const doc = await getUserModel().findOne({ userId: claims.u }).exec();
+  if (!doc) return null;
+  /*
+    세션 버전이 다르면 폐기된 토큰이다 (비밀번호 변경·탈퇴·모든 기기 로그아웃).
+    `sv` 가 없는 옛 토큰은 아직 한 번도 올리지 않은 계정(0)에서만 통한다.
+  */
+  if ((claims.sv ?? 0) !== (doc.sessionVersion ?? 0)) return null;
+  return doc;
 }
 
 /**

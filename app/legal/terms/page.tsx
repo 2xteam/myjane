@@ -255,7 +255,7 @@ export default function TermsPage() {
               <tr>
                 <th scope="row">운영자</th>
                 <td>
-                  myjane 운영자
+                  장민
                 </td>
               </tr>
               <tr>

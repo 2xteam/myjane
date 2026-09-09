@@ -6,6 +6,7 @@ import "./globals.css";
 import "./elements.css";
 import { EmailPrompt } from "@/components/EmailPrompt";
 import { PasswordPrompt } from "@/components/PasswordPrompt";
+import { PolicyPrompt } from "@/components/PolicyPrompt";
 
 const SITE_URL = "https://www.myjane.co.kr";
 
@@ -75,6 +76,11 @@ export default function RootLayout({
           → components/PasswordPrompt.tsx
         */}
         <PasswordPrompt />
+        {/*
+          방침·약관 개정 안내 띠. 아직 새 판을 확인하지 않은 회원에게만 뜨고,
+          이메일 안내가 뜰 상황이면 양보한다 → components/PolicyPrompt.tsx
+        */}
+        <PolicyPrompt />
       </body>
     </html>
   );

@@ -152,6 +152,14 @@ const UserSchema = new Schema(
      * 로그인 라우트가 이 값을 보고 막는다 — 앱마다 따로 검사하지 않는다.
      */
     withdrawnAt: { type: Date, default: null },
+    /**
+     * 세션 버전. 서명 토큰의 `sv` 와 같아야 통과한다.
+     * 비밀번호·PIN 변경 · 탈퇴 확정 · "모든 기기에서 로그아웃" 에서 +1 → 지금까지 발급한
+     * 토큰이 전부 무효가 된다. 토큰은 30일짜리라 이것 없이는 폐기할 방법이 없었다.
+     * ⚠️ 여섯 `models/User.ts` 에 함께 있어야 한다 — 한 앱이 모르면 저장 때 유실된다.
+     * → my-obsidian-vault / 50-Plans/E 개인정보 보호 보강.md 5번
+     */
+    sessionVersion: { type: Number, default: 0 },
 
     /**
      * 탈퇴 확인 메일의 토큰. 발급 후 30분에 만료되고 **한 번 쓰면 폐기**한다.

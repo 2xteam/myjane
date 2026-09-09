@@ -57,11 +57,28 @@ export default function CookiesPage() {
             </thead>
             <tbody>
               <tr>
+                <th scope="row">snap_session</th>
+                <td>
+                  로그인 상태를 유지합니다. 서버가 확인하는 서명 값 하나만 담고,
+                  브라우저의 스크립트가 읽을 수 없게(HttpOnly) 설정합니다. 여섯
+                  서비스가 한 계정을 함께 쓰기 때문에{" "}
+                  <code>.myjane.co.kr</code> 아래에서 공유됩니다.
+                </td>
+                <td>30일</td>
+              </tr>
+              <tr>
+                <th scope="row">snap_auth</th>
+                <td>
+                  "로그인되어 있다"는 표시 하나입니다. 화면이 로그인 버튼을
+                  보일지 정할 때만 읽습니다. 개인정보는 담지 않습니다.
+                </td>
+                <td>30일</td>
+              </tr>
+              <tr>
                 <th scope="row">snap_user</th>
                 <td>
-                  로그인 상태를 유지합니다. 여섯 서비스가 한 계정을 함께 쓰기
-                  때문에, 한 번 로그인하면 다른 서비스로 넘어갈 때 다시 로그인하지
-                  않아도 되도록 <code>.myjane.co.kr</code> 아래에서 공유됩니다.
+                  화면에 이름을 보여 주기 위한 표시용 값입니다. 서버는 이 값을
+                  신뢰하지 않습니다.
                 </td>
                 <td>30일</td>
               </tr>
@@ -69,17 +86,25 @@ export default function CookiesPage() {
           </table>
         </div>
 
-        <h3>이 쿠키에 담기는 값</h3>
+        <h3>이 쿠키들에 담기는 값</h3>
         <ul>
-          <li>회원 식별자, 이름, 전화번호</li>
           <li>
-            이메일 주소, 닉네임, 이용자 식별자 (해당 항목이 있는 계정만)
+            <code>snap_session</code> — 서버가 확인하는 서명 값과 만료 시각. 다른
+            사람의 기록에 접근하지 못하도록 서버에서 검증하는 데 씁니다
           </li>
           <li>
-            서버가 확인하는 서명 값과 만료 시각 — 다른 사람의 기록에 접근하지
-            못하도록 검증하는 데 씁니다
+            <code>snap_user</code> — 회원 식별자, 이름, 닉네임, 이용자 식별자,
+            이메일이 등록되어 있는지 여부. 전화번호와 이메일 주소는 담지 않습니다
+          </li>
+          <li>
+            <code>snap_auth</code> — 값 <code>1</code> 하나
           </li>
         </ul>
+        <p>
+          2026-09-09 이전에 로그인한 브라우저에는 이름·전화번호·이메일과 서명
+          값을 함께 담은 옛 형식의 <code>snap_user</code> 가 남아 있을 수
+          있습니다. 만료(최대 30일)되거나 다시 로그인하면 새 형식으로 바뀝니다.
+        </p>
 
         <div className="legal-callout">
           <p>

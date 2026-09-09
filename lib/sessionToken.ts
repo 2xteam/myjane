@@ -26,6 +26,8 @@ export type TokenClaims = {
   u: string;
   /** 만료 시각 (epoch 초) */
   exp: number;
+  /** 세션 버전 — `users.sessionVersion` 과 같아야 한다. 옛 토큰에는 없다(= 0) */
+  sv?: number;
 };
 
 function getSecret(): string {
@@ -42,11 +44,12 @@ function hmac(body: string): string {
   return b64url(crypto.createHmac("sha256", getSecret()).update(body).digest());
 }
 
-export function signSessionToken(uid: string, userId: string): string {
+export function signSessionToken(uid: string, userId: string, sv = 0): string {
   const claims: TokenClaims = {
     uid,
     u: userId,
     exp: Math.floor(Date.now() / 1000) + TTL_SEC,
+    sv,
   };
   const body = b64url(Buffer.from(JSON.stringify(claims), "utf8"));
   return `${body}.${hmac(body)}`;
@@ -70,6 +73,7 @@ export function verifySessionToken(token: string | undefined | null): TokenClaim
     const claims = JSON.parse(Buffer.from(body, "base64url").toString("utf8")) as TokenClaims;
     if (typeof claims.uid !== "string" || typeof claims.u !== "string") return null;
     if (typeof claims.exp !== "number" || claims.exp * 1000 < Date.now()) return null;
+    if (claims.sv !== undefined && typeof claims.sv !== "number") return null;
     return claims;
   } catch {
     return null;

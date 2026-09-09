@@ -192,7 +192,7 @@ export default function AccountEmailPage() {
   useEffect(() => {
     if (!status?.email) return;
     const s = loadSession();
-    if (s && s.email !== status.email) saveSession({ ...s, email: status.email });
+    if (s && !s.hasEmail) saveSession({ ...s, hasEmail: true });
   }, [status?.email]);
 
   const shell = (children: React.ReactNode) => (

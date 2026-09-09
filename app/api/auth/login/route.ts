@@ -3,7 +3,9 @@ import bcrypt from "bcryptjs";
 import { canRestore, restoreDaysLeft } from "@/lib/accountLifecycle";
 import { connectDB } from "@/lib/db";
 import { parseIdentifier } from "@/lib/identifier";
+import { checkThrottle, clearThrottle, hitThrottle, throttleKeys } from "@/lib/loginThrottle";
 import { signSessionToken } from "@/lib/sessionToken";
+import { sessionCookieHeaders, withSetCookies } from "@/lib/sessionCookie";
 import { getUserModel, type UserDocument } from "@/models/User";
 
 export const runtime = "nodejs";
@@ -60,6 +62,15 @@ export async function POST(req: Request) {
     await connectDB();
     const User = getUserModel();
 
+    /*
+      시도 제한 — 비교 **전에** 본다. 식별자당 5회 · IP 당 30회 / 15분.
+      없는 계정도 똑같이 센다. 응답 문장도 아래 401 과 같은 자리에서 나가므로
+      계정이 있는지 없는지 이 라우트로는 알 수 없다 → lib/loginThrottle.ts
+    */
+    const keys = throttleKeys(req, id.kind === "email" ? id.email : id.phone);
+    const throttled = await checkThrottle(keys);
+    if (throttled) return throttled;
+
     const candidates =
       id.kind === "email"
         ? await User.find({ email: id.email }).exec()
@@ -79,6 +90,7 @@ export async function POST(req: Request) {
     }
 
     if (matches.length === 0) {
+      await hitThrottle(keys);
       return NextResponse.json(
         { ok: false, error: "아이디 또는 비밀번호가 올바르지 않습니다." },
         { status: 401 },
@@ -135,19 +147,28 @@ export async function POST(req: Request) {
     if (!user.userId) user.userId = newUserId();
     user.lastLoginAt = new Date();
     await user.save();
+    await clearThrottle(keys);
 
-    return NextResponse.json({
-      ok: true,
-      user: {
-        id: String(user._id),
-        name: user.nickname ?? user.name ?? "",
-        phone: user.phone ?? "",
-        email: user.email ?? "",
-        nickname: user.nickname ?? "",
-        userId: user.userId,
-      },
-      token: signSessionToken(String(user._id), user.userId),
-    });
+    /*
+      토큰은 HttpOnly 쿠키로만 내린다 — 응답 본문에 넣지 않는다. 전화번호·이메일도
+      쿠키에 실릴 값이라 빼고, 안내 띠에 필요한 "이메일이 있는가" 만 준다.
+      → lib/sessionCookie.ts · 50-Plans/E 개인정보 보호 보강.md 5번
+    */
+    const token = signSessionToken(String(user._id), user.userId, user.sessionVersion ?? 0);
+    return withSetCookies(
+      NextResponse.json({
+        ok: true,
+        user: {
+          id: String(user._id),
+          name: user.nickname ?? user.name ?? "",
+          phone: "",
+          nickname: user.nickname ?? "",
+          userId: user.userId,
+          hasEmail: Boolean(user.email),
+        },
+      }),
+      sessionCookieHeaders(req, token),
+    );
   } catch (err) {
     const message = err instanceof Error ? err.message : "알 수 없는 오류가 발생했습니다.";
     return NextResponse.json({ ok: false, error: message }, { status: 500 });

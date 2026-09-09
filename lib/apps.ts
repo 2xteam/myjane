@@ -44,12 +44,14 @@ export const APPS: Record<AppKey, AppInfo> = {
     name: "SnapWord",
     origin: "https://snapword.myjane.co.kr",
     icon: "/snapword-icon.png",
+    requiresSessionToken: true,
   },
   snapnote: {
     key: "snapnote",
     name: "SnapNote",
     origin: "https://snapnote.myjane.co.kr",
     icon: "/snapnote-icon.png",
+    requiresSessionToken: true,
   },
   fitlog: {
     key: "fitlog",
@@ -57,6 +59,7 @@ export const APPS: Record<AppKey, AppInfo> = {
     origin: "https://fitlog.myjane.co.kr",
     icon: "/fitlog-icon.png",
     needsBodyProfile: true,
+    requiresSessionToken: true,
   },
   "2hbk": {
     key: "2hbk",

@@ -8,6 +8,7 @@ import { POLICY_VERSION } from "@/lib/legalVersion";
 import { passwordProblem } from "@/lib/password";
 import { normalizePhone } from "@/lib/phone";
 import { signSessionToken } from "@/lib/sessionToken";
+import { sessionCookieHeaders, withSetCookies } from "@/lib/sessionCookie";
 import { getUserModel, type UserDocument } from "@/models/User";
 
 export const runtime = "nodejs";
@@ -198,19 +199,21 @@ export async function POST(req: Request) {
       const mailSent = await sendVerification(existing, email);
       await existing.save();
 
-      return NextResponse.json({
-        ok: true,
-        mailSent,
-        user: {
-          id: String(existing._id),
-          name: existing.nickname ?? existing.name ?? name,
-          phone: existing.phone ?? "",
-          email,
-          nickname: existing.nickname ?? nickname,
-          userId,
-        },
-        token,
-      });
+      return withSetCookies(
+        NextResponse.json({
+          ok: true,
+          mailSent,
+          user: {
+            id: String(existing._id),
+            name: existing.nickname ?? existing.name ?? name,
+            phone: "",
+            nickname: existing.nickname ?? nickname,
+            userId,
+            hasEmail: true,
+          },
+        }),
+        sessionCookieHeaders(req, token),
+      );
     }
 
     /*
@@ -257,19 +260,21 @@ export async function POST(req: Request) {
     const mailSent = await sendVerification(user, email);
     if (mailSent) await user.save();
 
-    return NextResponse.json({
-      ok: true,
-      mailSent,
-      user: {
-        id: String(user._id),
-        name,
-        phone: user.phone ?? "",
-        email,
-        nickname,
-        userId,
-      },
-      token,
-    });
+    return withSetCookies(
+      NextResponse.json({
+        ok: true,
+        mailSent,
+        user: {
+          id: String(user._id),
+          name,
+          phone: "",
+          nickname,
+          userId,
+          hasEmail: true,
+        },
+      }),
+      sessionCookieHeaders(req, token),
+    );
   } catch (err) {
     const message = err instanceof Error ? err.message : "알 수 없는 오류가 발생했습니다.";
     return NextResponse.json({ ok: false, error: message }, { status: 500 });

@@ -1,4 +1,6 @@
 import { NextResponse } from "next/server";
+import { signSessionToken } from "@/lib/sessionToken";
+import { sessionCookieHeaders, withSetCookies } from "@/lib/sessionCookie";
 import bcrypt from "bcryptjs";
 import { passwordProblem } from "@/lib/password";
 import { requireSessionUser } from "@/lib/serverSession";
@@ -60,9 +62,16 @@ export async function POST(req: Request) {
     user.passwordChangedAt = new Date();
     user.passwordPromptSnoozedUntil = null;
     // `pin` 은 그대로 둔다 — 위 주석 참고
+    /* 지금까지 발급한 세션 토큰을 전부 폐기한다 → lib/sessionToken.ts 의 sv */
+    user.sessionVersion = (user.sessionVersion ?? 0) + 1;
     await user.save();
 
-    return NextResponse.json({ ok: true, keptPin: Boolean(user.pin) });
+    /* 다른 기기는 끊기고, 지금 이 기기에는 새 토큰을 바로 내려 계속 쓰게 한다 */
+    const token = signSessionToken(String(user._id), user.userId ?? "", user.sessionVersion);
+    return withSetCookies(
+      NextResponse.json({ ok: true, keptPin: Boolean(user.pin) }),
+      sessionCookieHeaders(req, token),
+    );
   } catch (err) {
     const message =
       err instanceof Error ? err.message : "알 수 없는 오류가 발생했습니다.";

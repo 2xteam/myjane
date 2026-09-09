@@ -7,9 +7,16 @@ export type SessionUser = {
   email?: string;
   nickname?: string;
   userId?: string;
+  /**
+   * 이메일이 등록되어 있는가. 주소 자체는 더 이상 쿠키에 넣지 않는다 — 안내 띠 판단에는
+   * 있는지 없는지만 필요하다. 주소가 필요한 화면은 `/api/me` 로 받는다.
+   */
+  hasEmail?: boolean;
 };
 
 export const SESSION_KEY = "snap_user";
+/** 서버가 내리는 표지 쿠키 — "쓸 수 있는 세션이 있다". 토큰은 HttpOnly `snap_session` 에 → lib/sessionCookie.ts */
+const SESSION_MARK_COOKIE = "snap_auth";
 
 const SESSION_TTL_SEC = 30 * 24 * 60 * 60;
 
@@ -83,6 +90,16 @@ function readBestPayload(): StoredPayload | null {
  * 세션에 담긴 앱 서버용 서명 토큰. 없으면 그 세션은 토큰을 요구하는 앱
  * (2hbk)에서 쓸 수 없다 → lib/sessionToken.ts
  */
+/**
+ * 이 앱에서 **쓸 수 있는** 세션인가.
+ * 새 로그인은 토큰을 HttpOnly 쿠키에만 두므로 JS 는 표지 쿠키 `snap_auth` 로 안다.
+ * 옛 세션(쿠키 안에 토큰)도 이행기 동안 인정한다 → 30-Patterns/인증과 세션 공유.md
+ */
+export function hasUsableSession(): boolean {
+  return Boolean(readBestPayload()?.token) || getCookieValues(SESSION_MARK_COOKIE).includes("1");
+}
+
+/** 세션에 담긴 앱 서버용 서명 토큰 (옛 형식). 새 로그인에서는 null 이다 — 서버는 쿠키로 확인한다 */
 export function loadSessionToken(): string | null {
   if (typeof window === "undefined") return null;
   return readBestPayload()?.token ?? null;
@@ -232,6 +249,16 @@ export function saveSession(user: SessionUser, token?: string) {
 
 export function clearSession() {
   if (typeof window === "undefined") return;
+  /*
+    `snap_session` 은 HttpOnly 라 JS 가 못 지운다. 서버에 지워 달라고 한다.
+    페이지가 곧 이동하므로 keepalive. 실패해도 표지·표시 쿠키는 아래서 지운다.
+  */
+  try {
+    void fetch("/api/auth/logout", { method: "POST", keepalive: true }).catch(() => {});
+  } catch {
+    /* ignore */
+  }
+  deleteCookie(SESSION_MARK_COOKIE);
   deleteCookie(SESSION_KEY);
   // 이전 쿠키 이름도 정리
   deleteCookie("snapword_user");

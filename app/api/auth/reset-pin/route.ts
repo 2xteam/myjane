@@ -56,6 +56,8 @@ export async function POST(req: Request) {
     }
 
     user.pin = await bcrypt.hash(newPin, 10);
+    /* 지금까지 발급한 세션 토큰을 전부 폐기한다 → lib/sessionToken.ts 의 sv */
+    user.sessionVersion = (user.sessionVersion ?? 0) + 1;
     await user.save();
 
     return NextResponse.json({ ok: true });

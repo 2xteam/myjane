@@ -8,7 +8,7 @@ import { buildReturnUrl, getApp } from "@/lib/apps";
 import { IDENTIFIER_HINT } from "@/lib/identifier";
 import {
   loadSession,
-  loadSessionToken,
+  hasUsableSession,
   saveSession,
   type SessionUser,
 } from "@/lib/session";
@@ -48,7 +48,7 @@ function LoginForm() {
       2026-09-03에 실제로 그랬다 → 30-Patterns/인증과 세션 공유.md
     */
     if (params.get("relogin") === "1") return;
-    if (app?.requiresSessionToken && !loadSessionToken()) return;
+    if (app?.requiresSessionToken && !hasUsableSession()) return;
 
     if (app) window.location.href = returnUrl;
     else router.replace("/");

@@ -164,6 +164,8 @@ export async function PATCH(req: Request) {
     /* 한 번 쓰면 폐기한다 */
     user.withdrawToken = undefined;
     user.withdrawTokenExpires = undefined;
+    /* 지금까지 발급한 세션 토큰을 전부 폐기한다 → lib/sessionToken.ts 의 sv */
+    user.sessionVersion = (user.sessionVersion ?? 0) + 1;
     await user.save();
 
     return NextResponse.json({
