@@ -91,6 +91,17 @@ export async function POST(req: Request) {
       전화번호+PIN 계정의 전환(/api/auth/migrate-pin). 주소가 확인됐으니 PIN 을 지운다 —
       이제 이 계정은 이메일+비밀번호로만 들어온다. 남아 있던 세션도 끊는다.
     */
+    /*
+      자녀 독립(/api/account/children/[id]/independence). 이메일이 확인됐으니 보호자 계정에서 분리한다 —
+      이제 자기 이메일로 로그인하는 일반 계정이다. 기록은 그대로다(문서가 같다).
+    */
+    if (user.independenceOnVerify) {
+      user.parentId = null;
+      user.independentAt = new Date();
+      user.independenceOnVerify = false;
+      user.sessionVersion = (user.sessionVersion ?? 0) + 1;
+    }
+
     if (user.pinRetireOnVerify) {
       user.pin = null;
       user.pinRetireOnVerify = false;

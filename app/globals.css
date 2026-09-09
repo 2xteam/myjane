@@ -973,7 +973,8 @@ a {
   flex-wrap: wrap;
   gap: 8px;
   max-width: var(--content-reading);
-  margin: 0 auto;
+  /* 헤더(sticky)와 붙지 않게 — 초안 알림을 걷어낸 뒤 이 여백이 사라졌다 (2026-09-09) */
+  margin: 28px auto 0;
   padding: 0 clamp(16px, 4.2vw, 40px);
 }
 

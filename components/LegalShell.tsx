@@ -54,10 +54,6 @@ export function LegalShell({
         <ScrollProgress />
       </header>
 
-      {/*
-        초안 알림. 법률 검토를 받기 전이라는 사실을 읽는 사람에게 먼저 알린다.
-        검토가 끝나면 이 블록을 지운다.
-      */}
       <nav className="legal-tabs" aria-label="법적 고지">
         {LEGAL_PAGES.map((p) => (
           <Link

@@ -4,8 +4,8 @@ import { canRestore, restoreDaysLeft } from "@/lib/accountLifecycle";
 import { connectDB } from "@/lib/db";
 import { parseIdentifier } from "@/lib/identifier";
 import { checkThrottle, clearThrottle, hitThrottle, throttleKeys } from "@/lib/loginThrottle";
-import { signSessionToken } from "@/lib/sessionToken";
-import { sessionCookieHeaders, withSetCookies } from "@/lib/sessionCookie";
+import { listChildren, signPickToken } from "@/lib/family";
+import { issueProfileSession } from "@/lib/profileSession";
 import { getUserModel, type UserDocument } from "@/models/User";
 
 export const runtime = "nodejs";
@@ -161,24 +161,24 @@ export async function POST(req: Request) {
     await clearThrottle(keys);
 
     /*
-      토큰은 HttpOnly 쿠키로만 내린다 — 응답 본문에 넣지 않는다. 전화번호·이메일도
-      쿠키에 실릴 값이라 빼고, 안내 띠에 필요한 "이메일이 있는가" 만 준다.
-      → lib/sessionCookie.ts · 50-Plans/E 개인정보 보호 보강.md 5번
+      자녀 프로필이 있으면 세션을 바로 내주지 않고 **누구로 들어갈지** 고르게 한다.
+      5분짜리 pickToken 을 주고 /api/auth/pick-profile 이 세션을 발급한다 → lib/family.ts
     */
-    const token = signSessionToken(String(user._id), user.userId, user.sessionVersion ?? 0);
-    return withSetCookies(
-      NextResponse.json({
+    const children = await listChildren(user._id);
+    if (children.length > 0) {
+      return NextResponse.json({
         ok: true,
-        user: {
-          id: String(user._id),
-          name: user.nickname ?? user.name ?? "",
-          nickname: user.nickname ?? "",
-          userId: user.userId,
-          hasEmail: Boolean(user.email),
-        },
-      }),
-      sessionCookieHeaders(req, token),
-    );
+        choose: true,
+        pickToken: signPickToken(String(user._id)),
+        profiles: [
+          { id: String(user._id), name: user.nickname ?? user.name ?? "본인", kind: "self" },
+          ...children.map((c) => ({ id: String(c._id), name: c.nickname ?? c.name ?? "", kind: "child" })),
+        ],
+      });
+    }
+
+    /* 토큰은 HttpOnly 쿠키로만 내린다 — 응답 본문에 넣지 않는다 → lib/profileSession.ts */
+    return issueProfileSession(req, user, null);
   } catch (err) {
     const message = err instanceof Error ? err.message : "알 수 없는 오류가 발생했습니다.";
     return NextResponse.json({ ok: false, error: message }, { status: 500 });

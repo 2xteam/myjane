@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { connectDB } from "@/lib/db";
 import { SESSION_KEY } from "@/lib/session";
-import { verifySessionToken } from "@/lib/sessionToken";
+import { verifySessionToken, type TokenClaims } from "@/lib/sessionToken";
 import { readSessionTokenFromRequest } from "@/lib/sessionCookie";
 import { getUserModel, type UserDocument } from "@/models/User";
 
@@ -39,6 +39,11 @@ export function readSessionToken(req: Request): string | null {
   return readSessionTokenFromRequest(req);
 }
 
+/** 서명이 유효하면 토큰의 내용. `gid` 가 있으면 자녀 프로필 세션이다 → lib/family.ts */
+export function getSessionClaims(req: Request): TokenClaims | null {
+  return verifySessionToken(readSessionTokenFromRequest(req));
+}
+
 /** 서명이 유효한 세션이 가리키는 회원 문서. 없으면 `null` */
 export async function getSessionUser(req: Request): Promise<UserDocument | null> {
   const claims = verifySessionToken(readSessionTokenFromRequest(req));
@@ -72,8 +77,25 @@ export async function requireSessionUser(
      * 하는데 기본값으로 막으면 스스로 되돌릴 길이 없어진다.
      */
     allowWithdrawn?: boolean;
+    /**
+     * 자녀 프로필 세션도 통과시킨다.
+     *
+     * 기본은 **막는다(403).** 계정 설정(탈퇴·동의·이메일·비밀번호·자녀 관리)은 보호자만 한다.
+     * 자녀 세션에서 부르면 부모 계정을 바꾸는 사고가 난다 → lib/family.ts
+     */
+    allowChild?: boolean;
   } = {},
 ): Promise<{ user: UserDocument } | { error: NextResponse }> {
+  const claims = getSessionClaims(req);
+  if (claims?.gid && !options.allowChild) {
+    return {
+      error: NextResponse.json(
+        { ok: false, child: true, error: "자녀 프로필에서는 할 수 없어요. 보호자 프로필로 전환해 주세요." },
+        { status: 403 },
+      ),
+    };
+  }
+
   const user = await getSessionUser(req);
   if (!user) {
     return {

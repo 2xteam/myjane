@@ -9,6 +9,8 @@ export type SessionUser = {
    * 있는지 없는지만 필요하다. 주소가 필요한 화면은 `/api/me` 로 받는다.
    */
   hasEmail?: boolean;
+  /** 자녀 프로필로 들어온 세션 — 헤더 표시용. 권한 판단은 서버가 토큰의 gid 로 한다 */
+  child?: boolean;
 };
 
 export const SESSION_KEY = "snap_user";
@@ -222,8 +224,8 @@ export function loadSession(): SessionUser | null {
 
 /** 표시용 쿠키에 남으면 안 되는 값을 뗀다 */
 function stripSensitive(u: SessionUser): SessionUser {
-  const { id, name, nickname, userId, hasEmail } = u;
-  return { id, name, ...(nickname !== undefined ? { nickname } : {}), ...(userId !== undefined ? { userId } : {}), ...(hasEmail !== undefined ? { hasEmail } : {}) };
+  const { id, name, nickname, userId, hasEmail, child } = u;
+  return { id, name, ...(nickname !== undefined ? { nickname } : {}), ...(userId !== undefined ? { userId } : {}), ...(hasEmail !== undefined ? { hasEmail } : {}), ...(child ? { child } : {}) };
 }
 
 export function saveSession(user: SessionUser, token?: string) {

@@ -32,6 +32,11 @@ export function HeaderAuth() {
 
   if (user) {
     return (
+      <>
+      <Link href="/account/switch" title="프로필 전환 · 자녀 관리">
+        {user.name}
+        {user.child ? " (자녀)" : ""}
+      </Link>
       <button
         type="button"
         className="site-nav-logout"
@@ -42,6 +47,7 @@ export function HeaderAuth() {
       >
         로그아웃
       </button>
+      </>
     );
   }
 

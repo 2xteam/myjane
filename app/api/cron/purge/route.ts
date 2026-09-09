@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { connectDB } from "@/lib/db";
 import { WITHDRAW_RETENTION_DAYS } from "@/lib/accountLifecycle";
+import { purgeUserAcrossApps } from "@/lib/family";
 import { getUserModel } from "@/models/User";
 
 export const runtime = "nodejs";
@@ -35,13 +36,7 @@ export const maxDuration = 60;
  * 그래서 각 줄이 무엇을 받는지(`sends`)를 함께 적는다. 하나로 뭉뚱그리면
  * 한쪽이 **조용히 안 지워진다.**
  */
-const PURGE_TARGETS = [
-  { key: "SnapWord", env: "APP_SNAPWORD_ORIGIN", sends: "id" },
-  { key: "SnapNote", env: "APP_SNAPNOTE_ORIGIN", sends: "id" },
-  { key: "FitLog", env: "APP_FITLOG_ORIGIN", sends: "id" },
-  { key: "2hbk", env: "APP_2HBK_ORIGIN", sends: "userId" },
-  { key: "TypeLog", env: "APP_TYPELOG_ORIGIN", sends: "id" },
-] as const;
+/* 앱별 정리 대상과 호출은 lib/family.ts 의 purgeUserAcrossApps 로 옮겼다 — 자녀 프로필 삭제와 같이 쓴다 */
 
 /**
  * Vercel Cron 인지 확인한다.
@@ -87,6 +82,16 @@ export async function GET(req: Request) {
     }
 
     /*
+      보호자가 폐기되면 **그 계정의 자녀 프로필도** 함께 폐기한다. 자녀는 스스로 탈퇴하지 않고
+      보호자에 딸려 있다 → lib/family.ts
+    */
+    const children = await User.find(
+      { parentId: { $in: doomed.map((d) => d._id) }, independentAt: null },
+      { _id: 1, userId: 1 },
+    ).lean().exec();
+    const targets = [...doomed, ...children];
+
+    /*
       회원 문서를 지우기 **전에** 각 앱의 데이터를 치운다.
 
       포털은 앱 DB 를 직접 읽지 않는다 — 통합 admin 과 같은 규칙이다.
@@ -96,44 +101,24 @@ export async function GET(req: Request) {
       영원히 폐기되지 않는다 — 방침에 적은 6개월이 지켜지지 않는다.
       실패는 로그로 남기고 다음에 손으로 치운다.
     */
-    for (const d of doomed) {
-      for (const app of PURGE_TARGETS) {
-        const base = process.env[app.env];
-        if (!base) continue;
-        /* 2hbk 는 도메인 식별자가 없는 계정은 애초에 데이터가 없다 */
-        if (app.sends === "userId" && !d.userId) continue;
-        /* 그 앱이 쓰는 키만 보낸다 — 위 표 참고 */
-        const payload =
-          app.sends === "userId" ? { userId: d.userId } : { id: String(d._id) };
-        try {
-          const res = await fetch(`${base.replace(/\/+$/, "")}/api/admin/purge-user`, {
-            method: "POST",
-            headers: {
-              "content-type": "application/json",
-              authorization: `Bearer ${process.env.ADMIN_API_SECRET ?? ""}`,
-            },
-            body: JSON.stringify(payload),
-          });
-          if (!res.ok) {
-            console.error(`[purge] ${app.key} 정리 실패 ${res.status} — ${d.userId}`);
-          }
-        } catch (e) {
-          console.error(`[purge] ${app.key} 정리 실패 — ${d.userId}`, e);
-        }
-      }
+    const apps: Record<string, Record<string, string>> = {};
+    for (const d of targets) {
+      apps[d.userId ?? String(d._id)] = await purgeUserAcrossApps({ id: String(d._id), userId: d.userId });
     }
 
-    const ids = doomed.map((d) => d._id);
+    const ids = targets.map((d) => d._id);
     const result = await User.deleteMany({ _id: { $in: ids } }).exec();
 
     console.log(
       `[purge] ${result.deletedCount}건 폐기 (기준 ${cutoff.toISOString()}) ` +
-        doomed.map((d) => d.userId ?? String(d._id)).join(","),
+        targets.map((d) => d.userId ?? String(d._id)).join(","),
     );
 
     return NextResponse.json({
       ok: true,
       purged: result.deletedCount,
+      children: children.length,
+      apps,
       cutoff: cutoff.toISOString(),
       /* 한 번에 500건까지만 본다. 남으면 다음 날 이어서 지운다 */
       more: doomed.length === 500,

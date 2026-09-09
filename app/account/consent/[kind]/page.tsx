@@ -52,7 +52,7 @@ function ConsentInner() {
     try {
       const res = await fetch("/api/account/consents");
       if (!res.ok) {
-        setMsg("로그인이 필요해요.");
+        setMsg(res.status === 403 ? "자녀 프로필의 동의는 보호자 프로필에서 '자녀 관리'로 설정해요." : "로그인이 필요해요.");
         return;
       }
       const json = (await res.json()) as {

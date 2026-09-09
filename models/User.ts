@@ -165,6 +165,14 @@ const UserSchema = new Schema(
      * 포털 /api/auth/migrate-pin 이 켜고 verify-email 이 끈다. 다른 앱은 읽지 않는다.
      */
     pinRetireOnVerify: { type: Boolean, default: false },
+    /**
+     * 보호자·자녀 계정 (2026-09-09). 자녀는 별도 문서고 `parentId` 가 보호자 `_id` 다.
+     * 자녀에는 이메일·전화번호·비밀번호가 없다. 만 14세부터 독립(이메일·비밀번호 등록 → 인증)하면
+     * `parentId` 가 풀리고 `independentAt` 이 찍힌다. 다른 앱은 읽지 않는다 → myjane/lib/family.ts
+     */
+    parentId: { type: Schema.Types.ObjectId, default: null, index: true },
+    independenceOnVerify: { type: Boolean, default: false },
+    independentAt: { type: Date, default: null },
 
     /**
      * 탈퇴 확인 메일의 토큰. 발급 후 30분에 만료되고 **한 번 쓰면 폐기**한다.

@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Suspense, useCallback, useEffect, useState } from "react";
 import { AuthShell, AuthTabs } from "@/components/AuthShell";
+import { ProfilePicker, type Profile } from "@/components/ProfilePicker";
 import { buildReturnUrl, getApp } from "@/lib/apps";
 import { IDENTIFIER_HINT } from "@/lib/identifier";
 import {
@@ -32,6 +33,12 @@ function LoginForm() {
   const [reveal, setReveal] = useState(false);
   const [busy, setBusy] = useState(false);
   const [msg, setMsg] = useState<string | null>(null);
+  /* 자녀가 있는 계정 — 로그인 뒤 어느 프로필로 들어갈지 고른다 */
+  const [pick, setPick] = useState<{ token: string; profiles: Profile[] } | null>(null);
+
+  /* 앱에서 오지 않았을 때 돌아갈 곳 — 포털 안 경로만 허용한다 (오픈 리다이렉트 방지) */
+  const rawNext = params.get("next");
+  const localNext = rawNext && rawNext.startsWith("/") && !rawNext.startsWith("//") ? rawNext : "/";
 
   useEffect(() => {
     if (!loadSession()) return;
@@ -49,8 +56,8 @@ function LoginForm() {
     if (app?.requiresSessionToken && !hasUsableSession()) return;
 
     if (app) window.location.href = returnUrl;
-    else router.replace("/");
-  }, [app, returnUrl, router, params]);
+    else router.replace(localNext);
+  }, [app, returnUrl, router, params, localNext]);
 
   const login = useCallback(async () => {
     setBusy(true);
@@ -64,23 +71,61 @@ function LoginForm() {
       const json = (await res.json()) as {
         ok: boolean;
         user?: SessionUser;
-        token?: string;
+        choose?: boolean;
+        pickToken?: string;
+        profiles?: Profile[];
         error?: string;
       };
-      if (!res.ok || !json.ok || !json.user) {
+      if (!res.ok || !json.ok) {
         setMsg(json.error ?? "로그인에 실패했습니다.");
         return;
       }
-      // 토큰을 함께 저장해야 2hbk 같은 앱이 이 세션을 쓸 수 있다
-      saveSession(json.user, json.token);
+      if (json.choose && json.pickToken && json.profiles) {
+        setPick({ token: json.pickToken, profiles: json.profiles });
+        return;
+      }
+      if (!json.user) {
+        setMsg("로그인에 실패했습니다.");
+        return;
+      }
+      saveSession(json.user);
       if (app) window.location.href = returnUrl;
-      else router.replace("/");
+      else router.replace(localNext);
     } catch {
       setMsg("네트워크 오류입니다.");
     } finally {
       setBusy(false);
     }
-  }, [identifier, secret, app, returnUrl, router]);
+  }, [identifier, secret, app, returnUrl, router, localNext]);
+
+  const pickProfile = useCallback(
+    async (profile: Profile) => {
+      if (!pick) return;
+      setBusy(true);
+      setMsg(null);
+      try {
+        const res = await fetch("/api/auth/pick-profile", {
+          method: "POST",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify({ pickToken: pick.token, profileId: profile.id }),
+        });
+        const json = (await res.json()) as { ok: boolean; user?: SessionUser; error?: string };
+        if (!res.ok || !json.ok || !json.user) {
+          setMsg(json.error ?? "프로필을 고르지 못했어요.");
+          if (res.status === 401) setPick(null);
+          return;
+        }
+        saveSession(json.user);
+        if (app) window.location.href = returnUrl;
+        else router.replace(localNext);
+      } catch {
+        setMsg("네트워크 오류입니다.");
+      } finally {
+        setBusy(false);
+      }
+    },
+    [pick, app, returnUrl, router, localNext],
+  );
 
   const qs = params.toString();
   const withQs = (path: string) => (qs ? `${path}?${qs}` : path);
@@ -114,6 +159,16 @@ function LoginForm() {
     >
       <AuthTabs current="login" qs={qs} />
 
+      {pick ? (
+        <>
+          <h2 className="auth-title">누구로 들어갈까요?</h2>
+          <p className="auth-sub">보호자 본인 또는 자녀 프로필을 골라 주세요. 나중에 프로필 전환에서 바꿀 수 있어요.</p>
+          <ProfilePicker profiles={pick.profiles} busy={busy} onPick={(p) => void pickProfile(p)} />
+          {msg ? <p className="auth-msg">{msg}</p> : null}
+        </>
+      ) : null}
+
+      <div hidden={Boolean(pick)}>
       <h2 className="auth-title">다시 만나요</h2>
       <p className="auth-sub">{IDENTIFIER_HINT}</p>
 
@@ -168,7 +223,7 @@ function LoginForm() {
         </button>
       </form>
 
-      {msg ? <p className="auth-msg">{msg}</p> : null}
+      {msg && !pick ? <p className="auth-msg">{msg}</p> : null}
 
       <div className="auth-links">
         <div>
@@ -181,6 +236,7 @@ function LoginForm() {
           전화번호·PIN으로 쓰셨나요?{" "}
           <Link href={withQs("/migrate")}>이메일 계정으로 전환</Link>
         </div>
+      </div>
       </div>
     </AuthShell>
   );

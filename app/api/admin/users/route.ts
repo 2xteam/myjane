@@ -42,7 +42,7 @@ export async function GET(req: Request) {
 
     const rows = await User.find(filter)
       .select({
-        name: 1, nickname: 1, email: 1, phone: 1, pin: 1, password: 1,
+        name: 1, nickname: 1, email: 1, phone: 1, pin: 1, password: 1, parentId: 1,
         userId: 1, signupFrom: 1, adminRole: 1, createdAt: 1, lastLoginAt: 1,
       })
       .sort({ lastLoginAt: -1, createdAt: -1 })
@@ -62,6 +62,8 @@ export async function GET(req: Request) {
       userId: u.userId ?? null,
       signupFrom: u.signupFrom ?? null,
       adminRole: u.adminRole ?? null,
+      /** 자녀 프로필이면 보호자 회원 id → lib/family.ts */
+      parentId: u.parentId ? String(u.parentId) : null,
       createdAt: iso(u.createdAt),
       lastLoginAt: iso(u.lastLoginAt),
     }));

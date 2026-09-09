@@ -487,8 +487,8 @@ function SignupForm() {
                     <strong>보관</strong> — 탈퇴하시면 6개월 뒤 폐기합니다
                   </li>
                   <li>
-                    <strong>만 14세 미만</strong>은 아직 가입하실 수 없어요.
-                    보호자 계정에 자녀를 추가하는 방식을 준비하고 있습니다
+                    <strong>만 14세 미만</strong>은 직접 가입하지 않아요.
+                    보호자가 가입한 뒤 <strong>자녀 관리</strong>에서 프로필로 추가합니다
                   </li>
                   <li>
                     <strong>FitLog 을 쓰실 때</strong> — 인바디·피검사 기록은
