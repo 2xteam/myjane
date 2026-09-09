@@ -45,6 +45,23 @@ function ConsentInner() {
   const rawNext = search.get("next") ?? "";
   const next =
     rawNext.startsWith("http://") || rawNext.startsWith("https://") ? rawNext : null;
+  /*
+    이어서 받을 동의들 (앱의 consentGate 가 `then=overseas,guardian` 처럼 넘긴다).
+    하나 끝나면 다음 동의 화면으로, 다 끝나면 next 로. 이게 없으면 앱으로 돌아가
+    다음 게이트를 다시 만나 허용 화면이 두 번 뜬다.
+  */
+  const thenKinds = (search.get("then") ?? "").split(",").filter(isConsentKind);
+  const afterAgree = () => {
+    if (thenKinds.length > 0) {
+      const [nextKind, ...rest] = thenKinds;
+      const qs = new URLSearchParams();
+      if (rawNext) qs.set("next", rawNext);
+      if (rest.length) qs.set("then", rest.join(","));
+      window.location.href = `/account/consent/${nextKind}?${qs.toString()}`;
+      return;
+    }
+    if (next) window.location.href = next;
+  };
 
   const valid = isConsentKind(kind);
 
@@ -89,8 +106,8 @@ function ConsentInner() {
         return;
       }
       setAgreed(true);
-      /* 쓰려던 자리로 돌려보낸다 */
-      if (next) window.location.href = next;
+      /* 이어서 받을 동의가 있으면 그쪽으로, 없으면 쓰려던 자리로 */
+      afterAgree();
     } catch {
       setMsg("동의 처리에 실패했어요.");
     } finally {
