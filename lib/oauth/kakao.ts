@@ -23,9 +23,12 @@ export function kakaoAuthUrl(args: { redirectUri: string; state: string }): stri
     redirect_uri: args.redirectUri,
     response_type: "code",
     state: args.state,
-    /* 콘솔 동의항목에 켜 둔 것만 실제로 물어본다. 닉네임(필수) · 이메일(선택) */
-    scope: "profile_nickname,account_email",
   });
+  /*
+    scope 는 보내지 않는다 — 콘솔 [동의항목] 에 켜 둔 것을 카카오가 알아서 묻는다.
+    개인 앱은 이메일(account_email)이 "권한 없음" 이라, scope 에 적으면 invalid_scope 로 거절된다
+    (2026-09-10 콘솔 확인). 비즈 앱으로 전환해 이메일을 켜면 아무것도 바꾸지 않아도 이메일이 함께 온다.
+  */
   return `https://kauth.kakao.com/oauth/authorize?${q.toString()}`;
 }
 
