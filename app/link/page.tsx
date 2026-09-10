@@ -16,11 +16,19 @@ export const metadata: Metadata = {
  * 게시글에는 "프로필의 링크 확인" 이라고 적는다. 여기서 각 서비스의 **소개 페이지**로 보낸다
  * (`/home` 이 아니다 — 처음 온 사람은 로그인 전이다).
  *
- * 순서는 그때 홍보하는 서비스를 맨 위에 둔다. 지금은 FitLog.
+ * 순서는 그때 홍보하는 서비스를 맨 위에 둔다. 지금은 TypeLog(러너 16유형 게시글).
  * 한 제품처럼 묶어 소개하지 않는다 — 각자 한 줄씩, 계정만 공유한다는 말은 아래 한 줄로만
  * → my-obsidian-vault / 20-Design/서비스 카테고리와 카피 원칙.md · 30-Patterns/SNS 소개 카드와 게시글.md
  */
 const LINKS = [
+  {
+    name: "TypeLog",
+    role: "성향 기록",
+    href: "https://typelog.myjane.co.kr",
+    domain: "typelog.myjane.co.kr",
+    icon: "/typelog-icon.png",
+    desc: "질문에 답하면 나와 가까운 타입이 나와요. 러너 16유형도 있어요. 다시 하면 그 변화가 쌓여요.",
+  },
   {
     name: "FitLog",
     role: "건강 기록",
@@ -52,14 +60,6 @@ const LINKS = [
     domain: "2hbk.myjane.co.kr",
     icon: "/2hbk-icon.png",
     desc: "목표에 스티커를 모아 채워요. 혼자 해도, 친구와 같이 해도 돼요.",
-  },
-  {
-    name: "TypeLog",
-    role: "성향 기록",
-    href: "https://typelog.myjane.co.kr",
-    domain: "typelog.myjane.co.kr",
-    icon: "/typelog-icon.png",
-    desc: "질문에 답하면 나와 가까운 타입이 나와요. 다시 하면 그 변화가 쌓여요.",
   },
 ] as const;
 
