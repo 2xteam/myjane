@@ -40,7 +40,10 @@ export function AdminNav() {
     },
     {
       label: "운영",
-      items: [{ href: "/admin/members", label: "회원 관리" }],
+      items: [
+        { href: "/admin/members", label: "회원 관리" },
+        { href: "/admin/share", label: "공유 링크", hint: "/share" },
+      ],
     },
     {
       label: "앱",
