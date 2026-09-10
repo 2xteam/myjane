@@ -379,6 +379,14 @@ export default function PrivacyPage() {
                 </td>
               </tr>
               <tr>
+                <th scope="row">Kakao (카카오 로그인)</th>
+                <td>카카오 계정으로 로그인할 때 카카오가 주는 닉네임 · 이메일(동의한 경우) · 계정 고유값</td>
+                <td>
+                  소셜 로그인 (한국). 이용자가 카카오 계정으로 로그인을 선택한 경우에만. 카카오의 접근
+                  토큰은 저장하지 않습니다
+                </td>
+              </tr>
+              <tr>
                 <th scope="row">Google (Gmail SMTP)</th>
                 <td>이메일 주소</td>
                 <td>인증·비밀번호 재설정 메일 발송</td>

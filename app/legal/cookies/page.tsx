@@ -77,7 +77,7 @@ export default function CookiesPage() {
               <tr>
                 <th scope="row">oauth_state · oauth_signup</th>
                 <td>
-                  구글 계정으로 로그인하는 동안만 쓰는 진행 값이에요. 로그인 요청과 응답이 같은
+                  구글·카카오 계정으로 로그인하는 동안만 쓰는 진행 값이에요. 로그인 요청과 응답이 같은
                   브라우저인지 확인하고(위조 방지), 처음 가입하는 분의 이름·이메일을 동의 화면까지
                   잠깐 들고 가요. 스크립트가 읽을 수 없게(HttpOnly) 설정합니다.
                 </td>
