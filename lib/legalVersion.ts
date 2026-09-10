@@ -11,4 +11,4 @@
  *
  * → my-obsidian-vault / 50-Plans/C 법적 페이지.md
  */
-export const POLICY_VERSION = "2026-09-09";
+export const POLICY_VERSION = "2026-09-10";

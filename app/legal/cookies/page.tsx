@@ -75,6 +75,15 @@ export default function CookiesPage() {
                 <td>30일</td>
               </tr>
               <tr>
+                <th scope="row">oauth_state · oauth_signup</th>
+                <td>
+                  구글 계정으로 로그인하는 동안만 쓰는 진행 값이에요. 로그인 요청과 응답이 같은
+                  브라우저인지 확인하고(위조 방지), 처음 가입하는 분의 이름·이메일을 동의 화면까지
+                  잠깐 들고 가요. 스크립트가 읽을 수 없게(HttpOnly) 설정합니다.
+                </td>
+                <td>10분</td>
+              </tr>
+              <tr>
                 <th scope="row">snap_user</th>
                 <td>
                   화면에 이름을 보여 주기 위한 표시용 값입니다. 서버는 이 값을

@@ -56,3 +56,27 @@ export async function POST(req: Request) {
     return NextResponse.json({ ok: false, error: message }, { status: 500 });
   }
 }
+
+/** 소셜 콜백처럼 302 로 온 경우 — 로그인 응답 없이 `?pick=` 토큰만 있다. 프로필 목록을 돌려준다 */
+export async function GET(req: Request) {
+  try {
+    const uid = verifyPickToken(new URL(req.url).searchParams.get("pickToken"));
+    if (!uid) return NextResponse.json({ ok: false, error: "선택 시간이 지났어요. 다시 로그인해 주세요." }, { status: 401 });
+    await connectDB();
+    const User = getUserModel();
+    const guardian = await User.findById(uid, { name: 1, nickname: 1 }).lean().exec();
+    if (!guardian) return NextResponse.json({ ok: false, error: "계정을 찾을 수 없습니다." }, { status: 404 });
+    const children = await User.find({ parentId: guardian._id, independentAt: null, withdrawnAt: null }, { name: 1, nickname: 1 })
+      .sort({ createdAt: 1 }).lean().exec();
+    return NextResponse.json({
+      ok: true,
+      profiles: [
+        { id: String(guardian._id), name: guardian.nickname ?? guardian.name ?? "본인", kind: "self" },
+        ...children.map((c) => ({ id: String(c._id), name: c.nickname ?? c.name ?? "", kind: "child" })),
+      ],
+    });
+  } catch (err) {
+    const message = err instanceof Error ? err.message : "알 수 없는 오류가 발생했습니다.";
+    return NextResponse.json({ ok: false, error: message }, { status: 500 });
+  }
+}

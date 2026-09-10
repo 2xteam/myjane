@@ -371,6 +371,14 @@ export default function PrivacyPage() {
                 <td>사진에서 글자·값 읽기, AI 대화·상담</td>
               </tr>
               <tr>
+                <th scope="row">Google (구글 로그인)</th>
+                <td>구글 계정으로 로그인할 때 구글이 주는 이메일 · 이름 · 계정 고유값</td>
+                <td>
+                  소셜 로그인 (미국). 이용자가 구글 계정으로 로그인을 선택한 경우에만. 구글의 접근
+                  토큰은 저장하지 않고 신원을 확인하는 데만 씁니다
+                </td>
+              </tr>
+              <tr>
                 <th scope="row">Google (Gmail SMTP)</th>
                 <td>이메일 주소</td>
                 <td>인증·비밀번호 재설정 메일 발송</td>

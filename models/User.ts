@@ -166,6 +166,22 @@ const UserSchema = new Schema(
      */
     pinRetireOnVerify: { type: Boolean, default: false },
     /**
+     * 소셜 로그인 연결 (2026-09-10). 공급자 고유 id 로 회원을 찾는다 — 이메일은 바뀔 수 있다.
+     * 포털만 쓰고 만든다. 다른 앱은 저장 때 유실하지 않기 위해 스키마에만 둔다.
+     * → my-obsidian-vault / 50-Plans/G 소셜 로그인.md
+     */
+    providers: {
+      type: [
+        {
+          provider: { type: String, enum: ["google", "kakao", "naver"], required: true },
+          providerId: { type: String, required: true },
+          email: { type: String, default: null },
+          linkedAt: { type: Date, default: Date.now },
+        },
+      ],
+      default: [],
+    },
+    /**
      * 보호자·자녀 계정 (2026-09-09). 자녀는 별도 문서고 `parentId` 가 보호자 `_id` 다.
      * 자녀에는 이메일·전화번호·비밀번호가 없다. 만 14세부터 독립(이메일·비밀번호 등록 → 인증)하면
      * `parentId` 가 풀리고 `independentAt` 이 찍힌다. 다른 앱은 읽지 않는다 → myjane/lib/family.ts
@@ -238,6 +254,11 @@ UserSchema.index({ email: 1 });
 UserSchema.index(
   { userId: 1 },
   { unique: true, partialFilterExpression: { userId: { $type: "string" } } },
+);
+
+UserSchema.index(
+  { "providers.provider": 1, "providers.providerId": 1 },
+  { unique: true, partialFilterExpression: { "providers.provider": { $type: "string" } }, name: "providers_unique" },
 );
 
 export type User = InferSchemaType<typeof UserSchema>;
