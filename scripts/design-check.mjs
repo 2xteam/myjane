@@ -16,7 +16,7 @@ import { existsSync, readdirSync, statSync } from "node:fs";
 import path from "node:path";
 
 const ROOT = "C:/Dev";
-const APPS = ["myjane", "SnapWord", "SnapNote", "fitlog", "2hbk", "typelog"];
+const APPS = ["myjane", "SnapWord", "SnapNote", "fitlog", "2hbk", "typelog", "calmtouch"];
 
 /**
  * 검사에서 빼는 자리 — 브랜드 팔레트가 아닌 색이 들어 있다.

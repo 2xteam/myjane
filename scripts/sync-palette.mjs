@@ -112,6 +112,7 @@ const APPS = [
   { dir: "fitlog", vocab: "app", dark: true },
   { dir: "2hbk", vocab: "app", dark: true },
   { dir: "typelog", vocab: "app", dark: false },
+  { dir: "calmtouch", vocab: "app", dark: false },
 ];
 
 // ───────────────────────────── 대비 계산

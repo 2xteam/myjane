@@ -33,7 +33,7 @@ const here = dirname(fileURLToPath(import.meta.url));
 const root = resolve(here, "..");       // myjane
 const siblings = resolve(root, "..");   // C:\Dev
 
-const APPS = ["myjane", "SnapWord", "SnapNote", "fitlog", "2hbk", "typelog"];
+const APPS = ["myjane", "SnapWord", "SnapNote", "fitlog", "2hbk", "typelog", "calmtouch"];
 
 const write = process.argv.includes("--write");
 const source = join(root, "design", "elements.css");

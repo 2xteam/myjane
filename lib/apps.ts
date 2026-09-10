@@ -5,7 +5,7 @@
  * 세션 쿠키는 `.myjane.co.kr` 도메인으로 저장되므로 서브도메인 전체에서 그대로 읽힌다.
  */
 
-export type AppKey = "snapword" | "snapnote" | "fitlog" | "2hbk" | "typelog";
+export type AppKey = "snapword" | "snapnote" | "fitlog" | "2hbk" | "typelog" | "calmtouch";
 
 export type AppInfo = {
   key: AppKey;
@@ -85,6 +85,18 @@ export const APPS: Record<AppKey, AppInfo> = {
     requiresSessionToken: true,
     // "타입로그"는 받침 없이 끝나 `으로`가 어색하다
     particle: "로",
+  },
+  calmtouch: {
+    key: "calmtouch",
+    name: "CalmTouch",
+    origin: "https://calmtouch.myjane.co.kr",
+    icon: "/calmtouch-icon.png",
+    /*
+      CalmTouch 는 회원 기능이 없다 — 로그인 없이 쓰고 API 도 없다. 그래서 서명 토큰을
+      요구하지 않는다. 저장 기능이 생겨 `lib/auth.ts` 에 verifySessionToken 이 들어오면
+      그때 requiresSessionToken 을 켠다 → my-obsidian-vault / 10-Projects/CalmTouch.md
+    */
+    // "캄터치"는 받침(ㅊ)으로 끝나 기본값 `으로`가 맞다
   },
 };
 
