@@ -97,6 +97,11 @@ export async function GET(req: Request) {
     q.set("pick", signPickToken(String(user._id)));
     return append(NextResponse.redirect(`${origin}/login?${q.toString()}`, 302), clear);
   }
-  const to = st.from ? null : (st.next && st.next.startsWith("/") && !st.next.startsWith("//") ? st.next : "/");
-  return append(redirectWithSession(req, user, null, to ?? `${origin}/login${backQs}`), clear);
+  /*
+    ⚠️ NextResponse.redirect 는 **절대 URL** 만 받는다. 상대 경로("/")를 주면 던져서 500 이 난다 —
+    2026-09-10 첫 운영 시도에서 그랬다. 앱에서 왔으면(from) 로그인 화면으로 보내 거기서 앱 복귀 규칙을 태운다.
+  */
+  const localNext = st.next && st.next.startsWith("/") && !st.next.startsWith("//") ? st.next : "/";
+  const to = st.from ? `${origin}/login${backQs}` : `${origin}${localNext}`;
+  return append(redirectWithSession(req, user, null, to), clear);
 }
