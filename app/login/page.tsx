@@ -36,16 +36,16 @@ function LoginForm() {
   /* 자녀가 있는 계정 — 로그인 뒤 어느 프로필로 들어갈지 고른다 */
   const [pick, setPick] = useState<{ token: string; profiles: Profile[] } | null>(null);
   /* 소셜 로그인 — 환경 변수가 있는 공급자만 버튼을 그린다 */
-  const [social, setSocial] = useState<{ google: boolean; kakao: boolean } | null>(null);
+  const [social, setSocial] = useState<{ google: boolean; kakao: boolean; naver: boolean } | null>(null);
 
   useEffect(() => {
     void (async () => {
       try {
         const res = await fetch("/api/auth/oauth/providers");
-        const json = (await res.json()) as { ok: boolean; google?: boolean; kakao?: boolean };
-        setSocial({ google: Boolean(json.ok && json.google), kakao: Boolean(json.ok && json.kakao) });
+        const json = (await res.json()) as { ok: boolean; google?: boolean; kakao?: boolean; naver?: boolean };
+        setSocial({ google: Boolean(json.ok && json.google), kakao: Boolean(json.ok && json.kakao), naver: Boolean(json.ok && json.naver) });
       } catch {
-        setSocial({ google: false, kakao: false });
+        setSocial({ google: false, kakao: false, naver: false });
       }
     })();
   }, []);
@@ -57,7 +57,8 @@ function LoginForm() {
   useEffect(() => {
     const err = params.get("oauth_error");
     if (err) {
-      const who = params.get("provider") === "kakao" ? "카카오" : "구글";
+      const pv = params.get("provider");
+      const who = pv === "kakao" ? "카카오" : pv === "naver" ? "네이버" : "구글";
       const text: Record<string, string> = {
         denied: `${who} 로그인을 취소했어요.`,
         state_missing: "로그인 과정이 만료됐어요. 다시 시도해 주세요.",
@@ -79,7 +80,7 @@ function LoginForm() {
     }
   }, [params]);
 
-  const socialStart = (provider: "google" | "kakao") => {
+  const socialStart = (provider: "google" | "kakao" | "naver") => {
     const q = new URLSearchParams();
     const from = params.get("from");
     const next = params.get("next");
@@ -223,7 +224,7 @@ function LoginForm() {
       <div hidden={Boolean(pick)}>
       <h2 className="auth-title">다시 만나요</h2>
 
-      {social?.google || social?.kakao ? (
+      {social?.google || social?.kakao || social?.naver ? (
         <div style={{ display: "grid", gap: 10, margin: "14px 0 18px" }}>
           {social?.google ? (
           /* 구글 브랜드 규정 — 흰 바탕 · 회색 테두리 · G 로고 · "Google 계정으로 로그인". 로고를 바꾸지 않는다 */
@@ -282,6 +283,34 @@ function LoginForm() {
               <path fill="#000000" fillOpacity=".85" d="M12 3C6.48 3 2 6.58 2 11c0 2.83 1.86 5.31 4.66 6.72-.16.6-.6 2.2-.69 2.55-.11.43.16.42.33.31.14-.1 2.2-1.5 3.1-2.11.84.12 1.71.19 2.6.19 5.52 0 10-3.58 10-8s-4.48-8-10-8z" />
             </svg>
             카카오 로그인
+          </button>
+          ) : null}
+          {social?.naver ? (
+          /* 네이버 브랜드 규정 — 배경 #03C75A · 흰 글자 · N 로고 · 문구 "네이버 로그인" */
+          <button
+            type="button"
+            onClick={() => socialStart("naver")}
+            disabled={busy}
+            style={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              gap: 10,
+              width: "100%",
+              padding: "12px 16px",
+              borderRadius: 12,
+              border: "none",
+              background: "#03C75A",
+              color: "#fff",
+              font: "inherit",
+              fontWeight: 600,
+              cursor: "pointer",
+            }}
+          >
+            <svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true">
+              <path fill="#fff" d="M16.3 3v9.6L7.9 3H3v18h4.7v-9.6l8.4 9.6H21V3z" />
+            </svg>
+            네이버 로그인
           </button>
           ) : null}
           <p className="auth-hint" style={{ margin: 0, textAlign: "center" }}>
