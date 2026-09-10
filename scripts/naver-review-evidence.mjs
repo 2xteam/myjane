@@ -8,7 +8,7 @@
  * 인정되지 않고(다른 회원 정보도 노출된다), 동의창 캡처도 반려 사유다. 그래서 실제 화면 셋을 찍어
  * 항목별 활용 목적을 붙인다 —
  *   ① /signup/social   네이버 프로필로 첫 가입 확인 — 이름(별칭) 칸에 네이버 이름, 이메일을 계정 이메일로
- *   ② /login           이메일이 로그인 아이디
+ *   ② /login (운영)     이메일이 로그인 아이디 + 네이버 로그인 버튼
  *   ③ fitlog /my       화면에 이름 표시
  * 첫 가입 화면은 `oauth_signup` 서명 쿠키를 여기서 만들어 넣는다(콜백이 하는 일과 같다).
  * playwright-core 는 klead 저장소의 것을 빌린다.
@@ -83,7 +83,8 @@ async function shot(url, file, waitText, pg = page) {
   return buf.toString("base64");
 }
 const s1 = await shot("http://localhost:3010/signup/social", "_ev-signup.png", "가입 확인");
-const s2 = await shot("http://localhost:3010/login", "_ev-login.png", "다시 만나요", anonPage);
+/* 로그인 화면은 **운영**에서 찍는다 — 소셜 버튼은 환경 변수가 있는 배포에만 보인다(로컬엔 키가 없다) */
+const s2 = await shot("https://www.myjane.co.kr/login", "_ev-login.png", "네이버 로그인", anonPage);
 const s3 = nv ? await shot("http://localhost:3013/my", "_ev-my.png", "님의") : null;
 
 const html = `<!doctype html><html lang="ko"><head><meta charset="utf-8">
