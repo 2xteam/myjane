@@ -18,7 +18,7 @@ export const metadata: Metadata = {
  * **두 칸으로 나뉜다** (2026-09-10).
  *
  * | 위 | `SHARES` — 그때 나누고 있는 링크. 게시글마다 바뀐다. **비우면 시트가 사라진다** |
- * | 아래 | `LINKS` — 앱 소개 링크. 다섯 서비스. **순서도 내용도 그대로 둔다** |
+ * | 아래 | `LINKS` — 앱 소개 링크. 여섯 서비스. **순서도 내용도 그대로 둔다** (새 서비스는 끝에 붙인다) |
  *
  * 위 칸이 생기기 전에는 홍보하는 서비스를 `LINKS` 맨 위로 올렸다. **이제 순서를
  * 홍보에 맞춰 바꾸지 않는다** — 그때그때 바뀌는 것은 위 칸이 맡고, 아래는 자리가
@@ -98,6 +98,14 @@ const LINKS = [
     domain: "2hbk.myjane.co.kr",
     icon: "/2hbk-icon.png",
     desc: "목표에 스티커를 모아 채워요. 혼자 해도, 친구와 같이 해도 돼요.",
+  },
+  {
+    name: "CalmTouch",
+    role: "마음 쉼",
+    href: "https://calmtouch.myjane.co.kr",
+    domain: "calmtouch.myjane.co.kr",
+    icon: "/calmtouch-icon.png",
+    desc: "물감·물결·별·슬라임을 손끝으로 만져요. 손을 떼면 잔잔해져요. 로그인 없이 바로.",
   },
 ] as const;
 

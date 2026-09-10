@@ -16,8 +16,8 @@ import { ScrollProgress } from "@/components/ScrollProgress";
  * 근거: my-obsidian-vault → 20-Design/결쩜사 페이지 패턴.md
  *
  * 서비스는 **한 덩어리로 묶지 않는다.** 공부 기록(SnapWord·SnapNote)·건강
- * 기록(FitLog)·습관 기록(2hbk)·성향 기록(TypeLog)은 목적도 데이터도 다르므로
- * 시트를 나눠 따로 설명한다. 공유하는 것은 계정뿐이다.
+ * 기록(FitLog)·습관 기록(2hbk)·성향 기록(TypeLog)·마음 쉼(CalmTouch)은 목적도
+ * 데이터도 다르므로 시트를 나눠 따로 설명한다. 공유하는 것은 계정뿐이다.
  *
  * 시트는 흰색과 연보라를 번갈아 쌓는다 — 카테고리를 추가할 때 색 순서를
  * 확인하지 않으면 같은 색이 두 번 이어져 경계가 사라진다.
@@ -99,6 +99,20 @@ const TYPE_APPS: App[] = [
   },
 ];
 
+/** 마음 쉼 — 만지면 움직이고 두면 잔잔해지는 화면. 기록은 하지 않는다 */
+const CALM_APPS: App[] = [
+  {
+    name: "CalmTouch",
+    domain: "calmtouch.myjane.co.kr",
+    href: "https://calmtouch.myjane.co.kr/home",
+    icon: "/calmtouch-icon.png",
+    role: "마음 쉼",
+    description:
+      "물감, 물결, 별, 공, 슬라임. 손끝이 닿는 자리에서 움직이고, 손을 떼면 천천히 잔잔해져요. 정답도 점수도 없고 로그인도 필요 없어요. 잠깐 쉬고 싶을 때 열어요.",
+    chips: ["스물네 장면", "로그인 없이", "만지면 잔잔해져요"],
+  },
+];
+
 /** 카테고리를 넘어 공통으로 해당되는 것만 적는다 */
 const NOTES = [
   {
@@ -139,7 +153,7 @@ const FLOW = [
   {
     badges: [{ text: "골라서", point: false }],
     title: "쓸 서비스만 열어요",
-    body: "여섯 개를 다 열 필요가 없어요. 열지 않은 서비스는 아무것도 쌓이지 않아요.",
+    body: "일곱 개를 다 열 필요가 없어요. 열지 않은 서비스는 아무것도 쌓이지 않아요.",
   },
   {
     badges: [{ text: "설정 없음", point: true }],
@@ -201,7 +215,7 @@ export default function Home() {
       <main className="sheets">
         {/* 히어로 — 크림에서 연분홍으로 내려가는 밝은 시트 */}
         <section className="sheet sheet--dark sheet--point">
-          <p className="hero-badge">✦ 공부 · 건강 · 습관 기록</p>
+          <p className="hero-badge">✦ 공부 · 건강 · 습관 · 성향 기록 · 마음 쉼</p>
           <h1 className="headline">
             필요한 기록만,
             <br />
@@ -301,8 +315,29 @@ export default function Home() {
           </nav>
         </section>
 
-        {/* 공통 안내 — 흰 시트 (앞의 습관 기록이 연분홍이라서 색을 바꾼다) */}
+        {/* 마음 쉼 — 흰 시트 (앞의 습관 기록이 연청록이라서 색을 바꾼다) */}
         <section className="sheet sheet--point">
+          <div className="center">
+            <p className="eyebrow">CALM · 마음 쉼</p>
+            <h2 className="headline">
+              만지면
+              <br />
+              <span>잔잔해져요</span>
+            </h2>
+            <p className="lead">
+              물감이 번지고 별이 돌고 슬라임이 늘어나요. 기록은 남기지 않아요 — 잠깐 쉬는 화면이에요.
+            </p>
+          </div>
+
+          <nav className="apps apps--solo" aria-label="마음 쉼 서비스">
+            {CALM_APPS.map((app) => (
+              <AppCard key={app.name} app={app} />
+            ))}
+          </nav>
+        </section>
+
+        {/* 공통 안내 — 연청록 시트 (앞의 마음 쉼이 흰색이라서 색을 바꾼다) */}
+        <section className="sheet sheet--tint sheet--point">
           <div className="center">
             <p className="eyebrow">ABOUT MYJANE</p>
             <h2 className="headline">
@@ -325,8 +360,8 @@ export default function Home() {
           </div>
         </section>
 
-        {/* 시작하는 순서 — 앞의 ABOUT MYJANE 이 흰 시트라서 색을 바꾼다 */}
-        <section className="sheet sheet--tint">
+        {/* 시작하는 순서 — 앞의 ABOUT MYJANE 이 연청록이라서 흰색으로 */}
+        <section className="sheet">
           <div className="center">
             <p className="eyebrow">HOW IT WORKS · 시작하는 순서</p>
             <h2 className="headline">
