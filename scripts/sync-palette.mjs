@@ -42,6 +42,12 @@ const NAMES = {
     elevated: "--bg-elevated",
     border: "--border",
     borderSubtle: "--border-subtle",
+    /*
+      진한 테두리. myjane 에만 있던 것을 앱 어휘로 올렸다 (2026-09-18) —
+      aikit 의 가로 슬라이드가 스크롤바 손잡이와 점선 버튼에 이 값을 쓰는데,
+      선언이 없으면 **그 속성이 통째로 빠진 채** 렌더된다(규칙 B).
+    */
+    borderStrong: "--border-strong",
     text: "--text-primary",
     textDim: "--text-secondary",
     textMuted: "--text-muted",
@@ -113,6 +119,7 @@ const APPS = [
   { dir: "2hbk", vocab: "app", dark: true },
   { dir: "typelog", vocab: "app", dark: false },
   { dir: "calmtouch", vocab: "app", dark: false },
+  { dir: "aikit", vocab: "app", dark: false },
 ];
 
 // ───────────────────────────── 대비 계산

@@ -107,6 +107,14 @@ const LINKS = [
     icon: "/calmtouch-icon.png",
     desc: "물감·물결·별·슬라임을 손끝으로 만져요. 손을 떼면 잔잔해져요. 로그인 없이 바로.",
   },
+  {
+    name: "AIKit",
+    role: "프롬프트 기록",
+    href: "https://aikit.myjane.co.kr",
+    domain: "aikit.myjane.co.kr",
+    icon: "/aikit-icon.png",
+    desc: "넣은 사진·쓴 프롬프트·받은 이미지를 한 묶음으로 남겨요. 두 달 뒤에도 그대로 찾아 써요.",
+  },
 ] as const;
 
 /** 두 칸의 카드가 같은 모양이어야 한다 — 한 곳에 둔다 */

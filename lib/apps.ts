@@ -5,7 +5,14 @@
  * 세션 쿠키는 `.myjane.co.kr` 도메인으로 저장되므로 서브도메인 전체에서 그대로 읽힌다.
  */
 
-export type AppKey = "snapword" | "snapnote" | "fitlog" | "2hbk" | "typelog" | "calmtouch";
+export type AppKey =
+  | "snapword"
+  | "snapnote"
+  | "fitlog"
+  | "2hbk"
+  | "typelog"
+  | "calmtouch"
+  | "aikit";
 
 export type AppInfo = {
   key: AppKey;
@@ -36,11 +43,23 @@ export type AppInfo = {
    * `2hbk`는 "…케이"로 끝나 `으로`가 어색해서 `로`를 쓴다.
    */
   particle?: "으로" | "로";
+  /**
+   * 로컬 개발 포트 — **포털이 localhost 에서 돌 때만** 쓴다.
+   *
+   * 이게 없으면 로컬에서 로그인해도 `origin`(운영 도메인)으로 튕겨서
+   * **세션이 공유되지 않는 것처럼 보인다.** 쿠키는 멀쩡히 localhost 에
+   * host-only 로 심겼는데, 돌아간 곳이 로컬이 아닐 뿐이다.
+   * (2026-09-18 AIKit 로컬 개발에서 겪었다)
+   *
+   * 포트 표의 원본은 볼트 `Home.md` 다.
+   */
+  devPort?: number;
 };
 
 export const APPS: Record<AppKey, AppInfo> = {
   snapword: {
     key: "snapword",
+    devPort: 3001,
     name: "SnapWord",
     origin: "https://snapword.myjane.co.kr",
     icon: "/snapword-icon.png",
@@ -48,6 +67,7 @@ export const APPS: Record<AppKey, AppInfo> = {
   },
   snapnote: {
     key: "snapnote",
+    devPort: 3002,
     name: "SnapNote",
     origin: "https://snapnote.myjane.co.kr",
     icon: "/snapnote-icon.png",
@@ -55,6 +75,7 @@ export const APPS: Record<AppKey, AppInfo> = {
   },
   fitlog: {
     key: "fitlog",
+    devPort: 3003,
     name: "FitLog",
     origin: "https://fitlog.myjane.co.kr",
     icon: "/fitlog-icon.png",
@@ -63,6 +84,7 @@ export const APPS: Record<AppKey, AppInfo> = {
   },
   "2hbk": {
     key: "2hbk",
+    devPort: 3004,
     name: "2hbk",
     origin: "https://2hbk.myjane.co.kr",
     icon: "/2hbk-icon.png",
@@ -72,6 +94,7 @@ export const APPS: Record<AppKey, AppInfo> = {
   },
   typelog: {
     key: "typelog",
+    devPort: 3005,
     name: "TypeLog",
     origin: "https://typelog.myjane.co.kr",
     icon: "/typelog-icon.png",
@@ -88,6 +111,7 @@ export const APPS: Record<AppKey, AppInfo> = {
   },
   calmtouch: {
     key: "calmtouch",
+    devPort: 3007,
     name: "CalmTouch",
     origin: "https://calmtouch.myjane.co.kr",
     icon: "/calmtouch-icon.png",
@@ -97,6 +121,22 @@ export const APPS: Record<AppKey, AppInfo> = {
       그때 requiresSessionToken 을 켠다 → my-obsidian-vault / 10-Projects/CalmTouch.md
     */
     // "캄터치"는 받침(ㅊ)으로 끝나 기본값 `으로`가 맞다
+  },
+  aikit: {
+    key: "aikit",
+    devPort: 3008,
+    name: "AIKit",
+    origin: "https://aikit.myjane.co.kr",
+    icon: "/aikit-icon.png",
+    /*
+      AIKit 의 API 도 쿠키의 `id` 를 믿지 않고 **서명 토큰**을 검증한다
+      (`aikit/lib/auth.ts`). 이 표시가 없으면 포털이 토큰 없는 세션을 그대로
+      돌려보내고, 앱에서는 화면만 열린 채 API 가 401 로 떨어진다.
+      묶음과 이미지가 사람별로 갈리는 앱이라 더더욱 켜 둔다
+      → my-obsidian-vault / 30-Patterns/인증과 세션 공유.md
+    */
+    requiresSessionToken: true,
+    // "에이아이킷"은 받침(ㅅ)으로 끝나 기본값 `으로`가 맞다
   },
 };
 
@@ -115,5 +155,22 @@ export function buildReturnUrl(
 ): string {
   const path = next && next.startsWith("/") && !next.startsWith("//") ? next : "/home";
   if (!app) return "/";
-  return `${app.origin}${path}`;
+  return `${originFor(app)}${path}`;
+}
+
+/**
+ * 돌아갈 오리진 — **포털이 로컬이면 그 앱의 로컬 포트로.**
+ *
+ * 쿠키는 포트를 가리지 않으므로 `localhost:3000` 이 심은 세션을 `localhost:3008`
+ * 이 그대로 읽는다. 그런데 운영 오리진으로 돌려보내면 로컬에서 로그인해도
+ * **아직 열리지 않은 주소**로 가서 "세션이 공유되지 않는다"로 보인다.
+ *
+ * ⚠️ 운영에서는 이 분기를 타지 않는다 — `location.hostname` 이 localhost 일 때만이다.
+ */
+function originFor(app: AppInfo): string {
+  if (typeof window === "undefined") return app.origin;
+  const host = window.location.hostname;
+  const local = host === "localhost" || host === "127.0.0.1" || host.endsWith(".localhost");
+  if (local && app.devPort) return `${window.location.protocol}//${host}:${app.devPort}`;
+  return app.origin;
 }

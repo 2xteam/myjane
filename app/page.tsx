@@ -16,7 +16,8 @@ import { ScrollProgress } from "@/components/ScrollProgress";
  * 근거: my-obsidian-vault → 20-Design/결쩜사 페이지 패턴.md
  *
  * 서비스는 **한 덩어리로 묶지 않는다.** 공부 기록(SnapWord·SnapNote)·건강
- * 기록(FitLog)·습관 기록(2hbk)·성향 기록(TypeLog)·마음 쉼(CalmTouch)은 목적도
+ * 기록(FitLog)·습관 기록(2hbk)·성향 기록(TypeLog)·마음 쉼(CalmTouch)·프롬프트
+ * 기록(AIKit)은 목적도
  * 데이터도 다르므로 시트를 나눠 따로 설명한다. 공유하는 것은 계정뿐이다.
  *
  * 시트는 흰색과 연보라를 번갈아 쌓는다 — 카테고리를 추가할 때 색 순서를
@@ -110,6 +111,20 @@ const CALM_APPS: App[] = [
     description:
       "물감, 물결, 별, 공, 슬라임. 손끝이 닿는 자리에서 움직이고, 손을 떼면 천천히 잔잔해져요. 정답도 점수도 없고 로그인도 필요 없어요. 잠깐 쉬고 싶을 때 열어요.",
     chips: ["스물네 장면", "로그인 없이", "만지면 잔잔해져요"],
+  },
+];
+
+/** 프롬프트 기록 — AI 에 넣은 것과 받은 것을 한 묶음으로 남긴다 */
+const PROMPT_APPS: App[] = [
+  {
+    name: "AIKit",
+    domain: "aikit.myjane.co.kr",
+    href: "https://aikit.myjane.co.kr/home",
+    icon: "/aikit-icon.png",
+    role: "프롬프트 기록",
+    description:
+      "AI로 이미지를 만들고 나면 어떤 사진을 넣었는지, 무슨 문장을 썼는지가 대화 기록 속에 묻혀요. 넣은 사진·쓴 프롬프트·받은 이미지를 한 묶음으로 남겨 두면 두 달 뒤에도 그대로 찾아 쓸 수 있어요. 이미지는 이 앱이 만들지 않아요.",
+    chips: ["묶음 기록", "프롬프트 복사", "결과 되가져오기"],
   },
 ];
 
@@ -336,8 +351,30 @@ export default function Home() {
           </nav>
         </section>
 
-        {/* 공통 안내 — 연청록 시트 (앞의 마음 쉼이 흰색이라서 색을 바꾼다) */}
+        {/* 프롬프트 기록 — 연청록 시트 (앞의 마음 쉼이 흰색이라서 색을 바꾼다) */}
         <section className="sheet sheet--tint sheet--point">
+          <div className="center">
+            <p className="eyebrow">PROMPT · 프롬프트 기록</p>
+            <h2 className="headline">
+              만든 것과
+              <br />
+              <span>만든 방법을 함께</span>
+            </h2>
+            <p className="lead">
+              AI에 넣은 사진과 쓴 문장, 받은 이미지를 한 묶음으로 남겨요. 이미지 생성은
+              하지 않아요.
+            </p>
+          </div>
+
+          <nav className="apps apps--solo" aria-label="프롬프트 기록 서비스">
+            {PROMPT_APPS.map((app) => (
+              <AppCard key={app.name} app={app} />
+            ))}
+          </nav>
+        </section>
+
+        {/* 공통 안내 — 흰 시트 (앞의 프롬프트 기록이 연청록이라서 색을 바꾼다) */}
+        <section className="sheet sheet--point">
           <div className="center">
             <p className="eyebrow">ABOUT MYJANE</p>
             <h2 className="headline">
@@ -360,8 +397,8 @@ export default function Home() {
           </div>
         </section>
 
-        {/* 시작하는 순서 — 앞의 ABOUT MYJANE 이 연청록이라서 흰색으로 */}
-        <section className="sheet">
+        {/* 시작하는 순서 — 앞의 ABOUT MYJANE 이 흰색이라서 연청록으로 */}
+        <section className="sheet sheet--tint">
           <div className="center">
             <p className="eyebrow">HOW IT WORKS · 시작하는 순서</p>
             <h2 className="headline">
