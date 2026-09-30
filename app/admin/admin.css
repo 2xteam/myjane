@@ -772,3 +772,140 @@
   .adm-body { padding: 20px; }
   .adm-head { padding: 0 20px; }
 }
+
+/* ── 확인 창 — 브라우저 기본 confirm() 대신 → ConfirmDialog.tsx ── */
+.adm-dialog-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  display: grid;
+  place-items: center;
+  padding: 16px;
+  background: rgba(15, 30, 35, 0.45);
+}
+
+.adm-dialog {
+  width: 100%;
+  max-width: 420px;
+  padding: 20px;
+  border-radius: 14px;
+  background: var(--bg-card);
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.25);
+}
+
+.adm-dialog-title {
+  margin: 0 0 10px;
+  font-size: 15px;
+  font-weight: 800;
+  color: var(--text-primary);
+}
+
+.adm-dialog-lines {
+  margin: 0 0 16px;
+  padding-left: 18px;
+  font-size: 12.5px;
+  line-height: 1.6;
+  color: var(--text-secondary);
+}
+
+.adm-dialog-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.adm-btn--solid-danger {
+  background: var(--danger-ink);
+  color: var(--on-accent);
+}
+
+/* ── 정렬 머리칸 · 쪽 넘김 → Pagination.tsx ── */
+.adm-sort {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 0;
+  border: none;
+  background: none;
+  font: inherit;
+  color: inherit;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.adm-sort-arrow {
+  font-size: 10px;
+  opacity: 0.35;
+}
+
+.adm-sort--active {
+  color: var(--accent-ink);
+}
+
+.adm-sort--active .adm-sort-arrow {
+  opacity: 1;
+}
+
+.adm-pager {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px 16px;
+  margin-top: 14px;
+  font-size: 12.5px;
+}
+
+.adm-pager-pages {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px;
+}
+
+.adm-pager-btn {
+  min-width: 30px;
+  height: 30px;
+  padding: 0 8px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: transparent;
+  color: var(--text-primary);
+  font-family: inherit;
+  font-size: 12.5px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.adm-pager-btn--on {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: var(--on-accent);
+}
+
+.adm-pager-btn:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+
+.adm-pager-gap {
+  padding: 0 4px;
+  color: var(--text-secondary);
+}
+
+.adm-pager-size,
+.adm-pager-custom {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: 0;
+}
+
+.adm-pager-select {
+  width: auto;
+  padding-right: 8px;
+}
+
+.adm-pager-input {
+  width: 80px;
+}

@@ -34,7 +34,8 @@ export default function AdminDashboard() {
         const res = await adminApi<{ me: Me; apps: AppInfo[] }>("/api/admin/me");
         setMe(res.me);
         setApps(res.apps);
-        const u = await adminApi<{ total: number }>("/api/admin/users");
+        // 전체 회원 수만 필요하다 — 한 건만 받아 total 을 쓴다
+        const u = await adminApi<{ total: number }>("/api/admin/users?pageSize=1");
         setUsers(u.total);
       } catch (err) {
         setError(adminErrorMessage(err));

@@ -22,6 +22,26 @@ function escapeRegex(s: string): string {
   return s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 }
 
+/**
+ * 정렬할 수 있는 항목 → 정렬에 쓰는 값.
+ * 화면의 열 이름과 같다. 이름은 닉네임이 있으면 닉네임(화면에 보이는 값)이다.
+ * 로그인 수단은 가진 수단의 개수, 2hbk 는 사용 여부, 권한은 마스터 > 운영자 > 없음.
+ */
+const SORT_FIELDS: Record<string, string> = {
+  name: "_sortName",
+  email: "email",
+  phone: "phone",
+  methods: "_methodCount",
+  signupFrom: "signupFrom",
+  uses2hbk: "_uses2hbk",
+  lastLoginAt: "lastLoginAt",
+  createdAt: "createdAt",
+  adminRole: "_roleRank",
+};
+
+const DEFAULT_SORT = "createdAt";
+const MAX_PAGE_SIZE = 500;
+
 export async function GET(req: Request) {
   const auth = await requireAdmin(req);
   if ("error" in auth) return auth.error;
@@ -29,7 +49,14 @@ export async function GET(req: Request) {
   try {
     const url = new URL(req.url);
     const q = (url.searchParams.get("q") ?? "").trim();
-    const limit = Math.min(Number(url.searchParams.get("limit") ?? 100) || 100, 500);
+
+    // 정렬 — 기본은 가입일 내림차순(최근 가입이 위)
+    const sortKey = SORT_FIELDS[url.searchParams.get("sort") ?? ""] ? url.searchParams.get("sort")! : DEFAULT_SORT;
+    const dir = url.searchParams.get("dir") === "asc" ? 1 : -1;
+
+    // 페이징 — 1부터 센다. 한 쪽은 1~500건
+    const pageSize = Math.min(Math.max(Math.floor(Number(url.searchParams.get("pageSize")) || 20), 1), MAX_PAGE_SIZE);
+    const page = Math.max(Math.floor(Number(url.searchParams.get("page")) || 1), 1);
 
     await connectDB();
     const User = getUserModel();
@@ -40,17 +67,61 @@ export async function GET(req: Request) {
       filter.$or = [{ name: rx }, { nickname: rx }, { email: rx }, { phone: rx }];
     }
 
-    const rows = await User.find(filter)
-      .select({
-        name: 1, nickname: 1, email: 1, phone: 1, pin: 1, password: 1, parentId: 1,
-        userId: 1, signupFrom: 1, adminRole: 1, createdAt: 1, lastLoginAt: 1,
-      })
-      .sort({ lastLoginAt: -1, createdAt: -1 })
-      .limit(limit)
-      .lean()
-      .exec();
+    /*
+      계산이 필요한 정렬(이름·로그인 수단·2hbk·권한)이 있어 aggregate 로 한 번에 센다.
+      같은 값끼리는 _id 로 순서를 고정한다 — 쪽을 넘길 때 같은 회원이 두 번 보이거나 빠지지 않게.
+    */
+    const [result] = await User.aggregate<{
+      rows: Array<Record<string, unknown>>;
+      total: Array<{ n: number }>;
+    }>([
+      { $match: filter },
+      {
+        $addFields: {
+          _sortName: { $toLower: { $ifNull: ["$nickname", { $ifNull: ["$name", ""] }] } },
+          _methodCount: {
+            $add: [
+              { $cond: [{ $gt: [{ $ifNull: ["$pin", ""] }, ""] }, 1, 0] },
+              { $cond: [{ $gt: [{ $ifNull: ["$password", ""] }, ""] }, 1, 0] },
+            ],
+          },
+          _uses2hbk: { $cond: [{ $gt: [{ $ifNull: ["$userId", ""] }, ""] }, 1, 0] },
+          _roleRank: {
+            $switch: {
+              branches: [
+                { case: { $eq: ["$adminRole", "master"] }, then: 2 },
+                { case: { $eq: ["$adminRole", "operator"] }, then: 1 },
+              ],
+              default: 0,
+            },
+          },
+        },
+      },
+      { $sort: { [SORT_FIELDS[sortKey]]: dir, _id: dir } },
+      {
+        $facet: {
+          rows: [
+            { $skip: (page - 1) * pageSize },
+            { $limit: pageSize },
+            {
+              $project: {
+                name: 1, nickname: 1, email: 1, phone: 1, pin: 1, password: 1, parentId: 1,
+                userId: 1, signupFrom: 1, adminRole: 1, createdAt: 1, lastLoginAt: 1,
+              },
+            },
+          ],
+          total: [{ $count: "n" }],
+        },
+      },
+    ]);
 
-    const users = rows.map((u) => ({
+    const total = result?.total[0]?.n ?? 0;
+    type Row = {
+      _id: unknown; name?: string; nickname?: string; email?: string; phone?: string; pin?: string;
+      password?: string; parentId?: unknown; userId?: string; signupFrom?: string;
+      adminRole?: string; createdAt?: unknown; lastLoginAt?: unknown;
+    };
+    const users = ((result?.rows ?? []) as Row[]).map((u) => ({
       id: String(u._id),
       name: u.nickname ?? u.name ?? "",
       email: u.email ?? null,
@@ -68,7 +139,15 @@ export async function GET(req: Request) {
       lastLoginAt: iso(u.lastLoginAt),
     }));
 
-    return NextResponse.json({ ok: true, users, total: users.length });
+    return NextResponse.json({
+      ok: true,
+      users,
+      total,
+      page,
+      pageSize,
+      sort: sortKey,
+      dir: dir === 1 ? "asc" : "desc",
+    });
   } catch (err) {
     return adminError(err);
   }
