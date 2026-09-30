@@ -5,6 +5,7 @@ import "./globals.css";
 // (import 는 파일 맨 앞이라야 하므로) 늘 먼저 들어가 진다.
 import "./elements.css";
 import { EmailPrompt } from "@/components/EmailPrompt";
+import { ImpersonationBar } from "@/components/ImpersonationBar";
 import { PasswordPrompt } from "@/components/PasswordPrompt";
 import { PolicyPrompt } from "@/components/PolicyPrompt";
 
@@ -64,6 +65,11 @@ export default function RootLayout({
         />
       </head>
       <body>
+        {/*
+          관리자 대리 로그인 경고 바. 대리 세션일 때만 맨 위에 고정된다.
+          여섯 앱에도 같은 파일이 있다 → components/ImpersonationBar.tsx · lib/impersonation.ts
+        */}
+        <ImpersonationBar portal />
         {children}
         {/*
           이메일 안내 띠. 로그인한 사람에게 해당될 때만, 하루에 한 번만 보인다.

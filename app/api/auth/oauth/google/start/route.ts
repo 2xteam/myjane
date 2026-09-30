@@ -22,7 +22,7 @@ export async function GET(req: Request) {
     provider: "google",
     from: url.searchParams.get("from"),
     next: url.searchParams.get("next"),
-    linkTo: url.searchParams.get("link") === "1" && claims && !claims.gid ? claims.uid : null,
+    linkTo: url.searchParams.get("link") === "1" && claims && !claims.gid && !claims.imp ? claims.uid : null,
   };
   const redirectUri = `${portalOrigin(req)}/api/auth/oauth/google/callback`;
   const res = NextResponse.redirect(googleAuthUrl({ redirectUri, state: st.state, nonce: st.nonce }), 302);

@@ -30,6 +30,12 @@ export type TokenClaims = {
   sv?: number;
   /** 자녀 프로필로 들어온 세션이면 보호자 `_id`. 없으면 본인 → myjane/lib/family.ts */
   gid?: string;
+  /**
+   * 관리자가 이 회원으로 **대리 로그인**한 세션이면 그 관리자의 `_id` → lib/impersonation.ts
+   * 수명이 1시간이고, 포털의 계정 설정 라우트는 이 값을 보고 막는다.
+   * 앱들은 모르는 필드라 무시하고 `exp` 만 보므로 1시간 뒤 모든 앱에서 함께 끊긴다.
+   */
+  imp?: string;
 };
 
 function getSecret(): string {
@@ -46,13 +52,21 @@ function hmac(body: string): string {
   return b64url(crypto.createHmac("sha256", getSecret()).update(body).digest());
 }
 
-export function signSessionToken(uid: string, userId: string, sv = 0, gid?: string): string {
+export function signSessionToken(
+  uid: string,
+  userId: string,
+  sv = 0,
+  gid?: string,
+  /** 대리 로그인 — `exp`(epoch 초)를 직접 정하고 `imp` 를 싣는다 → lib/impersonation.ts */
+  extra?: { exp: number; imp: string },
+): string {
   const claims: TokenClaims = {
     uid,
     u: userId,
-    exp: Math.floor(Date.now() / 1000) + TTL_SEC,
+    exp: extra?.exp ?? Math.floor(Date.now() / 1000) + TTL_SEC,
     sv,
     ...(gid ? { gid } : {}),
+    ...(extra ? { imp: extra.imp } : {}),
   };
   const body = b64url(Buffer.from(JSON.stringify(claims), "utf8"));
   return `${body}.${hmac(body)}`;
@@ -78,6 +92,7 @@ export function verifySessionToken(token: string | undefined | null): TokenClaim
     if (typeof claims.exp !== "number" || claims.exp * 1000 < Date.now()) return null;
     if (claims.sv !== undefined && typeof claims.sv !== "number") return null;
     if (claims.gid !== undefined && typeof claims.gid !== "string") return null;
+    if (claims.imp !== undefined && typeof claims.imp !== "string") return null;
     return claims;
   } catch {
     return null;

@@ -87,6 +87,18 @@ export async function requireSessionUser(
   } = {},
 ): Promise<{ user: UserDocument } | { error: NextResponse }> {
   const claims = getSessionClaims(req);
+  /*
+    관리자 대리 로그인 세션은 계정 설정을 **언제나** 막는다(옵션으로 풀 수 없다).
+    비밀번호·탈퇴·이메일·동의·자녀 관리는 본인만 한다 → lib/impersonation.ts
+  */
+  if (claims?.imp) {
+    return {
+      error: NextResponse.json(
+        { ok: false, impersonating: true, error: "고객 계정으로 대리 로그인 중에는 계정 설정을 바꿀 수 없어요." },
+        { status: 403 },
+      ),
+    };
+  }
   if (claims?.gid && !options.allowChild) {
     return {
       error: NextResponse.json(

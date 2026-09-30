@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { adminApi, adminErrorMessage, shortDate } from "@/lib/adminClient";
+import { useConfirm } from "./ConfirmDialog";
 
 export type AdminFeature = "stats" | "notices" | "inquiries" | "events";
 
@@ -167,6 +168,7 @@ function StatsView({ appKey, appName }: { appKey: string; appName: string }) {
 
 function NoticesView({ appKey, appName }: { appKey: string; appName: string }) {
   const [notices, setNotices] = useState<Notice[] | null>(null);
+  const { ask, dialog } = useConfirm();
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
   const [pinned, setPinned] = useState(false);
@@ -222,7 +224,7 @@ function NoticesView({ appKey, appName }: { appKey: string; appName: string }) {
   }
 
   async function remove(n: Notice) {
-    if (!confirm(`"${n.title}" 공지를 내릴까요?`)) return;
+    if (!(await ask({ title: `"${n.title}" 공지를 내릴까요?`, confirmLabel: "내리기", danger: true }))) return;
     try {
       const res = await adminApi<{ notices: Notice[] }>(
         `/api/admin/apps/${appKey}/notices?id=${encodeURIComponent(n.id)}`,
@@ -328,6 +330,7 @@ function NoticesView({ appKey, appName }: { appKey: string; appName: string }) {
           </div>
         )}
       </div>
+      {dialog}
     </>
   );
 }

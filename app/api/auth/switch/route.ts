@@ -48,6 +48,16 @@ export async function POST(req: Request) {
   try {
     const claims = getSessionClaims(req);
     if (!claims) return NextResponse.json({ ok: false, error: "로그인이 필요합니다." }, { status: 401 });
+    /*
+      대리 로그인 중에는 프로필을 바꾸지 못한다. 전환은 30일짜리 새 토큰을 내주므로
+      1시간 제한과 `imp` 표시를 벗어나는 통로가 된다 → lib/impersonation.ts
+    */
+    if (claims.imp) {
+      return NextResponse.json(
+        { ok: false, impersonating: true, error: "대리 로그인 중에는 프로필을 바꿀 수 없어요." },
+        { status: 403 },
+      );
+    }
 
     let body: { profileId?: unknown; password?: unknown };
     try {

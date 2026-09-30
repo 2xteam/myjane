@@ -25,6 +25,11 @@ export const SESSION_COOKIE = "snap_session";
 export const SESSION_MARK_COOKIE = "snap_auth";
 export const SESSION_COOKIE_TTL_SEC = 30 * 24 * 60 * 60;
 
+/** 대리 로그인 표지 — JS 가 읽는다(남은 시간·고객 이름). **표시용일 뿐 권한이 아니다** → lib/impersonation.ts */
+export const IMPERSONATION_COOKIE = "snap_imp";
+/** 대리 로그인 전 관리자 본인의 세션 토큰 — 끝낼 때 되돌린다. HttpOnly */
+export const ADMIN_RESTORE_COOKIE = "snap_admin_restore";
+
 function requestHost(req: Request): string {
   const raw = req.headers.get("x-forwarded-host") ?? req.headers.get("host") ?? "";
   return raw.split(",")[0].trim().replace(/:\d+$/, "").toLowerCase();
@@ -47,7 +52,8 @@ function isSecureRequest(req: Request): boolean {
   return !(host === "localhost" || host === "127.0.0.1" || host.endsWith(".localhost"));
 }
 
-function serialize(
+/** 다른 쿠키(대리 로그인 표지 등)도 같은 도메인·Secure 규칙으로 쓴다 → lib/impersonation.ts */
+export function serializeCookie(
   name: string,
   value: string,
   req: Request,
@@ -64,8 +70,8 @@ function serialize(
 export function sessionCookieHeaders(req: Request, token: string): string[] {
   const domain = cookieDomainFor(req);
   return [
-    serialize(SESSION_COOKIE, token, req, { maxAge: SESSION_COOKIE_TTL_SEC, httpOnly: true, domain }),
-    serialize(SESSION_MARK_COOKIE, "1", req, { maxAge: SESSION_COOKIE_TTL_SEC, httpOnly: false, domain }),
+    serializeCookie(SESSION_COOKIE, token, req, { maxAge: SESSION_COOKIE_TTL_SEC, httpOnly: true, domain }),
+    serializeCookie(SESSION_MARK_COOKIE, "1", req, { maxAge: SESSION_COOKIE_TTL_SEC, httpOnly: false, domain }),
   ];
 }
 
@@ -76,10 +82,11 @@ export function sessionCookieHeaders(req: Request, token: string): string[] {
 export function clearSessionCookieHeaders(req: Request): string[] {
   const domain = cookieDomainFor(req);
   const out: string[] = [];
-  for (const name of [SESSION_COOKIE, SESSION_MARK_COOKIE, SESSION_KEY]) {
-    const httpOnly = name === SESSION_COOKIE;
-    if (domain) out.push(serialize(name, "", req, { maxAge: 0, httpOnly, domain }));
-    out.push(serialize(name, "", req, { maxAge: 0, httpOnly }));
+  // 로그아웃하면 대리 로그인도 함께 끝난다 — 표지와 되돌릴 관리자 세션까지 지운다
+  for (const name of [SESSION_COOKIE, SESSION_MARK_COOKIE, SESSION_KEY, IMPERSONATION_COOKIE, ADMIN_RESTORE_COOKIE]) {
+    const httpOnly = name === SESSION_COOKIE || name === ADMIN_RESTORE_COOKIE;
+    if (domain) out.push(serializeCookie(name, "", req, { maxAge: 0, httpOnly, domain }));
+    out.push(serializeCookie(name, "", req, { maxAge: 0, httpOnly }));
   }
   return out;
 }

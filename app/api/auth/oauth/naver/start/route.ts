@@ -18,7 +18,7 @@ export async function GET(req: Request) {
     provider: "naver",
     from: url.searchParams.get("from"),
     next: url.searchParams.get("next"),
-    linkTo: url.searchParams.get("link") === "1" && claims && !claims.gid ? claims.uid : null,
+    linkTo: url.searchParams.get("link") === "1" && claims && !claims.gid && !claims.imp ? claims.uid : null,
   };
   const redirectUri = `${portalOrigin(req)}/api/auth/oauth/naver/callback`;
   const res = NextResponse.redirect(naverAuthUrl({ redirectUri, state: st.state }), 302);

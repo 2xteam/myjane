@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
+import { useConfirm } from "./ConfirmDialog";
 import { adminApi, adminErrorMessage, shortDate } from "@/lib/adminClient";
 
 type Row = {
@@ -29,6 +30,7 @@ export function SharePanel() {
   const [busy, setBusy] = useState(false);
   const [form, setForm] = useState(EMPTY);
   const [editing, setEditing] = useState<Row | null>(null);
+  const { ask, dialog } = useConfirm();
 
   const apply = (links: Row[]) => setRows([...links].sort((a, b) => a.order - b.order));
 
@@ -87,8 +89,16 @@ export function SharePanel() {
       return adminApi(`/api/admin/share/${other.id}`, { method: "PATCH", body: { order: b } });
     });
   };
-  const remove = (r: Row) => {
-    if (!confirm(`"${r.title}" 링크를 지울까요? 숨기기만 하려면 끄기를 쓰세요.`)) return;
+  const remove = async (r: Row) => {
+    if (
+      !(await ask({
+        title: `"${r.title}" 링크를 지울까요?`,
+        lines: ["숨기기만 하려면 끄기를 쓰세요."],
+        confirmLabel: "지우기",
+        danger: true,
+      }))
+    )
+      return;
     void run(() => adminApi(`/api/admin/share/${r.id}`, { method: "DELETE" }));
   };
 
@@ -175,6 +185,7 @@ export function SharePanel() {
           </div>
         )}
       </div>
+      {dialog}
     </>
   );
 }
