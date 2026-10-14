@@ -11,8 +11,7 @@ export type AppKey =
   | "fitlog"
   | "2hbk"
   | "typelog"
-  | "calmtouch"
-  | "aikit";
+  | "calmtouch";
 
 export type AppInfo = {
   key: AppKey;
@@ -121,22 +120,6 @@ export const APPS: Record<AppKey, AppInfo> = {
       그때 requiresSessionToken 을 켠다 → my-obsidian-vault / 10-Projects/CalmTouch.md
     */
     // "캄터치"는 받침(ㅊ)으로 끝나 기본값 `으로`가 맞다
-  },
-  aikit: {
-    key: "aikit",
-    devPort: 3008,
-    name: "AIKit",
-    origin: "https://aikit.myjane.co.kr",
-    icon: "/aikit-icon.png",
-    /*
-      AIKit 의 API 도 쿠키의 `id` 를 믿지 않고 **서명 토큰**을 검증한다
-      (`aikit/lib/auth.ts`). 이 표시가 없으면 포털이 토큰 없는 세션을 그대로
-      돌려보내고, 앱에서는 화면만 열린 채 API 가 401 로 떨어진다.
-      묶음과 이미지가 사람별로 갈리는 앱이라 더더욱 켜 둔다
-      → my-obsidian-vault / 30-Patterns/인증과 세션 공유.md
-    */
-    requiresSessionToken: true,
-    // "에이아이킷"은 받침(ㅅ)으로 끝나 기본값 `으로`가 맞다
   },
 };
 

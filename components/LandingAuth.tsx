@@ -78,13 +78,19 @@ export function HeroActions() {
   );
 }
 
-/** 마무리 회원가입 시트 — 로그인 상태에서는 통째로 감춘다 */
+/**
+ * 마무리 회원가입 시트 — 로그인 상태에서는 통째로 감춘다.
+ *
+ * ⚠️ 배경은 **연청록**이다. 앞의 "시작하는 순서" 가 흰색이라 번갈아 간다.
+ * 랜딩에서 시트를 더하거나 빼면 이 색까지 함께 본다 — 2026-10-14 에 AIKit
+ * 시트를 걷어내면서 이후 순서가 한 칸씩 밀려 흰색이 두 번 이어졌다.
+ */
 export function ClosingCta() {
   const { user, ready } = useSession();
   if (!ready || user) return null;
 
   return (
-    <section className="sheet center sheet--point">
+    <section className="sheet sheet--tint center sheet--point">
       <p className="eyebrow">START</p>
       <h2 className="headline">첫 기록을 남겨볼까요?</h2>
       <p className="lead">가입은 몇 칸이면 돼요. 서비스에 따라 전화번호와 PIN, 또는 이메일을 씁니다.</p>
