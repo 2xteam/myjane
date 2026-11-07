@@ -703,6 +703,63 @@ function UploadRelease({ onDone, latest }: { onDone: () => Promise<void>; latest
   );
 }
 
+/* ── 화면 묶음 — 앱 업데이트 없이 바뀌는 패널 · 자동화 스크립트(2026-11-08) ── */
+type UiBundleRow = { rev: number; notes: string; minApp: string; size: number; disabled: boolean; publishedAt: string | null };
+function UiBundlesCard() {
+  const [rows, setRows] = useState<UiBundleRow[] | null>(null);
+  const [msg, setMsg] = useState<{ ok: boolean; text: string } | null>(null);
+  const load = useCallback(async () => {
+    try {
+      setRows((await adminApi<{ bundles: UiBundleRow[] }>("/api/admin/ig-tidy/ui")).bundles);
+    } catch (err) {
+      setMsg({ ok: false, text: adminErrorMessage(err) });
+      setRows([]);
+    }
+  }, []);
+  useEffect(() => { void load(); }, [load]);
+  async function toggle(r: UiBundleRow) {
+    setMsg(null);
+    try {
+      await adminApi("/api/admin/ig-tidy/ui", { method: "PATCH", body: { rev: r.rev, disabled: !r.disabled } });
+      setMsg({ ok: true, text: r.disabled ? `화면 묶음 ${r.rev} 을 다시 켰어요.` : `화면 묶음 ${r.rev} 을 껐어요 — 앱들은 5분 안에 그 앞 화면으로 돌아가요.` });
+      await load();
+    } catch (err) {
+      setMsg({ ok: false, text: adminErrorMessage(err) });
+    }
+  }
+  const live = rows?.find((r) => !r.disabled);
+  return (
+    <div className="adm-card">
+      <p className="adm-card-title">화면 묶음 (앱 업데이트 없이 바뀌는 것)</p>
+      <p className="adm-card-sub">
+        패널 화면 · 인스타 자동화 스크립트는 앱을 다시 깔지 않고 바뀌어요. <code>ig-tidy-desktop</code> 에서
+        <code> npm run release -- --ui &quot;바뀐 점&quot;</code> 이 서명해서 올리고 여기 등록해요. 앱은 5분 안에 받아
+        작업이 돌고 있지 않으면 바로 바꿔요. 문제가 있으면 <b>끄기</b> — 그 앞 묶음(없으면 앱에 든 화면)으로 돌아가요.
+      </p>
+      {rows === null ? <p className="adm-empty">불러오는 중…</p> : rows.length === 0 ? <p className="adm-empty">아직 올린 화면 묶음이 없어요 — 앱에 든 화면을 써요.</p> : (
+        <div className="adm-table-wrap">
+          <table className="adm-table">
+            <thead><tr><th>묶음</th><th>올린 때</th><th>앱 버전</th><th>상태</th><th>바뀐 점</th><th></th></tr></thead>
+            <tbody>
+              {rows.map((r) => (
+                <tr key={r.rev}>
+                  <td style={{ fontWeight: 700 }}>{r.rev}</td>
+                  <td className="adm-muted">{shortDate(r.publishedAt)}</td>
+                  <td className="adm-muted">{r.minApp} 이상</td>
+                  <td>{r.disabled ? <span className="adm-pill">꺼짐</span> : live && live.rev === r.rev ? <span className="adm-pill adm-pill--done">쓰는 중</span> : "—"}</td>
+                  <td className="adm-wrap-cell">{r.notes || "—"}</td>
+                  <td><button className="adm-btn adm-btn--ghost adm-btn--sm" onClick={() => void toggle(r)}>{r.disabled ? "다시 켜기" : "끄기"}</button></td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
+      {msg ? <p className={msg.ok ? "adm-msg adm-msg--ok" : "adm-msg adm-msg--bad"}>{msg.text}</p> : null}
+    </div>
+  );
+}
+
 /* ── 배포 버전 ───────────────────────────────────────────── */
 function ReleasesView({ onSaved }: { onSaved: () => Promise<void> }) {
   const [rows, setRows] = useState<Release[] | null>(null);
@@ -738,6 +795,7 @@ function ReleasesView({ onSaved }: { onSaved: () => Promise<void> }) {
 
   return (
     <>
+      <UiBundlesCard />
       <div className="adm-card">
         <p className="adm-card-title">배포한 버전</p>
         <p className="adm-card-sub">

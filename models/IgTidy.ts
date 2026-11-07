@@ -356,3 +356,28 @@ ReleaseSchema.index({ version: 1 }, { unique: true });
 ReleaseSchema.index({ publishedAt: -1 });
 export type IgTidyRelease = InferSchemaType<typeof ReleaseSchema>;
 export const getIgReleaseModel = () => model<IgTidyRelease>("IgTidyRelease", ReleaseSchema, "releases");
+
+/* ── 화면 묶음 (2026-11-08) ─────────────────────────────────
+ * 앱 업데이트 없이 바꾸는 패널 · 인스타 자동화 스크립트. 릴리스 스크립트(npm run release -- --ui)가 만든다.
+ * 묶음은 gzip JSON 하나 — ed25519 로 서명했고, 앱은 내장 공개키로 확인한 뒤에만 쓴다(app/ui-bundle.js).
+ * disabled 를 켜면 앱들이 그 앞 묶음(없으면 앱에 든 화면)으로 돌아간다 — 되돌리기. */
+const UiBundleSchema = new Schema(
+  {
+    rev: { type: Number, required: true },
+    notes: { type: String, default: "" },
+    /** R2 경로 (ig-tidy/ui/ui-<rev>.json.gz) */
+    key: { type: String, required: true },
+    sha256: { type: String, required: true },
+    size: { type: Number, default: 0 },
+    /** 묶음 바이트에 대한 ed25519 서명(base64) */
+    signature: { type: String, required: true },
+    /** 이 묶음을 쓸 수 있는 가장 낮은 앱 버전 — 새 IPC 가 필요한 화면은 낮은 앱에 내려가지 않는다 */
+    minApp: { type: String, default: "0.0.0" },
+    disabled: { type: Boolean, default: false },
+    publishedAt: { type: Date, default: Date.now },
+  },
+  { versionKey: false },
+);
+UiBundleSchema.index({ rev: 1 }, { unique: true });
+export type IgTidyUiBundle = InferSchemaType<typeof UiBundleSchema>;
+export const getIgUiBundleModel = () => model<IgTidyUiBundle>("IgTidyUiBundle", UiBundleSchema, "ui_bundles");
