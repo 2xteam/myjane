@@ -39,7 +39,7 @@ function r2(): S3Client {
 }
 
 export function igTidyBucket(): string {
-  return process.env.IG_TIDY_R2_BUCKET || "myjane";
+  return process.env.IG_TIDY_R2_BUCKET || process.env.R2_BUCKET_NAME || "myjane";
 }
 
 /**
