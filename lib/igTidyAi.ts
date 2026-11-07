@@ -415,3 +415,211 @@ export async function analyzeIgStyle(input: { igUsername: string; samples: Style
     usage: { prompt: u?.prompt_tokens ?? null, completion: u?.completion_tokens ?? null, total: u?.total_tokens ?? null },
   };
 }
+
+/* ── AI 답글 (2026-11-08) ─────────────────────────────────────
+ * 앱이 **내 글**을 열어 다른 사람이 남긴 댓글 중 아직 답하지 않은 것을 찾고, 하나씩 답글을 부탁한다.
+ * 계정 주인이 자기 글에 달린 댓글에 답하는 것이다 — 남의 글에 말을 거는 댓글(generateIgComment)과 결이 다르다.
+ *   · 상대가 실제로 한 말(고마움 · 응원 · 질문)에 답한다. 한 문장 · 40자 안팎
+ *   · 질문의 답이 본문에 없으면 지어내지 않는다 — 사실 없이 다정하게만 답한다
+ *   · @ 멘션은 앱이 붙인다. 문구에는 해시태그 · 링크 · @ 를 넣지 않는다
+ *   · 스팸 · 광고 · 홍보 요청(dm me · collab) · 혐오 · 남을 태그만 한 댓글은 건너뛴다
+ * 언어 — **댓글의 언어로** 답한다(상대에게 답하는 것이라서). 댓글로 정할 수 없으면(이모지뿐) 본문 언어, 그다음 앱의 「우선 언어」.
+ * 존댓말 — 아래 replyPoliteness 참고. */
+export type AiReplyInput = {
+  /** 내 인스타그램 아이디(글 주인) */
+  owner: string;
+  caption: string;
+  commentAuthor: string;
+  commentText: string;
+  tone?: string;
+  style?: string;
+  customGuide?: string;
+  fallbackLang?: CommentLang;
+};
+export type AiReplyResult = {
+  skip: boolean;
+  reason: string;
+  reply: string;
+  lang: CommentLang;
+  model: string;
+  usage: { prompt: number | null; completion: number | null; total: number | null };
+};
+
+/** 스타일마다 답글에 꼭 넣을 것 — 댓글용 must 는 "글 속 구체적인 것을 짚어라" 라 답글에 맞지 않는다 */
+const REPLY_MUST: Record<IgCommentStyle, string> = {
+  basic: "상대가 한 말 하나에 담백하게 답하는 한 문장.",
+  hip: "요즘 말투로 가볍게 받아치는 한 문장. 반말 · 명령조는 쓰지 마세요.",
+  lively: "느낌표 하나 이상으로 반갑게 답하는 한 문장.",
+  humor: "상황을 살짝 비틀어 피식 웃게 하는 한 문장. 상대를 놀리지 마세요.",
+};
+
+/**
+ * 답글 존댓말 — 판단 기록(2026-11-08).
+ * 남의 글에 다는 댓글은 처음 보는 사람에게 거는 말이라 POLICY 가 늘 존댓말을 강제한다.
+ * 답글은 **내 글에 찾아온 사람**에게 답하는 것이라, 평소 그 계정 주인이 댓글에서 쓰는 말투를 따르는 게 자연스럽다.
+ * 그래서 「맞춤」 지침이 **측정값으로 반말이 많다고 분명히 적었을 때만**(analyzeIgStyle 이 존댓말 40% 미만이면
+ * "반말이 많습니다" 라고 쓴다) 반말을 허용하고, 그 밖에는 — 섞어 씀 · 존댓말 · 지침 없음 · 다른 스타일 — 존댓말로 끝낸다.
+ * 처음 보는 사람에게 반말로 답해 생기는 실례가, 아는 사람에게 존댓말로 답하는 어색함보다 크다.
+ */
+export function replyPoliteness(style: string | undefined, customGuide: string | undefined): "polite" | "casual" {
+  const g = style === "custom" ? String(customGuide ?? "") : "";
+  if (!g) return "polite";
+  if (/존댓말로\s*(씁|답|댓)/.test(g) || /섞어\s*씁/.test(g)) return "polite";
+  return /반말이\s*많|주로\s*반말|반말로\s*(씁|답|댓)|반말을\s*씁/.test(g) ? "casual" : "polite";
+}
+
+/**
+ * 답글 언어 — ① 댓글(commentLanguage, 상대 아이디는 빼고 센다)
+ *   ② 댓글이 짧아 ①이 못 정하면 짧은 글 기준으로 한 번 더 — 한글/가나가 하나라도 있으면 그 말, 로마자가 3자 이상이면 영어
+ *      ("Love it 😍" 같은 짧은 영어 댓글이 본문 언어(한국어)로 넘어가지 않게. commentLanguage 는 피드 본문용이라 4점이 문턱이다)
+ *   ③ 이모지뿐이면 본문 언어(commentLanguage, 내 아이디는 빼고) ④ 그래도 모르면 앱의 「우선 언어」
+ */
+export function replyLanguage(commentText: string, caption: string, fallback: CommentLang, commentAuthor = "", owner = ""): { code: CommentLang; source: "comment" | "caption" | "fallback" } {
+  const fromComment = commentLanguage(commentText, fallback, commentAuthor);
+  if (fromComment.source !== "fallback") return { code: fromComment.code, source: "comment" };
+  let bare = String(commentText || "").replace(/https?:\/\/\S+/g, " ").replace(/[#@][^\s#@]+/g, " ");
+  if (commentAuthor) bare = bare.split(commentAuthor).join(" ");
+  const s = scoreLang(bare);
+  if (s.ja >= 1 && s.ja >= s.ko) return { code: "ja", source: "comment" };
+  if (s.ko >= 1) return { code: "ko", source: "comment" };
+  if (s.en * 2.5 >= 3) return { code: "en", source: "comment" };
+  const fromCaption = commentLanguage(caption, fallback, owner);
+  if (fromCaption.source !== "fallback") return { code: fromCaption.code, source: "caption" };
+  return { code: fallback, source: "fallback" };
+}
+
+/**
+ * AI 를 부르기 전에 걸러 낸다(비용 없음) — 걸리면 까닭, 아니면 null.
+ *   · 내가 단 댓글  · 내용이 없는 댓글  · 다른 사람 @태그만 있는 댓글(친구 부르기 — 답할 말이 아니다)
+ */
+export function replyPrecheck(commentText: string, commentAuthor: string, owner: string): string | null {
+  if (commentAuthor && owner && commentAuthor.toLowerCase() === owner.toLowerCase()) return "내가 단 댓글이에요";
+  const text = String(commentText || "").trim();
+  if (!text) return "내용이 없는 댓글이에요";
+  const rest = text.replace(/@[A-Za-z0-9._]+/g, "").replace(/[\s.,!?~·…]+/g, "");
+  if (!rest && /@[A-Za-z0-9._]+/.test(text)) return "다른 사람을 태그만 한 댓글이에요";
+  return null;
+}
+
+const REPLY_BASE = `당신은 인스타그램 계정 주인을 대신해, **내 글에 다른 사람이 남긴 댓글**에 답글을 쓰는 도우미입니다.
+계정 주인이 직접 답하는 것처럼, 그 댓글에만 어울리는 짧은 답글 하나를 씁니다.
+
+[답글]
+- 상대가 **실제로 한 말**에 답합니다 — 고마움 · 칭찬에는 고마움으로, 응원에는 힘을 받았다는 말로, 질문에는 질문에 대한 답으로.
+- 질문의 답이 [내 글 본문] 에 **분명히 있을 때만** 그 사실로 답합니다. 없으면 지어내지 말고 사실 없이 다정하게 답합니다
+  (예: 장소 · 가격 · 제품 · 기록을 물었는데 본문에 없으면 "궁금해해 주셔서 고마워요" 처럼). "DM 드릴게요" 같은 약속도 하지 않습니다.
+- 한 문장, 40자 안팎. 길게 쓰지 않습니다.
+- 이모지는 스타일에 맞게 조금만, 문장 끝에 씁니다.
+- 말투는 아래 [스타일] 을 따르되, 스타일의 길이 · 예시는 댓글용이니 **말투만** 참고합니다. 예시 문장을 그대로 쓰지 않습니다.
+
+[건너뛰기]
+아래면 답글을 쓰지 말고 skip 을 true 로 답합니다.
+- 스팸 · 광고 · 홍보 · 판매 · "dm me" · "collab" · "check my page" · 맞팔 요청 · 협찬 제안
+- 혐오 · 욕설 · 비하 · 성적인 말 · 시비
+- 다른 사람을 태그만 한 댓글(친구 부르기)
+- 무슨 말인지 알 수 없는 댓글
+
+[출력]
+JSON 한 덩어리만: {"skip": false, "reason": "", "reply": "..."}
+skip 이 true 면 reason 에 까닭을 짧게, reply 는 "".`;
+
+function replyPolicy(politeness: "polite" | "casual") {
+  return `[반드시 지킬 것 — 위 말투 지시보다 우선]
+- 댓글이나 본문에 없는 사실을 지어내지 않습니다.
+- 해시태그 · 링크 · 계정 태그(@) · 홍보 · 내 계정 소개를 넣지 않습니다(상대 이름 @ 는 앱이 붙입니다).
+- 상대를 "당신", "님" 으로 부르지 않습니다. 호칭 없이 씁니다.
+- ${politeness === "casual"
+    ? "한국어 답글은 이 계정 주인의 평소 말투(맞춤 지침 — 반말이 많음)를 따릅니다. 다만 무례하거나 명령조로 쓰지 않습니다."
+    : "한국어 답글은 스타일과 상관없이 **존댓말(해요체)로 끝냅니다.**"}
+- 답글은 [이 답글의 언어] 하나로만 씁니다.
+- 한 문장, 40자 안팎을 넘기지 않습니다.`;
+}
+
+function replyLangRule(code: CommentLang, politeness: "polite" | "casual"): string {
+  if (code !== "ko") return LANG_RULE[code].replace("the comment", "the reply");
+  return politeness === "casual"
+    ? "한국어로만 쓰세요. 영어 단어 · 영어 감탄사 · 로마자를 섞지 마세요(본문 · 댓글에 나온 고유명사만 예외). 끝맺음은 계정 주인의 평소 말투를 따르세요."
+    : LANG_RULE.ko;
+}
+
+export async function generateIgReply(input: AiReplyInput): Promise<AiReplyResult> {
+  const apiKey = process.env.OPENAI_API_KEY;
+  if (!apiKey) throw new Error("OPENAI_API_KEY 환경 변수가 설정되지 않았습니다.");
+  const model = (process.env.OPENAI_MODEL ?? "gpt-4o-mini").trim() || "gpt-4o-mini";
+
+  const tone = (input.tone ?? "").trim().slice(0, 300);
+  const custom = input.style === "custom" && (input.customGuide ?? "").trim();
+  const style = custom ? customStyle(custom) : IG_COMMENT_STYLES[styleOf(input.style)];
+  const must = custom ? style.must : REPLY_MUST[styleOf(input.style)];
+  const politeness = replyPoliteness(custom ? "custom" : input.style, custom || undefined);
+  const lang = replyLanguage(input.commentText, input.caption, input.fallbackLang ?? "ko", input.commentAuthor, input.owner);
+  const rule = replyLangRule(lang.code, politeness);
+  const system = `${REPLY_BASE}\n\n[스타일 — ${style.label}]\n${style.guide}`
+    + `${tone ? `\n\n[사용자가 정한 말투 · 계정 성격]\n${tone}` : ""}\n\n${replyPolicy(politeness)}`
+    + `\n\n[이 답글의 언어 — 무엇보다 우선]\n${rule}`
+    + `\n\n[이번 답글에 꼭 들어갈 것 — ${style.label}]\n${must}`;
+
+  const text = [
+    `내 계정: @${input.owner}`,
+    `내 글 본문:\n${(input.caption || "(본문 없음)").slice(0, 1500)}`,
+    `댓글 쓴 사람: @${input.commentAuthor}`,
+    `댓글:\n${input.commentText.slice(0, 600)}`,
+    `답글 언어: ${rule}`,
+    `스타일(${style.label}): ${must}`,
+  ].join("\n\n");
+
+  const client = new OpenAI({ apiKey });
+  const messages: OpenAI.Chat.Completions.ChatCompletionMessageParam[] = [
+    { role: "system", content: system },
+    { role: "user", content: text },
+  ];
+  const seen = `${input.caption}\n${input.commentText}`;
+  const usage = { prompt: 0, completion: 0, total: 0 };
+  let usedModel = model;
+  let skip = false;
+  let reason = "";
+  let reply = "";
+  // 댓글과 같은 규칙 — 언어를 어기면 한 번만 다시, 또 어기면 건너뛴다
+  for (let attempt = 0; attempt < 2; attempt++) {
+    const completion = await client.chat.completions.create({
+      model,
+      temperature: attempt ? Math.min(style.temperature, 0.7) : style.temperature,
+      max_tokens: 160,
+      response_format: { type: "json_object" },
+      messages,
+    });
+    usedModel = completion.model || model;
+    const u = completion.usage;
+    usage.prompt += u?.prompt_tokens ?? 0;
+    usage.completion += u?.completion_tokens ?? 0;
+    usage.total += u?.total_tokens ?? 0;
+
+    const raw = completion.choices[0]?.message?.content ?? "";
+    const j = extractJson(raw) ?? {};
+    skip = j.skip === true;
+    reason = skip ? String(j.reason ?? "").slice(0, 120) : "";
+    reply = skip ? "" : cleanComment(String(j.reply ?? "")).slice(0, 120);
+    if (skip || !reply) break;
+
+    const slip = languageSlip(lang.code, reply, seen);
+    if (!slip) break;
+    if (attempt === 1) {
+      skip = true;
+      reason = `답글 언어를 맞추지 못해 건너뜀(${slip.slice(0, 40)})`;
+      reply = "";
+      break;
+    }
+    messages.push(
+      { role: "assistant", content: raw },
+      { role: "user", content: `방금 답글에 다른 언어가 섞였어요: ${slip}. ${rule} 같은 뜻을 이 언어로만 다시 써서 같은 JSON 으로 답하세요.` },
+    );
+  }
+  return {
+    skip: skip || !reply,
+    reason: skip ? reason : reply ? "" : "답글을 만들지 못했어요",
+    reply,
+    lang: lang.code,
+    model: usedModel,
+    usage: { prompt: usage.prompt || null, completion: usage.completion || null, total: usage.total || null },
+  };
+}

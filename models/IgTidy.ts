@@ -285,6 +285,13 @@ const AiLogSchema = new Schema(
     comment: { type: String, default: "" },
     reason: { type: String, default: "" },
     error: { type: String, default: "" },
+    /**
+     * 무엇을 만들었나 — comment(남의 글에 다는 댓글) · reply(내 글에 달린 댓글에 다는 답글, 2026-11-08).
+     * 예전 줄에는 이 칸이 없다 — 없으면 comment 로 본다(집계는 `$ne: "reply"` 로 센다).
+     */
+    kind: { type: String, default: "comment" },
+    /** 답글일 때 — 상대가 남긴 댓글(관리자가 만든 문구와 함께 훑어본다) */
+    inReplyTo: { type: String, default: "" },
     at: { type: Date, default: Date.now },
   },
   { versionKey: false },

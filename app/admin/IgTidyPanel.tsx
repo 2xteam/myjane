@@ -451,7 +451,7 @@ function PlaysView({ members }: { members: Member[] }) {
 type AiLog = {
   id: string; at: string | null; member: string; igUsername: string; target: string; permalink: string;
   comment: string; skip: boolean; reason: string; ok: boolean; error: string; tokens: number | null; withImage: boolean; ms: number;
-  style: string;
+  style: string; kind: "comment" | "reply"; inReplyTo: string;
 };
 const STYLE_LABEL: Record<string, string> = { basic: "기본", hip: "힙한", lively: "활기찬", humor: "유머" };
 function AiLogsView({ members }: { members: Member[] }) {
@@ -479,7 +479,10 @@ function AiLogsView({ members }: { members: Member[] }) {
   return (
     <div className="adm-card">
       <p className="adm-card-title">AI 댓글 기록</p>
-      <p className="adm-card-sub">AI 가 만든 문구예요. 「미리 보기만」 으로 돌린 것도 여기 남아요. 게시 여부는 실행 이력의 행동 기록에서 봐요.</p>
+      <p className="adm-card-sub">
+        AI 가 만든 문구예요. 「미리 보기만」 으로 돌린 것도 여기 남아요. 게시 여부는 실행 이력의 행동 기록에서 봐요.
+        「답글」 은 내 글에 달린 댓글에 단 답이에요 — 상대 댓글이 함께 보여요.
+      </p>
       <div className="adm-row" style={{ marginBottom: 12 }}>
         <select className="adm-input" style={{ maxWidth: 220 }} value={uid} onChange={(e) => { setUid(e.target.value); setList((l) => ({ ...l, page: 1 })); }}>
           <option value="">모든 사람</option>
@@ -490,7 +493,7 @@ function AiLogsView({ members }: { members: Member[] }) {
       {rows === null ? <p className="adm-empty">불러오는 중…</p> : rows.length === 0 ? <p className="adm-empty">아직 없어요.</p> : (
         <div className="adm-table-wrap">
           <table className="adm-table">
-            <thead><tr><th>때</th><th>회원 · 아이디</th><th>누구 글</th><th>스타일</th><th>만든 문구</th><th>토큰 · 사진</th></tr></thead>
+            <thead><tr><th>때</th><th>회원 · 아이디</th><th>누구 글 · 댓글</th><th>스타일</th><th>만든 문구</th><th>토큰 · 사진</th></tr></thead>
             <tbody>
               {rows.map((r) => (
                 <tr key={r.id}>
@@ -499,8 +502,12 @@ function AiLogsView({ members }: { members: Member[] }) {
                   <td>
                     {r.permalink ? <a href={`https://www.instagram.com${r.permalink}`} target="_blank" rel="noreferrer">@{r.target}</a> : `@${r.target}`}
                   </td>
-                  <td><span className="adm-pill">{STYLE_LABEL[r.style] ?? r.style}</span></td>
+                  <td>
+                    <span className="adm-pill">{STYLE_LABEL[r.style] ?? r.style}</span>
+                    {r.kind === "reply" ? <div><span className="adm-pill adm-pill--wait">답글</span></div> : null}
+                  </td>
                   <td className="adm-wrap-cell">
+                    {r.kind === "reply" && r.inReplyTo ? <div className="adm-muted">↳ 「{r.inReplyTo}」</div> : null}
                     {!r.ok ? <span className="adm-msg adm-msg--bad">실패 — {r.error}</span>
                       : r.skip ? <span className="adm-muted">건너뜀 — {r.reason || "까닭 없음"}</span>
                       : r.comment}

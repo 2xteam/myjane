@@ -42,6 +42,8 @@ export async function GET(req: Request) {
         igUsername: r.igUsername, target: r.target, permalink: r.permalink,
         comment: r.comment, skip: !!r.skip, reason: r.reason, ok: !!r.ok, error: r.error,
         tokens: r.totalTokens ?? null, withImage: !!r.withImage, ms: r.ms, style: r.style ?? "basic",
+        // 예전 줄에는 kind 가 없다 — 댓글로 본다
+        kind: r.kind === "reply" ? "reply" : "comment", inReplyTo: r.inReplyTo ?? "",
       })),
     });
   } catch (err) {
