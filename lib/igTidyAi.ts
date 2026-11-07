@@ -307,17 +307,53 @@ const STYLE_SYSTEM = `당신은 인스타그램 사용자의 댓글 습관을 �
 - 피하는 것(관찰되면)
 
 지키는 것
+- 입력 맨 앞의 [측정값] 은 코드가 직접 센 숫자입니다. 존댓말/반말 · 길이 · 이모지는 **측정값과 어긋나게 쓰지 않습니다**
+  (끝맺음이 있는 것 중 존댓말이 60% 이상이면 "존댓말로 씁니다", 40% 미만이면 "반말이 많습니다", 그 사이면 "섞어 씁니다").
 - 사람 이름 · 계정(@) · 장소 · 날짜 · 개인 사정 같은 사실은 지침에 넣지 않습니다. 말투만 옮깁니다.
 - 지침은 한국어로, 다른 AI 에게 주는 지시문 형태(~씁니다 / ~합니다)로 600자 안쪽.
 - 댓글이 적으면(5개 미만) 본문 말투로 보충하되 summary 에 "근거가 적어요" 라고 적습니다.
 
 출력은 JSON 한 덩어리만: {"guide": "...", "summary": "사용자에게 보여 줄 한두 문장 요약"}`;
 
+/**
+ * 모델이 말투를 거꾸로 읽는 일이 있었다(2026-11-07 — 「감사합니다 · 수고하셨습니다」 가 대부분인데 "주로 반말").
+ * 그래서 존댓말 비율 · 길이 · 이모지 · ㅋㅋ/ㅎㅎ 는 코드가 세어 [측정값] 으로 앞에 붙인다.
+ */
+export function styleStats(comments: string[]): string {
+  const cs = comments.map((c) => c.trim()).filter(Boolean);
+  if (!cs.length) return "[측정값] 내 댓글 없음";
+  const EMOJI = /\p{Extended_Pictographic}/gu;
+  const bare = (c: string) => c.replace(EMOJI, "").replace(/[\s!?.~,…^ㅋㅎㅠㅜ‘’'"]+$/u, "").trim();
+  const hangul = cs.filter((c) => /[\uac00-\ud7a3]/.test(c));
+  const polite = hangul.filter((c) => /(요|니다|세요|죠|용|여|예|십시오|까요)$/.test(bare(c)) || /(습니다|세요|해요|에요|예요|네요|어요|아요)/.test(c));
+  // 반말로 끝나는 것 — 감탄 · 이모지 · 「화이팅」 처럼 끝맺음이 없는 말은 어느 쪽에도 넣지 않는다
+  const casual = hangul.filter((c) => !polite.includes(c) && /(어|야|지|다|자|해|게|래|냐|니|네|군|걸|거든|워|와|줘|아)$/.test(bare(c)));
+  const lens = cs.map((c) => [...c].length).sort((a, b) => a - b);
+  const median = lens[Math.floor(lens.length / 2)];
+  const freq = new Map<string, number>();
+  for (const c of cs) for (const e of c.match(EMOJI) ?? []) freq.set(e, (freq.get(e) ?? 0) + 1);
+  const top = [...freq.entries()].sort((a, b) => b[1] - a[1]).slice(0, 6).map(([e, n]) => `${e}×${n}`).join(" ");
+  const withEmoji = cs.filter((c) => EMOJI.test(c)).length;
+  EMOJI.lastIndex = 0;
+  const laugh = cs.filter((c) => /[ㅋㅎ]{2,}/.test(c)).length;
+  const bang = cs.filter((c) => /!/.test(c)).length;
+  const pct = (n: number, d: number) => (d ? Math.round((n / d) * 100) : 0);
+  return [
+    "[측정값 — 코드가 센 것]",
+    `- 내 댓글 ${cs.length}개 (한글 댓글 ${hangul.length}개)`,
+    `- 끝맺음: 존댓말 ${polite.length}개 · 반말 ${casual.length}개 · 끝맺음 없는 감탄/이모지 ${hangul.length - polite.length - casual.length}개 → 끝맺음이 있는 것 중 존댓말 ${pct(polite.length, polite.length + casual.length)}%`,
+    `- 길이 중간값 ${median}자 (짧은 쪽 25% ${lens[Math.floor(lens.length / 4)]}자 · 긴 쪽 25% ${lens[Math.floor((lens.length * 3) / 4)]}자)`,
+    `- 이모지가 있는 댓글 ${pct(withEmoji, cs.length)}% · 많이 쓴 이모지 ${top || "없음"}`,
+    `- ㅋㅋ/ㅎㅎ 가 있는 댓글 ${pct(laugh, cs.length)}% · 느낌표가 있는 댓글 ${pct(bang, cs.length)}%`,
+  ].join("\n");
+}
+
 export async function analyzeIgStyle(input: { igUsername: string; samples: StyleSample[] }): Promise<StyleAnalysis> {
   const apiKey = process.env.OPENAI_API_KEY;
   if (!apiKey) throw new Error("OPENAI_API_KEY 환경 변수가 설정되지 않았습니다.");
   const model = (process.env.OPENAI_MODEL ?? "gpt-4o-mini").trim() || "gpt-4o-mini";
 
+  const stats = styleStats(input.samples.flatMap((p) => p.comments));
   // 입력 크기를 묶는다 — 글 본문은 짧게, 댓글은 하나에 200자, 전체 12,000자
   let budget = 12_000;
   const blocks: string[] = [];
@@ -338,7 +374,7 @@ export async function analyzeIgStyle(input: { igUsername: string; samples: Style
     response_format: { type: "json_object" },
     messages: [
       { role: "system", content: STYLE_SYSTEM },
-      { role: "user", content: blocks.join("\n\n") || "(자료 없음)" },
+      { role: "user", content: `${stats}\n\n${blocks.join("\n\n") || "(자료 없음)"}` },
     ],
   });
   const raw = completion.choices[0]?.message?.content ?? "";
