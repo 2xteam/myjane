@@ -152,21 +152,32 @@ const LANG_RULE: Record<CommentLang, string> = {
 };
 export const langOf = (v: unknown): CommentLang => (v === "en" || v === "ja" ? v : "ko");
 
-/** 글의 언어를 정할 수 없을 때(본문이 거의 없음 · 해시태그 · 이모지뿐)는 fallback(앱의 「우선 언어」) */
-export function commentLanguage(caption: string, fallback: CommentLang = "ko"): { code: CommentLang; rule: string } {
-  const t = String(caption || "")
-    .replace(/https?:\/\/\S+/g, " ")
-    .replace(/[#@][^\s#@]+/g, " ");
-  const count = (re: RegExp) => (t.match(re) || []).length;
-  const ko = count(/[\uac00-\ud7a3]/g);
-  const ja = count(/[\u3040-\u30ff]/g);
+/**
+ * 글의 언어 — ① 본문(해시태그 · @ · 링크 뺀 것) ② 본문이 거의 없으면 해시태그 ③ 그래도 모르면 fallback(앱의 「우선 언어」).
+ * 해시태그는 **본문이 없을 때만** 본다 — 한국어 글에도 #running #nrc 같은 영어 태그가 흔해서
+ * 본문과 같이 세면 한국어 글이 영어로 넘어간다(2026-11-07 사용자 제안으로 ② 추가).
+ */
+type LangScore = { ko: number; ja: number; en: number; total: number };
+function scoreLang(text: string): LangScore {
+  const count = (re: RegExp) => (text.match(re) || []).length;
+  const ko = count(/[가-힣]/g);
+  const ja = count(/[぀-ヿ]/g);
   const en = count(/[A-Za-z]/g) / 2.5;   // 영문은 글자당 정보가 적어 한글 1자 ≈ 영문 2.5자로 본다
-  const total = ko + ja + en;
-  const pick = (code: CommentLang) => ({ code, rule: LANG_RULE[code] });
-  if (total < 4) return pick(fallback);
-  if (ja / total > 0.3 && ja >= ko) return pick("ja");
-  if (en > ko && en > ja) return pick("en");
-  return pick("ko");
+  return { ko, ja, en, total: ko + ja + en };
+}
+function dominant({ ko, ja, en, total }: LangScore): CommentLang {
+  if (ja / total > 0.3 && ja >= ko) return "ja";
+  if (en > ko && en > ja) return "en";
+  return "ko";
+}
+export function commentLanguage(caption: string, fallback: CommentLang = "ko"): { code: CommentLang; rule: string; source: "body" | "tags" | "fallback" } {
+  const raw = String(caption || "").replace(/https?:\/\/\S+/g, " ");
+  const body = scoreLang(raw.replace(/[#@][^\s#@]+/g, " "));
+  const tags = scoreLang((raw.match(/#[^\s#@]+/g) || []).map((x) => x.slice(1)).join(" "));
+  const pick = (code: CommentLang, source: "body" | "tags" | "fallback") => ({ code, rule: LANG_RULE[code], source });
+  if (body.total >= 4) return pick(dominant(body), "body");
+  if (tags.total >= 3) return pick(dominant(tags), "tags");
+  return pick(fallback, "fallback");
 }
 
 /**
