@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { connectDB } from "@/lib/db";
 import { aiQuota, igError, loadSettings, normalizeIg, publicSettings, requireIgTidyUser } from "@/lib/igTidy";
-import { generateIgComment, styleOf } from "@/lib/igTidyAi";
+import { generateIgComment, styleIdOf } from "@/lib/igTidyAi";
 import { getIgAccountModel, getIgAiLogModel, getIgPermModel } from "@/models/IgTidy";
 
 export const runtime = "nodejs";
@@ -66,8 +66,11 @@ export async function POST(req: Request) {
   const base = {
     uid: user._id, igUsername: ig, target: author,
     permalink: String(post.permalink ?? "").slice(0, 200), withImage: !!imageDataUrl,
-    style: styleOf(body.style),
+    style: styleIdOf(body.style),
   };
+  // 맞춤 — 이 IG 계정에 저장된 지침을 쓴다. 지침이 없으면 기본으로
+  const customGuide = base.style === "custom" ? String((account as { customStyleGuide?: string }).customStyleGuide ?? "").trim() : "";
+  if (base.style === "custom" && !customGuide) base.style = "basic";
   const t0 = Date.now();
   try {
     const r = await generateIgComment({
@@ -77,6 +80,7 @@ export async function POST(req: Request) {
       imageDataUrl,
       tone: typeof body.tone === "string" ? body.tone : "",
       style: base.style,
+      customGuide: customGuide || undefined,
     });
     await Logs.create({
       ...base, model: r.model, promptTokens: r.usage.prompt, completionTokens: r.usage.completion,

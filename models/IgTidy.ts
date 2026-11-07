@@ -41,6 +41,13 @@ const AccountSchema = new Schema(
     lastPlayAt: { type: Date, default: null },
     /** 관리자가 떼어 낸 아이디. 지우지 않고 표시만 한다(기록이 남아 있다) */
     removedAt: { type: Date, default: null },
+    /** 「맞춤」 댓글 스타일 — 이 IG 계정의 내 글 · 내가 단 댓글을 AI 가 읽고 만든 지침(사용자가 고칠 수 있다) */
+    customStyleGuide: { type: String, default: "" },
+    customStyleSummary: { type: String, default: "" },
+    /** 분석에 쓴 글 수 · 내 댓글 수 */
+    customStylePosts: { type: Number, default: 0 },
+    customStyleComments: { type: Number, default: 0 },
+    customStyleAt: { type: Date, default: null },
   },
   { versionKey: false },
 );
@@ -268,8 +275,10 @@ const AiLogSchema = new Schema(
     completionTokens: { type: Number, default: null },
     totalTokens: { type: Number, default: null },
     withImage: { type: Boolean, default: false },
-    /** 댓글 스타일 — basic · hip · lively · humor */
+    /** 댓글 스타일 — basic · hip · lively · humor · custom(맞춤), 스타일 분석은 analyze */
     style: { type: String, default: "basic" },
+    /** 이 호출이 쓴 단위 — 비어 있으면 사진 포함 aiPhotoWeight · 글만 1(댓글). 스타일 분석은 따로 적는다 */
+    units: { type: Number, default: null },
     ms: { type: Number, default: 0 },
     ok: { type: Boolean, default: false },
     skip: { type: Boolean, default: false },

@@ -182,7 +182,7 @@ export async function aiQuota(
     {
       $group: {
         _id: null,
-        units: { $sum: { $cond: ["$withImage", weight, 1] } },
+        units: { $sum: { $cond: ["$withImage", weight, { $ifNull: ["$units", 1] }] } },
         photo: { $sum: { $cond: ["$withImage", 1, 0] } },
         text: { $sum: { $cond: ["$withImage", 0, 1] } },
       },

@@ -23,8 +23,10 @@ export type AiCommentInput = {
   imageDataUrl?: string;
   /** 사용자가 정한 말투 · 계정 성격(예: "러닝 계정, 다정하게, 반말 금지") — 스타일 위에 덧붙는다 */
   tone?: string;
-  /** 댓글 스타일 — basic · hip · lively · humor. 모르는 값이면 basic */
+  /** 댓글 스타일 — basic · hip · lively · humor · custom. 모르는 값이면 basic */
   style?: string;
+  /** style 이 custom 일 때 쓰는 맞춤 지침(서버가 계정에서 꺼내 넣는다). 비어 있으면 basic */
+  customGuide?: string;
 };
 
 /**
@@ -74,6 +76,20 @@ export const IG_COMMENT_STYLES = {
 export type IgCommentStyle = keyof typeof IG_COMMENT_STYLES;
 export const styleOf = (s: unknown): IgCommentStyle =>
   (typeof s === "string" && s in IG_COMMENT_STYLES ? s : "basic") as IgCommentStyle;
+
+/** 요청의 스타일 — 맞춤(custom)까지. 맞춤은 계정에 지침이 있을 때만 쓰고 없으면 basic */
+export type IgCommentStyleId = IgCommentStyle | "custom";
+export const styleIdOf = (s: unknown): IgCommentStyleId => (s === "custom" ? "custom" : styleOf(s));
+
+/** 맞춤 스타일 — 사용자 글 · 댓글에서 뽑은 지침을 guide 로 쓴다. 언어 규칙 · POLICY 가 여전히 위에 선다 */
+function customStyle(guide: string) {
+  return {
+    label: "맞춤",
+    temperature: 0.85,
+    guide: `이 계정 주인이 평소 댓글을 쓰는 방식이에요. 이 사람이 직접 단 것처럼 씁니다.\n${guide.slice(0, 1500)}`,
+    must: "위 [스타일 — 맞춤] 의 말투 · 길이 · 이모지 · 끝맺음 습관을 따르세요. 지침에 적힌 표현을 매번 그대로 반복하지 말고 이 글에 맞게 쓰세요.",
+  };
+}
 
 export type AiCommentResult = {
   skip: boolean;
@@ -188,7 +204,8 @@ export async function generateIgComment(input: AiCommentInput): Promise<AiCommen
   const model = (process.env.OPENAI_MODEL ?? "gpt-4o-mini").trim() || "gpt-4o-mini";
 
   const tone = (input.tone ?? "").trim().slice(0, 300);
-  const style = IG_COMMENT_STYLES[styleOf(input.style)];
+  const custom = input.style === "custom" && (input.customGuide ?? "").trim();
+  const style = custom ? customStyle(custom) : IG_COMMENT_STYLES[styleOf(input.style)];
   const lang = commentLanguage(input.caption);
   const system = `${BASE}\n\n[스타일 — ${style.label}]\n${style.guide}`
     + `${tone ? `\n\n[사용자가 정한 말투 · 계정 성격]\n${tone}` : ""}\n\n${POLICY}`
@@ -260,5 +277,79 @@ export async function generateIgComment(input: AiCommentInput): Promise<AiCommen
     comment,
     model: usedModel,
     usage: { prompt: usage.prompt || null, completion: usage.completion || null, total: usage.total || null },
+  };
+}
+
+
+/* ── 맞춤 스타일 분석 (2026-11-07) ─────────────────────────────
+ * 앱이 내 글(본문)과 그 글들에 **내가 단 댓글 · 답글**을 모아 보내면, 댓글 쓰는 습관을 지침으로 정리한다.
+ * 지침은 댓글을 만들 때 [스타일 — 맞춤] 자리에 들어간다(언어 규칙 · POLICY 가 위에 선다).
+ * 지침에는 사람 이름 · 계정 · 장소 같은 개인 사실을 넣지 않는다 — 말투만 옮긴다. */
+export type StyleSample = { caption?: string; comments: string[] };
+export type StyleAnalysis = {
+  guide: string;
+  summary: string;
+  model: string;
+  usage: { prompt: number | null; completion: number | null; total: number | null };
+};
+
+const STYLE_SYSTEM = `당신은 인스타그램 사용자의 댓글 습관을 읽고, 다른 AI 가 그 사람처럼 댓글을 쓰도록 **스타일 지침**을 만드는 분석가입니다.
+
+입력은 이 사람이 올린 게시글 본문 몇 개와, 그 게시글들에 **이 사람이 직접 단 댓글 · 답글**입니다.
+댓글이 가장 중요한 근거입니다. 본문은 말투 참고로만 씁니다.
+
+지침에 담을 것(관찰된 것만, 근거가 없으면 적지 않음)
+- 존댓말 / 반말, 끝맺음 습관(~요, ~네요, ~ㅎㅎ, 느낌표 수 등)
+- 길이(대략 몇 자 · 몇 문장)
+- 이모지 · 이모티콘 · ㅋㅋ/ㅎㅎ 쓰는 정도와 자주 쓰는 것
+- 자주 쓰는 표현 · 감탄어 · 호응 방식(고마움 표현, 되묻기, 응원 등) — 짧은 예 2~4개까지만 따옴표로
+- 분위기(다정함 · 담백함 · 유쾌함 등)와 상대를 대하는 태도
+- 피하는 것(관찰되면)
+
+지키는 것
+- 사람 이름 · 계정(@) · 장소 · 날짜 · 개인 사정 같은 사실은 지침에 넣지 않습니다. 말투만 옮깁니다.
+- 지침은 한국어로, 다른 AI 에게 주는 지시문 형태(~씁니다 / ~합니다)로 600자 안쪽.
+- 댓글이 적으면(5개 미만) 본문 말투로 보충하되 summary 에 "근거가 적어요" 라고 적습니다.
+
+출력은 JSON 한 덩어리만: {"guide": "...", "summary": "사용자에게 보여 줄 한두 문장 요약"}`;
+
+export async function analyzeIgStyle(input: { igUsername: string; samples: StyleSample[] }): Promise<StyleAnalysis> {
+  const apiKey = process.env.OPENAI_API_KEY;
+  if (!apiKey) throw new Error("OPENAI_API_KEY 환경 변수가 설정되지 않았습니다.");
+  const model = (process.env.OPENAI_MODEL ?? "gpt-4o-mini").trim() || "gpt-4o-mini";
+
+  // 입력 크기를 묶는다 — 글 본문은 짧게, 댓글은 하나에 200자, 전체 12,000자
+  let budget = 12_000;
+  const blocks: string[] = [];
+  input.samples.forEach((p, i) => {
+    if (budget <= 0) return;
+    const cap = (p.caption ?? "").replace(/\s+/g, " ").trim().slice(0, 240);
+    const cs = p.comments.map((c) => c.replace(/\s+/g, " ").trim().slice(0, 200)).filter(Boolean);
+    const block = [`[글 ${i + 1}] ${cap || "(본문 없음)"}`, ...cs.map((c) => `  - 내 댓글: ${c}`)].join("\n");
+    budget -= block.length;
+    blocks.push(block);
+  });
+
+  const client = new OpenAI({ apiKey });
+  const completion = await client.chat.completions.create({
+    model,
+    temperature: 0.4,
+    max_tokens: 700,
+    response_format: { type: "json_object" },
+    messages: [
+      { role: "system", content: STYLE_SYSTEM },
+      { role: "user", content: blocks.join("\n\n") || "(자료 없음)" },
+    ],
+  });
+  const raw = completion.choices[0]?.message?.content ?? "";
+  const j = extractJson(raw) ?? {};
+  const guide = String(j.guide ?? "").trim().slice(0, 1500);
+  if (!guide) throw new Error("지침을 만들지 못했어요");
+  const u = completion.usage;
+  return {
+    guide,
+    summary: String(j.summary ?? "").trim().slice(0, 300),
+    model: completion.model || model,
+    usage: { prompt: u?.prompt_tokens ?? null, completion: u?.completion_tokens ?? null, total: u?.total_tokens ?? null },
   };
 }
