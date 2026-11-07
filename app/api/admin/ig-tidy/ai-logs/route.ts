@@ -41,7 +41,7 @@ export async function GET(req: Request) {
         member: nameOf.get(String(r.uid)) ?? "",
         igUsername: r.igUsername, target: r.target, permalink: r.permalink,
         comment: r.comment, skip: !!r.skip, reason: r.reason, ok: !!r.ok, error: r.error,
-        tokens: r.totalTokens ?? null, withImage: !!r.withImage, ms: r.ms,
+        tokens: r.totalTokens ?? null, withImage: !!r.withImage, ms: r.ms, style: r.style ?? "basic",
       })),
     });
   } catch (err) {

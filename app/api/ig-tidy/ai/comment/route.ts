@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { connectDB } from "@/lib/db";
-import { igError, loadSettings, normalizeIg, publicSettings, requireIgTidyUser, startOfTodayKst } from "@/lib/igTidy";
-import { generateIgComment } from "@/lib/igTidyAi";
+import { aiQuota, igError, loadSettings, normalizeIg, publicSettings, requireIgTidyUser } from "@/lib/igTidy";
+import { generateIgComment, styleOf } from "@/lib/igTidyAi";
 import { getIgAccountModel, getIgAiLogModel, getIgPermModel } from "@/models/IgTidy";
 
 export const runtime = "nodejs";
@@ -11,12 +11,14 @@ export const maxDuration = 30;
  * AI 댓글 하나 만들기 — IG Tidy 앱의 「AI 피드 댓글」 이 글마다 부른다.
  *
  * 본문: `{ igUsername, post: { author, caption, imageAlt, imageDataUrl, permalink }, tone }`
- * 응답: `{ ok, skip, reason, comment, usedToday, cap }`
+ * 응답: `{ ok, skip, reason, comment, photoDropped, quota }` — quota 는 앱 AI댓글 대시보드가 그린다
  *
  * 막는 것(code)
- *   ai_not_allowed  이 회원은 AI 댓글 허용 전 — 앱이 「관리자에게 요청하기」 를 보여 준다
  *   ai_disabled     관리자가 AI 댓글을 전체로 꺼 둠
- *   ai_cap          이 인스타그램 아이디의 오늘 만들기 상한에 닿음
+ *   ai_cap          오늘 한도를 다 씀 — 승인 전이면 「관리자 승인을 받으면 …」 과 요청 버튼
+ *
+ * 승인 전(무료)에도 쓴다. 승인(igtidy.perms.aiComment)은 **한도를 올리는 것**이다(2026-11-07).
+ * 사용량은 단위 — 글만 1 · 사진 포함 aiPhotoWeight → lib/igTidy.ts aiQuota
  *
  * 만든 문구는 기록(ai_logs)에 남는다. 게시는 앱이 한다 — 서버는 만들기만 한다.
  */
@@ -28,7 +30,7 @@ export async function POST(req: Request) {
   const user = auth.user;
 
   const body = (await req.json().catch(() => ({}))) as {
-    igUsername?: unknown; tone?: unknown;
+    igUsername?: unknown; tone?: unknown; style?: unknown;
     post?: { author?: unknown; caption?: unknown; imageAlt?: unknown; imageDataUrl?: unknown; permalink?: unknown };
   };
   const ig = normalizeIg(body.igUsername);
@@ -38,11 +40,7 @@ export async function POST(req: Request) {
 
   await connectDB();
   const perm = await getIgPermModel().findOne({ uid: user._id }).lean().exec();
-  if (!perm || perm.aiComment !== true) {
-    return igError("ai_not_allowed", "AI 댓글은 관리자 허용이 필요해요. 관리자에게 요청해 주세요.", 403, {
-      requested: !!(perm && perm.aiRequestedAt),
-    });
-  }
+  const approved = !!(perm && perm.aiComment === true);
   const settings = publicSettings(await loadSettings());
   if (!settings.aiEnabled) return igError("ai_disabled", "관리자가 AI 댓글을 잠시 꺼 두었어요.", 503);
 
@@ -51,18 +49,24 @@ export async function POST(req: Request) {
     return igError("account_taken", `@${ig} 는 이 계정에 등록된 아이디가 아니에요.`, 409);
   }
 
+  /* 한도 — 승인 전에도 무료로 쓴다. 사진 몫(weight)이 모자라고 글 몫(1)은 남으면
+     사진을 빼고 글만으로 만든다(남은 한도를 끝까지 쓸 수 있게). */
   const Logs = getIgAiLogModel();
-  const usedToday = await Logs.countDocuments({ uid: user._id, igUsername: ig, at: { $gte: startOfTodayKst() }, ok: true }).exec();
-  if (settings.aiDailyCap && usedToday >= settings.aiDailyCap) {
-    return igError("ai_cap", `오늘 AI 댓글 ${settings.aiDailyCap}개를 다 만들었어요. 내일 다시 할 수 있어요.`, 429, {
-      usedToday, cap: settings.aiDailyCap,
-    });
+  const quota = await aiQuota(user._id, approved, settings);
+  let imageDataUrl = typeof post.imageDataUrl === "string" && post.imageDataUrl.length <= MAX_IMAGE ? post.imageDataUrl : undefined;
+  let photoDropped = false;
+  if (imageDataUrl && quota.leftUnits < quota.weight) { imageDataUrl = undefined; photoDropped = true; }
+  if (quota.leftUnits < 1) {
+    const msg = approved
+      ? `오늘 AI 댓글 한도(사진 포함 ${quota.photoDaily}개 분)를 다 썼어요. 내일 다시 할 수 있어요.`
+      : `오늘 무료 AI 댓글(사진 포함 ${quota.photoDaily}개 분)을 다 썼어요. 관리자 승인을 받으면 하루 사진 포함 ${quota.approvedPhotoDaily}개까지 쓸 수 있어요.`;
+    return igError("ai_cap", msg, 429, { quota, requested: !!(perm && perm.aiRequestedAt) });
   }
 
-  const imageDataUrl = typeof post.imageDataUrl === "string" && post.imageDataUrl.length <= MAX_IMAGE ? post.imageDataUrl : undefined;
   const base = {
     uid: user._id, igUsername: ig, target: author,
     permalink: String(post.permalink ?? "").slice(0, 200), withImage: !!imageDataUrl,
+    style: styleOf(body.style),
   };
   const t0 = Date.now();
   try {
@@ -72,14 +76,16 @@ export async function POST(req: Request) {
       imageAlt: typeof post.imageAlt === "string" ? post.imageAlt : undefined,
       imageDataUrl,
       tone: typeof body.tone === "string" ? body.tone : "",
+      style: base.style,
     });
     await Logs.create({
       ...base, model: r.model, promptTokens: r.usage.prompt, completionTokens: r.usage.completion,
       totalTokens: r.usage.total, ms: Date.now() - t0, ok: true, skip: r.skip, comment: r.comment, reason: r.reason,
     });
+    const cost = imageDataUrl ? quota.weight : 1;
+    const after = { ...quota, usedUnits: quota.usedUnits + cost, leftUnits: Math.max(0, quota.leftUnits - cost) };
     return NextResponse.json({
-      ok: true, skip: r.skip, reason: r.reason, comment: r.comment,
-      usedToday: usedToday + 1, cap: settings.aiDailyCap,
+      ok: true, skip: r.skip, reason: r.reason, comment: r.comment, photoDropped, quota: after,
     });
   } catch (err) {
     const message = err instanceof Error ? err.message : "알 수 없는 오류";

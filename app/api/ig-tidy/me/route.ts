@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { connectDB } from "@/lib/db";
 import { requireSessionUser } from "@/lib/serverSession";
 import {
+  aiQuota,
   compareVersion,
   igError,
   latestRelease,
@@ -87,9 +88,11 @@ export async function GET(req: Request) {
       live: live ? playSummary(live) : null,
       /** 기능별 허용 — 앱이 탭을 열지, 「관리자에게 요청하기」 를 보여 줄지 정한다 */
       features: {
-        aiComment: !!(perm && perm.aiComment === true) && s.aiEnabled,
+        // 승인 전에도 무료로 쓴다 — 승인은 한도를 올린다
+        aiComment: s.aiEnabled,
         aiCommentAllowed: !!(perm && perm.aiComment === true),
         aiRequested: !!(perm && perm.aiRequestedAt),
+        aiQuota: await aiQuota(user._id, !!(perm && perm.aiComment === true), s),
       },
     });
   } catch (err) {

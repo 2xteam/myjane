@@ -166,6 +166,45 @@ export async function todayUsage(uid: Types.ObjectId, igUsername: string): Promi
   return sum;
 }
 
+/**
+ * AI 댓글 오늘 사용량 — 단위로(글만 1 · 사진 포함 weight). myjane 계정 단위.
+ * 앱의 AI댓글 대시보드와 /api/ig-tidy/ai/comment 의 한도 판단이 이것 하나를 쓴다.
+ */
+export async function aiQuota(
+  uid: Types.ObjectId,
+  approved: boolean,
+  s: ReturnType<typeof publicSettings>,
+) {
+  const { getIgAiLogModel } = await import("@/models/IgTidy");
+  const weight = s.aiPhotoWeight;
+  const [row] = await getIgAiLogModel().aggregate<{ units: number; photo: number; text: number }>([
+    { $match: { uid, ok: true, at: { $gte: startOfTodayKst() } } },
+    {
+      $group: {
+        _id: null,
+        units: { $sum: { $cond: ["$withImage", weight, 1] } },
+        photo: { $sum: { $cond: ["$withImage", 1, 0] } },
+        text: { $sum: { $cond: ["$withImage", 0, 1] } },
+      },
+    },
+  ]);
+  const photoDaily = approved ? s.aiApprovedPhotoDaily : s.aiFreePhotoDaily;
+  const capUnits = photoDaily * weight;
+  const usedUnits = row?.units ?? 0;
+  return {
+    approved,
+    weight,
+    photoDaily,
+    capUnits,
+    usedUnits,
+    leftUnits: Math.max(0, capUnits - usedUnits),
+    usedPhoto: row?.photo ?? 0,
+    usedText: row?.text ?? 0,
+    freePhotoDaily: s.aiFreePhotoDaily,
+    approvedPhotoDaily: s.aiApprovedPhotoDaily,
+  };
+}
+
 /** 앱에 내려 주는 설정 모양 */
 export function publicSettings(s: IgTidySettings) {
   return {
@@ -175,7 +214,12 @@ export function publicSettings(s: IgTidySettings) {
     dailyCaps: (s.dailyCaps ?? {}) as Record<string, number>,
     minDelaySec: Number(s.minDelaySec) || 0,
     aiEnabled: (s as { aiEnabled?: boolean }).aiEnabled !== false,
-    aiDailyCap: Number((s as { aiDailyCap?: number }).aiDailyCap ?? 60) || 0,
+    aiFreePhotoDaily: Math.max(0, Number((s as { aiFreePhotoDaily?: number }).aiFreePhotoDaily ?? 50)),
+    aiApprovedPhotoDaily: Math.max(0, Number((s as { aiApprovedPhotoDaily?: number }).aiApprovedPhotoDaily ?? 300)),
+    aiPhotoWeight: Math.max(1, Number((s as { aiPhotoWeight?: number }).aiPhotoWeight ?? 4) || 4),
+    notice: String((s as { notice?: string }).notice ?? ""),
+    noticeAt: (s as { noticeAt?: Date | null }).noticeAt instanceof Date
+      ? ((s as { noticeAt: Date }).noticeAt).toISOString() : null,
   };
 }
 

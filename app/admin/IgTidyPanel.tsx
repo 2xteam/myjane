@@ -27,7 +27,8 @@ type Found = { id: string; name: string; email: string | null; signupFrom: strin
 type Live = { id: string; member: string; deviceName: string; igUsername: string; kind: string; startedAt: string | null; lastBeatAt: string | null; done: number };
 type Settings = {
   enabled: boolean; disabledMessage: string; minVersion: string; dailyCaps: Record<string, number>; minDelaySec: number;
-  aiEnabled: boolean; aiDailyCap: number;
+  aiEnabled: boolean; aiFreePhotoDaily: number; aiApprovedPhotoDaily: number; aiPhotoWeight: number;
+  notice: string; noticeAt: string | null;
 };
 type Release = { version: string; notes: string; url: string; key: string; sha256: string; size: number; mandatory: boolean; publishedAt: string | null };
 type Overview = { settings: Settings; release: Release | null; waiting: Waiting[]; members: Member[]; live: Live[] };
@@ -101,14 +102,16 @@ export function IgTidyPanel() {
     if (ok) await run(() => adminApi(`/api/admin/users/${id}/ig-tidy`, { method: "PATCH", body: { allowed } }));
   }
 
-  /** AI 댓글 허용 — 앱 사용 허용과 따로 켠다(OpenAI 비용 · 남의 글에 말을 거는 일) */
+  /** AI 댓글 한도 승인 — 승인 전에도 무료(사진 포함 50개 분)로 쓰고, 승인하면 하루 한도가 올라간다 */
   async function setAi(m: Member, on: boolean) {
+    const s = data?.settings;
     const ok = await ask({
-      title: on ? `${m.name || "이 회원"}님에게 AI 댓글을 허용할까요?` : `${m.name || "이 회원"}님의 AI 댓글을 끌까요?`,
+      title: on ? `${m.name || "이 회원"}님의 AI 댓글 한도를 올릴까요?` : `${m.name || "이 회원"}님의 AI 한도 승인을 거둘까요?`,
       lines: on
-        ? ["앱의 「댓글 관리 → AI 피드 댓글」 을 쓸 수 있게 돼요.", "만든 문구는 「AI 댓글 기록」 에서 볼 수 있어요."]
-        : ["실행 중이면 다음 글에서 멈춰요."],
-      confirmLabel: on ? "허용하기" : "끄기",
+        ? [`하루 사진 포함 ${s?.aiApprovedPhotoDaily ?? 300}개 분까지 쓸 수 있게 돼요(승인 전은 ${s?.aiFreePhotoDaily ?? 50}개 분).`,
+           "만든 문구는 「AI 댓글 기록」 에서 볼 수 있어요."]
+        : [`무료 한도(하루 사진 포함 ${s?.aiFreePhotoDaily ?? 50}개 분)로 돌아가요.`],
+      confirmLabel: on ? "승인하기" : "승인 거두기",
       danger: !on,
     });
     if (ok) await run(() => adminApi("/api/admin/ig-tidy/perms", { method: "PATCH", body: { uid: m.id, aiComment: on } }));
@@ -192,7 +195,7 @@ export function IgTidyPanel() {
             ) : (
               <div className="adm-table-wrap">
                 <table className="adm-table">
-                  <thead><tr><th>이름</th><th>이메일</th><th>인스타그램 아이디</th><th>AI 댓글</th><th>허용일</th><th /></tr></thead>
+                  <thead><tr><th>이름</th><th>이메일</th><th>인스타그램 아이디</th><th>AI 한도</th><th>허용일</th><th /></tr></thead>
                   <tbody>
                     {data.members.map((m) => (
                       <tr key={m.id}>
@@ -217,9 +220,9 @@ export function IgTidyPanel() {
                             className={m.aiComment ? "adm-btn" : "adm-btn adm-btn--ghost"}
                             disabled={busy}
                             onClick={() => setAi(m, !m.aiComment)}
-                            title={m.aiComment ? "AI 댓글 쓰는 중 — 눌러서 끄기" : "AI 댓글 허용하기"}
+                            title={m.aiComment ? "AI 한도 승인됨 — 눌러서 거두기" : "AI 한도 올리기(승인)"}
                           >
-                            {m.aiComment ? "허용됨" : "허용"}
+                            {m.aiComment ? "승인됨" : "승인"}
                           </button>
                           {!m.aiComment && m.aiRequestedAt ? (
                             <div><span className="adm-pill adm-pill--wait">요청 {ago(m.aiRequestedAt)}</span></div>
@@ -443,7 +446,9 @@ function PlaysView({ members }: { members: Member[] }) {
 type AiLog = {
   id: string; at: string | null; member: string; igUsername: string; target: string; permalink: string;
   comment: string; skip: boolean; reason: string; ok: boolean; error: string; tokens: number | null; withImage: boolean; ms: number;
+  style: string;
 };
+const STYLE_LABEL: Record<string, string> = { basic: "기본", hip: "힙한", lively: "활기찬", humor: "유머" };
 function AiLogsView({ members }: { members: Member[] }) {
   const [list, setList] = useState<ListQuery>(() => listQueryDefaults("at", "desc"));
   const [uid, setUid] = useState("");
@@ -480,7 +485,7 @@ function AiLogsView({ members }: { members: Member[] }) {
       {rows === null ? <p className="adm-empty">불러오는 중…</p> : rows.length === 0 ? <p className="adm-empty">아직 없어요.</p> : (
         <div className="adm-table-wrap">
           <table className="adm-table">
-            <thead><tr><th>때</th><th>회원 · 아이디</th><th>누구 글</th><th>만든 문구</th><th>토큰 · 사진</th></tr></thead>
+            <thead><tr><th>때</th><th>회원 · 아이디</th><th>누구 글</th><th>스타일</th><th>만든 문구</th><th>토큰 · 사진</th></tr></thead>
             <tbody>
               {rows.map((r) => (
                 <tr key={r.id}>
@@ -489,6 +494,7 @@ function AiLogsView({ members }: { members: Member[] }) {
                   <td>
                     {r.permalink ? <a href={`https://www.instagram.com${r.permalink}`} target="_blank" rel="noreferrer">@{r.target}</a> : `@${r.target}`}
                   </td>
+                  <td><span className="adm-pill">{STYLE_LABEL[r.style] ?? r.style}</span></td>
                   <td className="adm-wrap-cell">
                     {!r.ok ? <span className="adm-msg adm-msg--bad">실패 — {r.error}</span>
                       : r.skip ? <span className="adm-muted">건너뜀 — {r.reason || "까닭 없음"}</span>
@@ -546,6 +552,13 @@ function SettingsView({ settings, onSaved }: { settings: Settings; onSaved: () =
       ) : null}
 
       <label className="adm-field">
+        <span className="adm-label">앱 공지 — 앱 위쪽 띠에 보여요(닫으면 그 공지는 다시 안 떠요). 비우면 내려요</span>
+        <textarea className="adm-textarea" rows={2} maxLength={500} value={form.notice}
+          onChange={(e) => setForm({ ...form, notice: e.target.value })}
+          placeholder="예) 11/10 새벽 2~3시 점검이 있어요. 그 시간에는 실행이 멈출 수 있어요." />
+      </label>
+
+      <label className="adm-field">
         <span className="adm-label">최소 앱 버전 — 이보다 낮으면 시작 전에 업데이트를 요구해요</span>
         <input className="adm-input" style={{ maxWidth: 160 }} value={form.minVersion} onChange={(e) => setForm({ ...form, minVersion: e.target.value })} />
       </label>
@@ -562,10 +575,25 @@ function SettingsView({ settings, onSaved }: { settings: Settings; onSaved: () =
           <option value="off">꺼짐 — 모두 못 써요</option>
         </select>
       </label>
-      <label className="adm-field">
-        <span className="adm-label">AI 댓글 — 인스타그램 아이디당 하루 만들기 상한 (0 = 제한 없음)</span>
-        <input className="adm-input" style={{ maxWidth: 120 }} type="number" min={0} max={1000} value={form.aiDailyCap} onChange={(e) => setForm({ ...form, aiDailyCap: Number(e.target.value) })} />
-      </label>
+      <p className="adm-label" style={{ marginTop: 10 }}>AI 댓글 하루 한도 — myjane 계정 단위 · 사진 포함 개수 기준</p>
+      <p className="adm-card-sub" style={{ marginTop: 0 }}>
+        글만 쓰면 1단위, 사진을 포함하면 가중치만큼 셉니다. 무료 {form.aiFreePhotoDaily}개 = {form.aiFreePhotoDaily * form.aiPhotoWeight}단위(글만 그만큼),
+        승인 {form.aiApprovedPhotoDaily}개 = {form.aiApprovedPhotoDaily * form.aiPhotoWeight}단위.
+      </p>
+      <div className="adm-row" style={{ flexWrap: "wrap", gap: 10 }}>
+        <label className="adm-field" style={{ minWidth: 150 }}>
+          <span className="adm-label">승인 전(무료)</span>
+          <input className="adm-input" type="number" min={0} value={form.aiFreePhotoDaily} onChange={(e) => setForm({ ...form, aiFreePhotoDaily: Number(e.target.value) })} />
+        </label>
+        <label className="adm-field" style={{ minWidth: 150 }}>
+          <span className="adm-label">관리자 승인 후</span>
+          <input className="adm-input" type="number" min={0} value={form.aiApprovedPhotoDaily} onChange={(e) => setForm({ ...form, aiApprovedPhotoDaily: Number(e.target.value) })} />
+        </label>
+        <label className="adm-field" style={{ minWidth: 150 }}>
+          <span className="adm-label">사진 1개 = 글 몇 개</span>
+          <input className="adm-input" type="number" min={1} max={20} value={form.aiPhotoWeight} onChange={(e) => setForm({ ...form, aiPhotoWeight: Number(e.target.value) })} />
+        </label>
+      </div>
 
       <p className="adm-label" style={{ marginTop: 10 }}>인스타그램 아이디당 하루 상한 (0 = 제한 없음)</p>
       <p className="adm-card-sub" style={{ marginTop: 0 }}>
@@ -583,6 +611,92 @@ function SettingsView({ settings, onSaved }: { settings: Settings; onSaved: () =
 
       <div className="adm-row" style={{ marginTop: 14 }}>
         <button className="adm-btn" disabled={busy} onClick={save}>저장</button>
+        {msg ? <span className={msg.ok ? "adm-msg adm-msg--ok" : "adm-msg adm-msg--bad"}>{msg.text}</span> : null}
+      </div>
+    </div>
+  );
+}
+
+/* ── 새 버전 올리기 ─────────────────────────────────────────
+ * 설치 파일(.exe)을 고르면: sha256 을 재고 → R2 로 곧장 올리고(진행률) → 버전 · 바뀐 점을 등록한다.
+ * 포털(Vercel)을 거치지 않는다 — 100MB 안팎이라 함수 본문 제한(4.5MB)을 넘는다. */
+function UploadRelease({ onDone, latest }: { onDone: () => Promise<void>; latest: string | null }) {
+  const [file, setFile] = useState<File | null>(null);
+  const [version, setVersion] = useState("");
+  const [notes, setNotes] = useState("");
+  const [mandatory, setMandatory] = useState(false);
+  const [step, setStep] = useState<string | null>(null);
+  const [pct, setPct] = useState(0);
+  const [msg, setMsg] = useState<{ ok: boolean; text: string } | null>(null);
+
+  function pick(f: File | null) {
+    setFile(f);
+    setMsg(null);
+    const m = f?.name.match(/(\d+\.\d+\.\d+)/);
+    if (m) setVersion(m[1]);
+  }
+
+  async function upload() {
+    if (!file) return;
+    setMsg(null);
+    try {
+      setStep("파일 지문(sha256) 재는 중…");
+      const buf = await file.arrayBuffer();
+      const hash = Array.from(new Uint8Array(await crypto.subtle.digest("SHA-256", buf)))
+        .map((b) => b.toString(16).padStart(2, "0")).join("");
+
+      setStep("올릴 주소 받는 중…");
+      const { url, key } = await adminApi<{ url: string; key: string }>("/api/admin/ig-tidy/releases/upload-url", {
+        method: "POST", body: { version },
+      });
+
+      setStep("R2 에 올리는 중…");
+      await new Promise<void>((resolve, reject) => {
+        const xhr = new XMLHttpRequest();
+        xhr.open("PUT", url);
+        xhr.setRequestHeader("Content-Type", "application/octet-stream");
+        xhr.upload.onprogress = (e) => { if (e.lengthComputable) setPct(Math.round((e.loaded / e.total) * 100)); };
+        xhr.onload = () => (xhr.status >= 200 && xhr.status < 300 ? resolve() : reject(new Error(`R2 가 ${xhr.status} 로 거절했어요`)));
+        xhr.onerror = () => reject(new Error("R2 에 닿지 못했어요 — 버킷 CORS(PUT · 이 주소)를 확인해 주세요"));
+        xhr.send(file);
+      });
+
+      setStep("버전 등록 중…");
+      await adminApi("/api/admin/ig-tidy/releases", {
+        method: "POST", body: { version, notes, key, sha256: hash, size: file.size, mandatory },
+      });
+      setMsg({ ok: true, text: `${version} 을 올렸어요. 1분 안에 앱들에 「새 버전」 이 떠요.` });
+      setFile(null); setNotes(""); setMandatory(false); setPct(0);
+      await onDone();
+    } catch (err) {
+      setMsg({ ok: false, text: adminErrorMessage(err) });
+    } finally {
+      setStep(null);
+    }
+  }
+
+  const sameOrOlder = !!(latest && version && version.split(".").map(Number).reduce((acc, n, i) => acc !== 0 ? acc : n - (latest.split(".").map(Number)[i] ?? 0), 0) <= 0);
+  return (
+    <div className="adm-card">
+      <p className="adm-card-title">새 버전 올리기</p>
+      <p className="adm-card-sub">
+        <code>npm run dist</code> 로 만든 <code>IG-Tidy-Setup-x.y.z.exe</code> 를 골라 올려요. 지금 최신은 <b>{latest ?? "없음"}</b>.
+      </p>
+      <label className="adm-field"><span className="adm-label">설치 파일</span>
+        <input type="file" accept=".exe" onChange={(e) => pick(e.target.files?.[0] ?? null)} disabled={!!step} /></label>
+      <label className="adm-field"><span className="adm-label">버전 (파일 이름에서 읽어요)</span>
+        <input className="adm-input" style={{ maxWidth: 160 }} value={version} onChange={(e) => setVersion(e.target.value)} disabled={!!step} /></label>
+      {sameOrOlder ? <p className="adm-msg adm-msg--bad">최신({latest})보다 높아야 앱이 새 버전으로 알아봐요. package.json 의 version 을 올렸는지 확인해 주세요.</p> : null}
+      <label className="adm-field"><span className="adm-label">바뀐 점 — 앱 알림과 업데이트 내역에 그대로 보여요</span>
+        <textarea className="adm-textarea" rows={4} value={notes} onChange={(e) => setNotes(e.target.value)} disabled={!!step}
+          placeholder={"예)\n· AI댓글에 대상 고르기가 생겼어요\n· 피드 좋아요가 조금 빨라졌어요"} /></label>
+      <label className="adm-row" style={{ gap: 6 }}>
+        <input type="checkbox" checked={mandatory} onChange={(e) => setMandatory(e.target.checked)} disabled={!!step} />
+        <span>꼭 올려야 함 — 낮은 버전은 시작 전에 업데이트를 요구해요</span>
+      </label>
+      <div className="adm-row" style={{ marginTop: 12, gap: 10 }}>
+        <button className="adm-btn" disabled={!file || !/^\d+\.\d+\.\d+$/.test(version) || !!step} onClick={upload}>올리기</button>
+        {step ? <span className="adm-muted">{step}{step.startsWith("R2") ? ` ${pct}%` : ""}</span> : null}
         {msg ? <span className={msg.ok ? "adm-msg adm-msg--ok" : "adm-msg adm-msg--bad"}>{msg.text}</span> : null}
       </div>
     </div>
@@ -650,9 +764,32 @@ function ReleasesView({ onSaved }: { onSaved: () => Promise<void> }) {
         )}
       </div>
 
-      <div className="adm-card">
-        <p className="adm-card-title">손으로 등록</p>
-        <p className="adm-card-sub">설치 파일을 직접 R2 에 올렸을 때만 써요.</p>
+      <UploadRelease onDone={async () => { await load(); await onSaved(); }} latest={rows && rows[0] ? rows[0].version : null} />
+
+      <details className="adm-card">
+        <summary className="adm-card-title" style={{ cursor: "pointer" }}>새 버전을 내는 순서 (처음이면 펼쳐 보세요)</summary>
+        <ol className="adm-card-sub" style={{ lineHeight: 1.8, paddingLeft: 18 }}>
+          <li><b>코드 고치기</b> — <code>C:\Dev\ig-tidy-desktop</code> 에서 고친다.</li>
+          <li><b>버전 올리기</b> — <code>package.json</code> 의 <code>&quot;version&quot;</code> 을 올린다(예: 1.0.0 → 1.0.1). 앱은 이 숫자로 새것인지 가린다.</li>
+          <li><b>설치 파일 만들기</b> — 그 폴더에서 <code>npm run dist</code>. 몇 분 뒤 <code>dist\IG-Tidy-Setup-1.0.1.exe</code> 가 생긴다.</li>
+          <li><b>여기서 올리기</b> — 위 「새 버전 올리기」 에 그 파일을 고르고 버전 · 바뀐 점을 적고 「올리기」.
+            파일 이름에서 버전을 읽어 미리 채워 준다.</li>
+          <li><b>끝</b> — 1분 안에 켜져 있는 앱들 위쪽 띠에 「새 버전」 버튼이 뜨고, 앱을 다시 켜면 「지금 업데이트할까요?」 를 묻는다.
+            「꼭 올려야 함」 을 켜면 낮은 버전은 시작 전에 업데이트를 요구한다.</li>
+        </ol>
+        <p className="adm-card-sub">
+          한 번에 하려면 그 폴더에서 <code>npm run release -- &quot;바뀐 점&quot;</code> — 빌드 · 올리기 · 등록을 한꺼번에 한다
+          (<code>.env.release</code> 에 R2 · 릴리스 비밀값이 있어야 한다).
+        </p>
+        <p className="adm-card-sub">
+          <b>처음 한 번 필요한 준비</b> — Cloudflare R2 에 비공개 버킷 <code>ig-tidy</code> · 그 버킷 CORS 에
+          PUT/GET 과 <code>https://www.myjane.co.kr</code> · Vercel 에 <code>IG_TIDY_R2_BUCKET</code> · <code>R2_ACCOUNT_ID</code> ·
+          <code>R2_ACCESS_KEY_ID</code> · <code>R2_SECRET_ACCESS_KEY</code>. 없으면 「올리기」 가 그 이름을 대며 멈춘다.
+        </p>
+      </details>
+
+      <details className="adm-card">
+        <summary className="adm-card-title" style={{ cursor: "pointer" }}>손으로 등록 (파일을 R2 에 직접 올렸을 때만)</summary>
         <label className="adm-field"><span className="adm-label">버전 (1.2.3)</span>
           <input className="adm-input" style={{ maxWidth: 160 }} value={form.version} onChange={(e) => setForm({ ...form, version: e.target.value })} /></label>
         <label className="adm-field"><span className="adm-label">R2 경로</span>
@@ -669,7 +806,7 @@ function ReleasesView({ onSaved }: { onSaved: () => Promise<void> }) {
           <button className="adm-btn" disabled={busy || !form.version} onClick={save}>등록</button>
           {msg ? <span className={msg.ok ? "adm-msg adm-msg--ok" : "adm-msg adm-msg--bad"}>{msg.text}</span> : null}
         </div>
-      </div>
+      </details>
     </>
   );
 }

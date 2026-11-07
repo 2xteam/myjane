@@ -1,4 +1,4 @@
-import { GetObjectCommand, S3Client } from "@aws-sdk/client-s3";
+import { GetObjectCommand, PutObjectCommand, S3Client } from "@aws-sdk/client-s3";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 
 /**
@@ -38,6 +38,19 @@ export function igTidyBucket(): string {
   const b = process.env.IG_TIDY_R2_BUCKET;
   if (!b) throw new Error("IG_TIDY_R2_BUCKET 환경 변수가 없어요.");
   return b;
+}
+
+/**
+ * 설치 파일을 **브라우저에서 바로** 올리는 주소(30분). 관리 화면 「배포 버전」 이 쓴다.
+ * 100MB 안팎이라 포털(Vercel 함수, 본문 4.5MB 제한)을 거치지 않고 R2 로 곧장 PUT 한다.
+ * ⚠️ 버킷에 CORS(PUT · 포털 오리진)가 있어야 한다 → 40-Infra/Cloudflare R2.md
+ */
+export async function signedInstallerUploadUrl(key: string): Promise<string> {
+  return getSignedUrl(
+    r2(),
+    new PutObjectCommand({ Bucket: igTidyBucket(), Key: key, ContentType: "application/octet-stream" }),
+    { expiresIn: 1800 },
+  );
 }
 
 /** 설치 파일을 10분 동안 받을 수 있는 주소 */

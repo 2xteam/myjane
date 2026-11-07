@@ -268,6 +268,8 @@ const AiLogSchema = new Schema(
     completionTokens: { type: Number, default: null },
     totalTokens: { type: Number, default: null },
     withImage: { type: Boolean, default: false },
+    /** 댓글 스타일 — basic · hip · lively · humor */
+    style: { type: String, default: "basic" },
     ms: { type: Number, default: 0 },
     ok: { type: Boolean, default: false },
     skip: { type: Boolean, default: false },
@@ -299,9 +301,20 @@ const SettingsSchema = new Schema(
     },
     /** 행동 사이 최소 간격(초). 앱의 간격 설정이 이보다 짧으면 이 값으로 올린다 */
     minDelaySec: { type: Number, default: 4 },
-    /** AI 댓글 — 전체 켜기·끄기와 인스타그램 아이디당 하루 만들기 상한 */
+    /**
+     * AI 댓글 — 하루 사용량은 **단위**로 센다(2026-11-07 사용자 결정).
+     *   글만 = 1단위 · 사진 포함 = aiPhotoWeight(4)단위
+     *   승인 전(무료) 하루 한도 = 사진 포함 aiFreePhotoDaily(50)개 = 200단위
+     *   관리자 승인 후            = 사진 포함 aiApprovedPhotoDaily(300)개 = 1,200단위
+     * myjane 계정 단위로 센다(인스타 아이디를 합쳐서) — 비용이 사람 단위로 나간다.
+     */
     aiEnabled: { type: Boolean, default: true },
-    aiDailyCap: { type: Number, default: 60 },
+    aiFreePhotoDaily: { type: Number, default: 50 },
+    aiApprovedPhotoDaily: { type: Number, default: 300 },
+    aiPhotoWeight: { type: Number, default: 4 },
+    /** 앱 공지 — 앱 위쪽 띠에 보인다(닫으면 그 공지는 다시 안 뜬다). 비우면 안 보인다 */
+    notice: { type: String, default: "" },
+    noticeAt: { type: Date, default: null },
     updatedAt: { type: Date, default: Date.now },
     updatedBy: { type: Schema.Types.ObjectId, default: null },
   },

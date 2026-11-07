@@ -38,7 +38,17 @@ export async function PUT(req: Request) {
     }
     if (body.minDelaySec !== undefined) set.minDelaySec = Math.max(0, Math.min(120, Number(body.minDelaySec) || 0));
     if (typeof body.aiEnabled === "boolean") set.aiEnabled = body.aiEnabled;
-    if (body.aiDailyCap !== undefined) set.aiDailyCap = Math.max(0, Math.min(1000, Math.floor(Number(body.aiDailyCap) || 0)));
+    const n = (v: unknown, lo: number, hi: number) => Math.max(lo, Math.min(hi, Math.floor(Number(v) || 0)));
+    if (body.aiFreePhotoDaily !== undefined) set.aiFreePhotoDaily = n(body.aiFreePhotoDaily, 0, 5000);
+    if (body.aiApprovedPhotoDaily !== undefined) set.aiApprovedPhotoDaily = n(body.aiApprovedPhotoDaily, 0, 5000);
+    if (body.aiPhotoWeight !== undefined) set.aiPhotoWeight = n(body.aiPhotoWeight, 1, 20);
+    // 공지 — 글이 바뀔 때만 시각을 새로 찍는다(앱은 시각으로 "새 공지" 를 가린다)
+    if (typeof body.notice === "string") {
+      const notice = body.notice.trim().slice(0, 500);
+      const before = (await loadSettings()).notice ?? "";
+      set.notice = notice;
+      if (notice !== before) set.noticeAt = notice ? new Date() : null;
+    }
     if (body.dailyCaps && typeof body.dailyCaps === "object") {
       const caps: Record<string, number> = {};
       for (const k of CAP_KEYS) {
