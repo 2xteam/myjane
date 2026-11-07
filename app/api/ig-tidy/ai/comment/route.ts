@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { connectDB } from "@/lib/db";
 import { aiQuota, igError, loadSettings, normalizeIg, publicSettings, requireIgTidyUser } from "@/lib/igTidy";
-import { generateIgComment, styleIdOf } from "@/lib/igTidyAi";
+import { generateIgComment, langOf, styleIdOf } from "@/lib/igTidyAi";
 import { getIgAccountModel, getIgAiLogModel, getIgPermModel } from "@/models/IgTidy";
 
 export const runtime = "nodejs";
@@ -30,7 +30,7 @@ export async function POST(req: Request) {
   const user = auth.user;
 
   const body = (await req.json().catch(() => ({}))) as {
-    igUsername?: unknown; tone?: unknown; style?: unknown;
+    igUsername?: unknown; tone?: unknown; style?: unknown; lang?: unknown;
     post?: { author?: unknown; caption?: unknown; imageAlt?: unknown; imageDataUrl?: unknown; permalink?: unknown };
   };
   const ig = normalizeIg(body.igUsername);
@@ -81,6 +81,7 @@ export async function POST(req: Request) {
       tone: typeof body.tone === "string" ? body.tone : "",
       style: base.style,
       customGuide: customGuide || undefined,
+      fallbackLang: langOf(body.lang),
     });
     await Logs.create({
       ...base, model: r.model, promptTokens: r.usage.prompt, completionTokens: r.usage.completion,

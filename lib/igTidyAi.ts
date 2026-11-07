@@ -27,6 +27,8 @@ export type AiCommentInput = {
   style?: string;
   /** style 이 custom 일 때 쓰는 맞춤 지침(서버가 계정에서 꺼내 넣는다). 비어 있으면 basic */
   customGuide?: string;
+  /** 글의 언어를 정할 수 없을 때 쓸 언어(앱 설정 「우선 언어」) — 기본 ko */
+  fallbackLang?: CommentLang;
 };
 
 /**
@@ -143,7 +145,15 @@ const POLICY = `[반드시 지킬 것 — 위 말투 지시보다 우선]
  * **주된 언어 하나로만** 쓰게 바꿨다. 해시태그 · @ · 링크는 빼고 센다.
  */
 export type CommentLang = "ko" | "en" | "ja";
-export function commentLanguage(caption: string): { code: CommentLang; rule: string } {
+const LANG_RULE: Record<CommentLang, string> = {
+  ko: "한국어로만 쓰세요. 영어 단어 · 영어 감탄사 · 로마자를 섞지 마세요(글에 나온 고유명사 · 브랜드만 예외). 존댓말(해요체)로 끝내세요.",
+  en: "Write the comment in ENGLISH ONLY. Do not use any Korean or other languages.",
+  ja: "日本語だけで書いてください。韓国語や英語を混ぜないでください。です・ます調で。",
+};
+export const langOf = (v: unknown): CommentLang => (v === "en" || v === "ja" ? v : "ko");
+
+/** 글의 언어를 정할 수 없을 때(본문이 거의 없음 · 해시태그 · 이모지뿐)는 fallback(앱의 「우선 언어」) */
+export function commentLanguage(caption: string, fallback: CommentLang = "ko"): { code: CommentLang; rule: string } {
   const t = String(caption || "")
     .replace(/https?:\/\/\S+/g, " ")
     .replace(/[#@][^\s#@]+/g, " ");
@@ -152,11 +162,11 @@ export function commentLanguage(caption: string): { code: CommentLang; rule: str
   const ja = count(/[\u3040-\u30ff]/g);
   const en = count(/[A-Za-z]/g) / 2.5;   // 영문은 글자당 정보가 적어 한글 1자 ≈ 영문 2.5자로 본다
   const total = ko + ja + en;
-  const KO = "한국어로만 쓰세요. 영어 단어 · 영어 감탄사 · 로마자를 섞지 마세요(글에 나온 고유명사 · 브랜드만 예외). 존댓말(해요체)로 끝내세요.";
-  if (total < 4) return { code: "ko", rule: KO };
-  if (ja / total > 0.3 && ja >= ko) return { code: "ja", rule: "日本語だけで書いてください。韓国語や英語を混ぜないでください。です・ます調で。" };
-  if (en > ko && en > ja) return { code: "en", rule: "Write the comment in ENGLISH ONLY. Do not use any Korean or other languages." };
-  return { code: "ko", rule: KO };
+  const pick = (code: CommentLang) => ({ code, rule: LANG_RULE[code] });
+  if (total < 4) return pick(fallback);
+  if (ja / total > 0.3 && ja >= ko) return pick("ja");
+  if (en > ko && en > ja) return pick("en");
+  return pick("ko");
 }
 
 /**
@@ -206,7 +216,7 @@ export async function generateIgComment(input: AiCommentInput): Promise<AiCommen
   const tone = (input.tone ?? "").trim().slice(0, 300);
   const custom = input.style === "custom" && (input.customGuide ?? "").trim();
   const style = custom ? customStyle(custom) : IG_COMMENT_STYLES[styleOf(input.style)];
-  const lang = commentLanguage(input.caption);
+  const lang = commentLanguage(input.caption, input.fallbackLang ?? "ko");
   const system = `${BASE}\n\n[스타일 — ${style.label}]\n${style.guide}`
     + `${tone ? `\n\n[사용자가 정한 말투 · 계정 성격]\n${tone}` : ""}\n\n${POLICY}`
     + `\n\n[이 글의 댓글 언어 — 무엇보다 우선]\n${lang.rule}`
