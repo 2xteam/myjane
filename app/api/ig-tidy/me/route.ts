@@ -11,7 +11,7 @@ import {
   publicSettings,
   sweepLost,
 } from "@/lib/igTidy";
-import { getIgAccountModel, getIgRequestModel } from "@/models/IgTidy";
+import { getIgAccountModel, getIgPermModel, getIgRequestModel } from "@/models/IgTidy";
 
 export const runtime = "nodejs";
 
@@ -71,9 +71,10 @@ export async function GET(req: Request) {
     }
 
     await sweepLost({ uid: user._id });
-    const [accounts, live] = await Promise.all([
+    const [accounts, live, perm] = await Promise.all([
       getIgAccountModel().find({ uid: user._id, removedAt: null }).sort({ lastPlayAt: -1, addedAt: 1 }).lean().exec(),
       livePlay(user._id),
+      getIgPermModel().findOne({ uid: user._id }).lean().exec(),
     ]);
 
     return NextResponse.json({
@@ -84,6 +85,12 @@ export async function GET(req: Request) {
         lastPlayAt: a.lastPlayAt instanceof Date ? a.lastPlayAt.toISOString() : null,
       })),
       live: live ? playSummary(live) : null,
+      /** 기능별 허용 — 앱이 탭을 열지, 「관리자에게 요청하기」 를 보여 줄지 정한다 */
+      features: {
+        aiComment: !!(perm && perm.aiComment === true) && s.aiEnabled,
+        aiCommentAllowed: !!(perm && perm.aiComment === true),
+        aiRequested: !!(perm && perm.aiRequestedAt),
+      },
     });
   } catch (err) {
     const message = err instanceof Error ? err.message : "알 수 없는 오류";

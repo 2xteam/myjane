@@ -29,6 +29,9 @@ export type IgCode =
   | "busy_elsewhere"
   | "account_taken"
   | "play_gone"
+  | "ai_not_allowed"
+  | "ai_disabled"
+  | "ai_cap"
   | "bad_request";
 
 export function igError(code: IgCode, message: string, status: number, extra: Record<string, unknown> = {}) {
@@ -171,6 +174,8 @@ export function publicSettings(s: IgTidySettings) {
     minVersion: s.minVersion || "0.0.0",
     dailyCaps: (s.dailyCaps ?? {}) as Record<string, number>,
     minDelaySec: Number(s.minDelaySec) || 0,
+    aiEnabled: (s as { aiEnabled?: boolean }).aiEnabled !== false,
+    aiDailyCap: Number((s as { aiDailyCap?: number }).aiDailyCap ?? 60) || 0,
   };
 }
 

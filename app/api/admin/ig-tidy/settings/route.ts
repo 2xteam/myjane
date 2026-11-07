@@ -37,6 +37,8 @@ export async function PUT(req: Request) {
       set.minVersion = body.minVersion;
     }
     if (body.minDelaySec !== undefined) set.minDelaySec = Math.max(0, Math.min(120, Number(body.minDelaySec) || 0));
+    if (typeof body.aiEnabled === "boolean") set.aiEnabled = body.aiEnabled;
+    if (body.aiDailyCap !== undefined) set.aiDailyCap = Math.max(0, Math.min(1000, Math.floor(Number(body.aiDailyCap) || 0)));
     if (body.dailyCaps && typeof body.dailyCaps === "object") {
       const caps: Record<string, number> = {};
       for (const k of CAP_KEYS) {

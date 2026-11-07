@@ -15,14 +15,20 @@ import { Pagination, listQueryDefaults, type ListQuery } from "./Pagination";
  */
 
 type Account = { igUsername: string; addedAt: string | null; lastPlayAt: string | null; removed: boolean; savedBytes: number; savedAt: string | null };
-type Member = { id: string; name: string; email: string | null; allowedAt: string | null; lastLoginAt: string | null; accounts: Account[] };
+type Member = {
+  id: string; name: string; email: string | null; allowedAt: string | null; lastLoginAt: string | null; accounts: Account[];
+  aiComment: boolean; aiRequestedAt: string | null; aiToday: number; aiTokensToday: number;
+};
 type Waiting = {
   id: string; name: string; email: string | null; createdAt: string | null;
   signupFrom: string | null; requestedAt: string | null; firstRequestedAt: string | null; deviceName: string;
 };
 type Found = { id: string; name: string; email: string | null; signupFrom: string | null; igTidyAllowed: boolean };
 type Live = { id: string; member: string; deviceName: string; igUsername: string; kind: string; startedAt: string | null; lastBeatAt: string | null; done: number };
-type Settings = { enabled: boolean; disabledMessage: string; minVersion: string; dailyCaps: Record<string, number>; minDelaySec: number };
+type Settings = {
+  enabled: boolean; disabledMessage: string; minVersion: string; dailyCaps: Record<string, number>; minDelaySec: number;
+  aiEnabled: boolean; aiDailyCap: number;
+};
 type Release = { version: string; notes: string; url: string; key: string; sha256: string; size: number; mandatory: boolean; publishedAt: string | null };
 type Overview = { settings: Settings; release: Release | null; waiting: Waiting[]; members: Member[]; live: Live[] };
 type Play = Live & { status: string; appVersion: string; endedAt: string | null; reason: string; tally: Record<string, { ok?: number; skip?: number; fail?: number }> };
@@ -43,7 +49,7 @@ const CAP_LABEL: Record<string, string> = {
   comment: "댓글", dm: "인사 메시지",
 };
 const VIEWS = [
-  ["members", "사용자"], ["live", "실행 중"], ["plays", "실행 이력"], ["settings", "운영 설정"], ["releases", "배포 버전"],
+  ["members", "사용자"], ["live", "실행 중"], ["plays", "실행 이력"], ["ai", "AI 댓글 기록"], ["settings", "운영 설정"], ["releases", "배포 버전"],
 ] as const;
 type View = (typeof VIEWS)[number][0];
 
@@ -93,6 +99,19 @@ export function IgTidyPanel() {
       danger: !allowed,
     });
     if (ok) await run(() => adminApi(`/api/admin/users/${id}/ig-tidy`, { method: "PATCH", body: { allowed } }));
+  }
+
+  /** AI 댓글 허용 — 앱 사용 허용과 따로 켠다(OpenAI 비용 · 남의 글에 말을 거는 일) */
+  async function setAi(m: Member, on: boolean) {
+    const ok = await ask({
+      title: on ? `${m.name || "이 회원"}님에게 AI 댓글을 허용할까요?` : `${m.name || "이 회원"}님의 AI 댓글을 끌까요?`,
+      lines: on
+        ? ["앱의 「댓글 관리 → AI 피드 댓글」 을 쓸 수 있게 돼요.", "만든 문구는 「AI 댓글 기록」 에서 볼 수 있어요."]
+        : ["실행 중이면 다음 글에서 멈춰요."],
+      confirmLabel: on ? "허용하기" : "끄기",
+      danger: !on,
+    });
+    if (ok) await run(() => adminApi("/api/admin/ig-tidy/perms", { method: "PATCH", body: { uid: m.id, aiComment: on } }));
   }
 
   async function account(ig: string, action: "remove" | "restore" | "release") {
@@ -173,7 +192,7 @@ export function IgTidyPanel() {
             ) : (
               <div className="adm-table-wrap">
                 <table className="adm-table">
-                  <thead><tr><th>이름</th><th>이메일</th><th>인스타그램 아이디</th><th>허용일</th><th /></tr></thead>
+                  <thead><tr><th>이름</th><th>이메일</th><th>인스타그램 아이디</th><th>AI 댓글</th><th>허용일</th><th /></tr></thead>
                   <tbody>
                     {data.members.map((m) => (
                       <tr key={m.id}>
@@ -192,6 +211,20 @@ export function IgTidyPanel() {
                               <button className="adm-btn adm-btn--ghost adm-btn--sm" disabled={busy} onClick={() => account(a.igUsername, "release")}>묶음 풀기</button>
                             </div>
                           ))}
+                        </td>
+                        <td>
+                          <button
+                            className={m.aiComment ? "adm-btn" : "adm-btn adm-btn--ghost"}
+                            disabled={busy}
+                            onClick={() => setAi(m, !m.aiComment)}
+                            title={m.aiComment ? "AI 댓글 쓰는 중 — 눌러서 끄기" : "AI 댓글 허용하기"}
+                          >
+                            {m.aiComment ? "허용됨" : "허용"}
+                          </button>
+                          {!m.aiComment && m.aiRequestedAt ? (
+                            <div><span className="adm-pill adm-pill--wait">요청 {ago(m.aiRequestedAt)}</span></div>
+                          ) : null}
+                          {m.aiToday ? <div className="adm-muted">오늘 {m.aiToday}개 · {m.aiTokensToday.toLocaleString()}토큰</div> : null}
                         </td>
                         <td className="adm-muted">{shortDate(m.allowedAt)}</td>
                         <td><button className="adm-btn adm-btn--danger" disabled={busy} onClick={() => allow(m.id, m.name, false)}>허용 끄기</button></td>
@@ -239,6 +272,7 @@ export function IgTidyPanel() {
       ) : null}
 
       {data && view === "plays" ? <PlaysView members={data.members} /> : null}
+      {data && view === "ai" ? <AiLogsView members={data.members} /> : null}
       {data && view === "settings" ? <SettingsView settings={data.settings} onSaved={load} /> : null}
       {data && view === "releases" ? <ReleasesView onSaved={load} /> : null}
       {dialog}
@@ -405,6 +439,73 @@ function PlaysView({ members }: { members: Member[] }) {
   );
 }
 
+/* ── AI 댓글 기록 ─────────────────────────────────────────── */
+type AiLog = {
+  id: string; at: string | null; member: string; igUsername: string; target: string; permalink: string;
+  comment: string; skip: boolean; reason: string; ok: boolean; error: string; tokens: number | null; withImage: boolean; ms: number;
+};
+function AiLogsView({ members }: { members: Member[] }) {
+  const [list, setList] = useState<ListQuery>(() => listQueryDefaults("at", "desc"));
+  const [uid, setUid] = useState("");
+  const [rows, setRows] = useState<AiLog[] | null>(null);
+  const [total, setTotal] = useState(0);
+  const [error, setError] = useState<string | null>(null);
+
+  const load = useCallback(async () => {
+    setError(null);
+    try {
+      const q = new URLSearchParams({ page: String(list.page), pageSize: String(list.pageSize) });
+      if (uid) q.set("uid", uid);
+      const res = await adminApi<{ logs: AiLog[]; total: number }>(`/api/admin/ig-tidy/ai-logs?${q}`);
+      setRows(res.logs);
+      setTotal(res.total);
+    } catch (err) {
+      setError(adminErrorMessage(err));
+      setRows([]);
+    }
+  }, [list, uid]);
+  useEffect(() => { void load(); }, [load]);
+
+  return (
+    <div className="adm-card">
+      <p className="adm-card-title">AI 댓글 기록</p>
+      <p className="adm-card-sub">AI 가 만든 문구예요. 「미리 보기만」 으로 돌린 것도 여기 남아요. 게시 여부는 실행 이력의 행동 기록에서 봐요.</p>
+      <div className="adm-row" style={{ marginBottom: 12 }}>
+        <select className="adm-input" style={{ maxWidth: 220 }} value={uid} onChange={(e) => { setUid(e.target.value); setList((l) => ({ ...l, page: 1 })); }}>
+          <option value="">모든 사람</option>
+          {members.map((m) => <option key={m.id} value={m.id}>{m.name || m.email}</option>)}
+        </select>
+      </div>
+      {error ? <p className="adm-note adm-note--error">{error}</p> : null}
+      {rows === null ? <p className="adm-empty">불러오는 중…</p> : rows.length === 0 ? <p className="adm-empty">아직 없어요.</p> : (
+        <div className="adm-table-wrap">
+          <table className="adm-table">
+            <thead><tr><th>때</th><th>회원 · 아이디</th><th>누구 글</th><th>만든 문구</th><th>토큰 · 사진</th></tr></thead>
+            <tbody>
+              {rows.map((r) => (
+                <tr key={r.id}>
+                  <td className="adm-muted">{shortDate(r.at)}</td>
+                  <td>{r.member || "—"}<div className="adm-muted">@{r.igUsername}</div></td>
+                  <td>
+                    {r.permalink ? <a href={`https://www.instagram.com${r.permalink}`} target="_blank" rel="noreferrer">@{r.target}</a> : `@${r.target}`}
+                  </td>
+                  <td className="adm-wrap-cell">
+                    {!r.ok ? <span className="adm-msg adm-msg--bad">실패 — {r.error}</span>
+                      : r.skip ? <span className="adm-muted">건너뜀 — {r.reason || "까닭 없음"}</span>
+                      : r.comment}
+                  </td>
+                  <td className="adm-muted">{r.tokens ?? "—"} · {r.withImage ? "사진" : "글만"}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
+      {rows !== null && total > 0 ? <Pagination query={list} total={total} onChange={setList} /> : null}
+    </div>
+  );
+}
+
 /* ── 운영 설정 ───────────────────────────────────────────── */
 function SettingsView({ settings, onSaved }: { settings: Settings; onSaved: () => Promise<void> }) {
   const [form, setForm] = useState(settings);
@@ -452,6 +553,18 @@ function SettingsView({ settings, onSaved }: { settings: Settings; onSaved: () =
       <label className="adm-field">
         <span className="adm-label">행동 사이 최소 간격(초)</span>
         <input className="adm-input" style={{ maxWidth: 120 }} type="number" min={0} max={120} value={form.minDelaySec} onChange={(e) => setForm({ ...form, minDelaySec: Number(e.target.value) })} />
+      </label>
+
+      <label className="adm-field">
+        <span className="adm-label">AI 댓글</span>
+        <select className="adm-input" style={{ maxWidth: 260 }} value={form.aiEnabled ? "on" : "off"} onChange={(e) => setForm({ ...form, aiEnabled: e.target.value === "on" })}>
+          <option value="on">켜짐 — AI 허용된 사람은 쓸 수 있어요</option>
+          <option value="off">꺼짐 — 모두 못 써요</option>
+        </select>
+      </label>
+      <label className="adm-field">
+        <span className="adm-label">AI 댓글 — 인스타그램 아이디당 하루 만들기 상한 (0 = 제한 없음)</span>
+        <input className="adm-input" style={{ maxWidth: 120 }} type="number" min={0} max={1000} value={form.aiDailyCap} onChange={(e) => setForm({ ...form, aiDailyCap: Number(e.target.value) })} />
       </label>
 
       <p className="adm-label" style={{ marginTop: 10 }}>인스타그램 아이디당 하루 상한 (0 = 제한 없음)</p>

@@ -237,6 +237,51 @@ RequestSchema.index({ uid: 1 }, { unique: true });
 RequestSchema.index({ lastAt: -1 });
 export const getIgRequestModel = () => model<Record<string, unknown>>("IgTidyRequest", RequestSchema, "requests");
 
+/* ── 기능별 허용 ────────────────────────────────────────
+ * 앱 사용 허용(users.igTidyAllowed)과 따로 켜는 기능. 첫 번째가 **AI 댓글**(2026-11-07) —
+ * OpenAI 를 부르는 일이라 비용이 들고, 남의 글에 말을 거는 일이라 관리자가 사람별로 켠다.
+ * 허용되지 않은 사람은 앱에서 「관리자에게 요청하기」 를 누를 수 있다(aiRequestedAt). */
+const PermSchema = new Schema(
+  {
+    uid: { type: Schema.Types.ObjectId, required: true },
+    aiComment: { type: Boolean, default: false },
+    aiCommentAt: { type: Date, default: null },
+    aiCommentBy: { type: Schema.Types.ObjectId, default: null },
+    aiRequestedAt: { type: Date, default: null },
+  },
+  { versionKey: false },
+);
+PermSchema.index({ uid: 1 }, { unique: true });
+export const getIgPermModel = () => model<Record<string, unknown>>("IgTidyPerm", PermSchema, "perms");
+
+/* ── AI 호출 기록 ─────────────────────────────────────────
+ * 한 번 부를 때마다 한 줄 — 비용(토큰) · 걸린 시간 · 만든 문구. 하루 상한도 이걸로 센다.
+ * SnapWord 의 openai_request_logs 와 같은 생각이다 → SnapWord/lib/openaiRequestLog.ts */
+const AiLogSchema = new Schema(
+  {
+    uid: { type: Schema.Types.ObjectId, required: true },
+    igUsername: { type: String, default: "", lowercase: true },
+    target: { type: String, default: "" },
+    permalink: { type: String, default: "" },
+    model: { type: String, default: "" },
+    promptTokens: { type: Number, default: null },
+    completionTokens: { type: Number, default: null },
+    totalTokens: { type: Number, default: null },
+    withImage: { type: Boolean, default: false },
+    ms: { type: Number, default: 0 },
+    ok: { type: Boolean, default: false },
+    skip: { type: Boolean, default: false },
+    comment: { type: String, default: "" },
+    reason: { type: String, default: "" },
+    error: { type: String, default: "" },
+    at: { type: Date, default: Date.now },
+  },
+  { versionKey: false },
+);
+AiLogSchema.index({ uid: 1, igUsername: 1, at: -1 });
+AiLogSchema.index({ at: -1 });
+export const getIgAiLogModel = () => model<Record<string, unknown>>("IgTidyAiLog", AiLogSchema, "ai_logs");
+
 /* ── 운영 설정 (문서 하나) ─────────────────────────────────
  * 관리자가 정해 앱에 내려 주는 값. 사용자가 속도를 올려 계정 제한을 당하는 일을 막는다. */
 const SettingsSchema = new Schema(
@@ -254,6 +299,9 @@ const SettingsSchema = new Schema(
     },
     /** 행동 사이 최소 간격(초). 앱의 간격 설정이 이보다 짧으면 이 값으로 올린다 */
     minDelaySec: { type: Number, default: 4 },
+    /** AI 댓글 — 전체 켜기·끄기와 인스타그램 아이디당 하루 만들기 상한 */
+    aiEnabled: { type: Boolean, default: true },
+    aiDailyCap: { type: Number, default: 60 },
     updatedAt: { type: Date, default: Date.now },
     updatedBy: { type: Schema.Types.ObjectId, default: null },
   },

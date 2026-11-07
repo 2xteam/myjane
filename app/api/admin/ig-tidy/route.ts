@@ -2,7 +2,8 @@ import { NextResponse } from "next/server";
 import { connectDB } from "@/lib/db";
 import { adminError, requireAdmin } from "@/lib/adminAuth";
 import { latestRelease, loadSettings, playSummary, publicSettings, sweepLost } from "@/lib/igTidy";
-import { getIgAccountModel, getIgPlayModel, getIgRequestModel, getIgStateModel } from "@/models/IgTidy";
+import { getIgAccountModel, getIgAiLogModel, getIgPermModel, getIgPlayModel, getIgRequestModel, getIgStateModel } from "@/models/IgTidy";
+import { startOfTodayKst } from "@/lib/igTidy";
 import { getUserModel } from "@/models/User";
 
 export const runtime = "nodejs";
@@ -50,6 +51,16 @@ export async function GET(req: Request) {
       latestRelease(),
     ]);
 
+    const [perms, aiToday] = await Promise.all([
+      getIgPermModel().find({}).lean().exec(),
+      getIgAiLogModel().aggregate<{ _id: unknown; n: number; tokens: number }>([
+        { $match: { at: { $gte: startOfTodayKst() }, ok: true } },
+        { $group: { _id: "$uid", n: { $sum: 1 }, tokens: { $sum: { $ifNull: ["$totalTokens", 0] } } } },
+      ]),
+    ]);
+    const permOf = new Map(perms.map((p) => [String(p.uid), p]));
+    const aiOf = new Map(aiToday.map((a) => [String(a._id), a]));
+
     const nameOf = new Map<string, string>();
     for (const u of [...allowed, ...waiting]) nameOf.set(String(u._id), u.nickname ?? u.name ?? u.email ?? "");
     const sizeOf = new Map(bytes.map((b) => [`${String(b._id.uid)}:${b._id.ig}`, { bytes: b.bytes, at: iso(b.at) }]));
@@ -92,6 +103,10 @@ export async function GET(req: Request) {
         allowedAt: iso(u.igTidyAllowedAt),
         lastLoginAt: iso(u.lastLoginAt),
         accounts: accountsOf.get(String(u._id)) ?? [],
+        aiComment: permOf.get(String(u._id))?.aiComment === true,
+        aiRequestedAt: iso(permOf.get(String(u._id))?.aiRequestedAt),
+        aiToday: aiOf.get(String(u._id))?.n ?? 0,
+        aiTokensToday: aiOf.get(String(u._id))?.tokens ?? 0,
       })),
       live: live.map((p) => ({ ...playSummary(p), uid: String(p.uid), member: nameOf.get(String(p.uid)) ?? "" })),
     });
