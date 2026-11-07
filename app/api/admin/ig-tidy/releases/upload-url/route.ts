@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { adminError, requireAdmin } from "@/lib/adminAuth";
-import { signedInstallerUploadUrl } from "@/lib/igTidyR2";
+import { igTidyReleaseKey, signedInstallerUploadUrl } from "@/lib/igTidyR2";
 
 export const runtime = "nodejs";
 
@@ -20,7 +20,7 @@ export async function POST(req: Request) {
     if (!/^\d+\.\d+\.\d+$/.test(version)) {
       return NextResponse.json({ ok: false, error: "버전은 1.2.3 모양으로 넣어 주세요." }, { status: 400 });
     }
-    const key = `releases/IG-Tidy-Setup-${version}.exe`;
+    const key = igTidyReleaseKey(version);
     return NextResponse.json({ ok: true, key, url: await signedInstallerUploadUrl(key) });
   } catch (err) {
     return adminError(err);

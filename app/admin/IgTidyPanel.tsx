@@ -782,9 +782,10 @@ function ReleasesView({ onSaved }: { onSaved: () => Promise<void> }) {
           (<code>.env.release</code> 에 R2 · 릴리스 비밀값이 있어야 한다).
         </p>
         <p className="adm-card-sub">
-          <b>처음 한 번 필요한 준비</b> — Cloudflare R2 에 비공개 버킷 <code>ig-tidy</code> · 그 버킷 CORS 에
-          PUT/GET 과 <code>https://www.myjane.co.kr</code> · Vercel 에 <code>IG_TIDY_R2_BUCKET</code> · <code>R2_ACCOUNT_ID</code> ·
-          <code>R2_ACCESS_KEY_ID</code> · <code>R2_SECRET_ACCESS_KEY</code>. 없으면 「올리기」 가 그 이름을 대며 멈춘다.
+          <b>처음 한 번 필요한 준비</b> — Cloudflare R2 공용 버킷 <code>myjane</code>(공개 URL 은 끈 채로) · 그 버킷 CORS 에
+          PUT/GET 과 <code>https://www.myjane.co.kr</code> · Vercel 에 <code>R2_ACCOUNT_ID</code> ·
+          <code>R2_ACCESS_KEY_ID</code> · <code>R2_SECRET_ACCESS_KEY</code>. 파일은 <code>ig-tidy/releases/</code> 아래에 놓인다.
+          없으면 「올리기」 가 그 이름을 대며 멈춘다.
         </p>
       </details>
 
@@ -793,7 +794,7 @@ function ReleasesView({ onSaved }: { onSaved: () => Promise<void> }) {
         <label className="adm-field"><span className="adm-label">버전 (1.2.3)</span>
           <input className="adm-input" style={{ maxWidth: 160 }} value={form.version} onChange={(e) => setForm({ ...form, version: e.target.value })} /></label>
         <label className="adm-field"><span className="adm-label">R2 경로</span>
-          <input className="adm-input" value={form.key} onChange={(e) => setForm({ ...form, key: e.target.value })} placeholder="releases/IG-Tidy-Setup-1.2.3.exe" /></label>
+          <input className="adm-input" value={form.key} onChange={(e) => setForm({ ...form, key: e.target.value })} placeholder="ig-tidy/releases/IG-Tidy-Setup-1.2.3.exe" /></label>
         <label className="adm-field"><span className="adm-label">sha256</span>
           <input className="adm-input" value={form.sha256} onChange={(e) => setForm({ ...form, sha256: e.target.value })} /></label>
         <label className="adm-field"><span className="adm-label">바뀐 점(앱 알림에 보여요)</span>

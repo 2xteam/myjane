@@ -332,7 +332,7 @@ const ReleaseSchema = new Schema(
     notes: { type: String, default: "" },
     /** 설치 파일 주소(손으로 받을 때) — 비워 두면 R2 의 key 로 내려 준다 */
     url: { type: String, default: "" },
-    /** R2 비공개 버킷 안의 설치 파일 경로 (예: `releases/IG-Tidy-Setup-1.2.0.exe`) */
+    /** R2 비공개 버킷 안의 설치 파일 경로 (예: `ig-tidy/releases/IG-Tidy-Setup-1.2.0.exe`, 공용 버킷 myjane) */
     key: { type: String, default: "" },
     /** 앱이 받은 뒤 검증한다. 다르면 설치하지 않는다 */
     sha256: { type: String, default: "" },

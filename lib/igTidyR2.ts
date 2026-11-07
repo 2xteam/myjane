@@ -9,9 +9,13 @@ import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
  * **10분짜리 사전 서명 주소**로 넘긴다. 100MB 안팎이라 Vercel 함수로 흘려보내지 않는다.
  * → my-obsidian-vault / 40-Infra/Cloudflare R2.md · 10-Projects/IG Tidy.md
  *
- * 버킷 이름은 환경 변수로 받되 **기본값을 두지 않는다** — 빠졌을 때 조용히 다른 앱의
- * 버킷을 가리키지 않게(AIKit 과 같은 원칙).
+ * 버킷은 myjane **공용 버킷 `myjane`**(2026-11-07 결정) — 앱마다 접두 폴더로 나눈다.
+ * IG Tidy 설치 파일은 `ig-tidy/releases/IG-Tidy-Setup-<버전>.exe`.
+ * 공용 버킷이라도 **공개 URL(r2.dev · 커스텀 도메인)을 켜지 않는다** — 켜면 설치 파일이 허용 확인 없이 열린다.
+ * `IG_TIDY_R2_BUCKET` 으로 따로 둘 수도 있다(없으면 `myjane`).
  */
+export const IG_TIDY_RELEASE_PREFIX = "ig-tidy/releases/";
+export const igTidyReleaseKey = (version: string) => `${IG_TIDY_RELEASE_PREFIX}IG-Tidy-Setup-${version}.exe`;
 
 let client: S3Client | null = null;
 
@@ -35,9 +39,7 @@ function r2(): S3Client {
 }
 
 export function igTidyBucket(): string {
-  const b = process.env.IG_TIDY_R2_BUCKET;
-  if (!b) throw new Error("IG_TIDY_R2_BUCKET 환경 변수가 없어요.");
-  return b;
+  return process.env.IG_TIDY_R2_BUCKET || "myjane";
 }
 
 /**
