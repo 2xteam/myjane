@@ -43,6 +43,8 @@ export function AdminNav() {
       items: [
         { href: "/admin/members", label: "회원 관리" },
         { href: "/admin/share", label: "공유 링크", hint: "/share" },
+        // 데스크톱 앱이라 앱 묶음이 아니라 여기 — 데이터가 포털 자신의 것이다
+        { href: "/admin/ig-tidy", label: "IG Tidy", hint: "윈도우 앱" },
       ],
     },
     {

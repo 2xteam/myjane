@@ -11,7 +11,8 @@ export type AppKey =
   | "fitlog"
   | "2hbk"
   | "typelog"
-  | "calmtouch";
+  | "calmtouch"
+  | "ig-tidy";
 
 export type AppInfo = {
   key: AppKey;
@@ -53,6 +54,12 @@ export type AppInfo = {
    * 포트 표의 원본은 볼트 `Home.md` 다.
    */
   devPort?: number;
+  /**
+   * 앱 화면이 **포털 자신**에 있다(IG Tidy — `/ig-tidy`). 돌아갈 오리진을 언제나 지금 포털의
+   * 오리진으로 한다. 포트를 박아 두면 포털을 다른 포트(검증 서버 3010 등)로 띄웠을 때
+   * 아무것도 없는 3000 으로 튕긴다(2026-11-06 IG Tidy 앱 로그인 창이 그래서 안 닫혔다).
+   */
+  samePortal?: boolean;
 };
 
 export const APPS: Record<AppKey, AppInfo> = {
@@ -121,6 +128,24 @@ export const APPS: Record<AppKey, AppInfo> = {
     */
     // "캄터치"는 받침(ㅊ)으로 끝나 기본값 `으로`가 맞다
   },
+  "ig-tidy": {
+    key: "ig-tidy",
+    /*
+      IG Tidy 는 웹 앱이 아니라 **윈도우 데스크톱 앱**이다(2026-11-06). 서브도메인을 따로 두지 않고
+      포털이 API(`/api/ig-tidy/*`)와 작은 화면(`/ig-tidy`)을 함께 갖는다. 그래서 오리진이 포털 자신이다.
+      앱은 자기 창에 이 로그인 화면을 띄우고, `next=/ig-tidy/connected` 로 돌아오는 것을 보고 창을 닫는다.
+      가입 출처는 `signupFrom: "ig-tidy"` 로 남고, 다른 앱도 그대로 쓰는 일반 회원이다.
+      → my-obsidian-vault / 10-Projects/IG Tidy.md
+    */
+    samePortal: true,
+    name: "IG Tidy",
+    origin: "https://www.myjane.co.kr",
+    icon: "/ig-tidy-icon.png",
+    // API 가 쿠키의 id 가 아니라 서명 토큰을 검증한다(lib/serverSession.ts)
+    requiresSessionToken: true,
+    // "타이디"는 받침 없이 끝난다
+    particle: "로",
+  },
 };
 
 export function getApp(from: string | null | undefined): AppInfo | null {
@@ -152,6 +177,7 @@ export function buildReturnUrl(
  */
 function originFor(app: AppInfo): string {
   if (typeof window === "undefined") return app.origin;
+  if (app.samePortal) return window.location.origin;
   const host = window.location.hostname;
   const local = host === "localhost" || host === "127.0.0.1" || host.endsWith(".localhost");
   if (local && app.devPort) return `${window.location.protocol}//${host}:${app.devPort}`;

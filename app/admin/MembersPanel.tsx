@@ -16,6 +16,7 @@ type Member = {
   adminRole: "master" | "operator" | null;
   createdAt: string | null;
   lastLoginAt: string | null;
+  igTidyAllowed: boolean;
 };
 
 /**
@@ -97,6 +98,32 @@ export function MembersPanel({ isMaster }: { isMaster: boolean }) {
     }
   }
 
+  /**
+   * IG Tidy 사용 허용 켜기·끄기 → /api/admin/users/:id/ig-tidy
+   * 끄면 그 회원의 앱은 다음 연장(1분 안)에서 멈춘다.
+   */
+  async function setIgTidy(m: Member, allowed: boolean) {
+    const ok = await ask({
+      title: allowed ? `${m.name || "이 회원"}님에게 IG Tidy 를 허용할까요?` : `${m.name || "이 회원"}님의 IG Tidy 허용을 끌까요?`,
+      lines: allowed
+        ? ["허용하면 IG Tidy 앱을 바로 쓸 수 있어요(앱이 1분 안에 알아차립니다)."]
+        : ["실행 중이면 1분 안에 멈추고, 다시 허용할 때까지 시작할 수 없어요.", "기록은 지우지 않아요."],
+      confirmLabel: allowed ? "허용하기" : "허용 끄기",
+      danger: !allowed,
+    });
+    if (!ok) return;
+
+    setBusy(m.id);
+    try {
+      await adminApi(`/api/admin/users/${m.id}/ig-tidy`, { method: "PATCH", body: { allowed } });
+      await load();
+    } catch (err) {
+      setError(adminErrorMessage(err));
+    } finally {
+      setBusy(null);
+    }
+  }
+
   async function setRole(m: Member, role: "operator" | null) {
     const label = role ? `${m.name}님을 운영자로 세울까요?` : `${m.name}님의 운영자 권한을 내릴까요?`;
     if (!(await ask({ title: label, confirmLabel: role ? "운영자로 세우기" : "권한 내리기", danger: !role }))) return;
@@ -171,6 +198,7 @@ export function MembersPanel({ isMaster }: { isMaster: boolean }) {
                 <SortableTh label="가입일" sortKey="createdAt" query={list} onChange={setList} firstDir="desc" />
                 <SortableTh label="마지막 로그인" sortKey="lastLoginAt" query={list} onChange={setList} firstDir="desc" />
                 <SortableTh label="권한" sortKey="adminRole" query={list} onChange={setList} firstDir="desc" />
+                <SortableTh label="IG Tidy" sortKey="igTidy" query={list} onChange={setList} firstDir="desc" />
                 <th>대리 로그인</th>
                 {isMaster ? <th /> : null}
               </tr>
@@ -192,6 +220,16 @@ export function MembersPanel({ isMaster }: { isMaster: boolean }) {
                     ) : (
                       <span className="adm-muted">—</span>
                     )}
+                  </td>
+                  <td>
+                    <button
+                      className={m.igTidyAllowed ? "adm-btn" : "adm-btn adm-btn--ghost"}
+                      disabled={busy === m.id}
+                      onClick={() => setIgTidy(m, !m.igTidyAllowed)}
+                      title={m.igTidyAllowed ? "IG Tidy 를 쓰는 중 — 눌러서 끄기" : "IG Tidy 사용 허용하기"}
+                    >
+                      {m.igTidyAllowed ? "허용됨" : "허용"}
+                    </button>
                   </td>
                   <td>
                     {m.adminRole ? (

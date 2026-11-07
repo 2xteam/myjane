@@ -222,6 +222,17 @@ const UserSchema = new Schema(
     /** 어느 앱에서 가입했는지 (통합 로그인에서 기록) */
     signupFrom: { type: String, default: null },
 
+    /**
+     * ── IG Tidy 사용 허용 (2026-11-06) ──
+     * 포털 admin 회원 목록에서만 켜고 끈다. IG Tidy 데스크톱 앱이 `/api/ig-tidy/*` 에서 본다.
+     * 다른 앱은 읽지도 쓰지도 않지만 **일곱 `models/User.ts` 에 함께 선언**한다 —
+     * 한 컬렉션을 공유하므로 스키마에 없는 필드는 그 앱이 저장할 때 유실될 수 있다.
+     * → my-obsidian-vault / 10-Projects/IG Tidy.md
+     */
+    igTidyAllowed: { type: Boolean, default: false },
+    igTidyAllowedAt: { type: Date, default: null },
+    igTidyAllowedBy: { type: Schema.Types.ObjectId, default: null },
+
     /** FitLog 전용 신체 프로필 — 다른 앱은 사용하지 않는다 */
     heightCm: { type: Number, default: null },
     gender: { type: String, enum: ["male", "female", null], default: null },

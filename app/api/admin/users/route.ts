@@ -37,6 +37,7 @@ const SORT_FIELDS: Record<string, string> = {
   lastLoginAt: "lastLoginAt",
   createdAt: "createdAt",
   adminRole: "_roleRank",
+  igTidy: "_igTidy",
 };
 
 const DEFAULT_SORT = "createdAt";
@@ -86,6 +87,7 @@ export async function GET(req: Request) {
             ],
           },
           _uses2hbk: { $cond: [{ $gt: [{ $ifNull: ["$userId", ""] }, ""] }, 1, 0] },
+          _igTidy: { $cond: [{ $eq: ["$igTidyAllowed", true] }, 1, 0] },
           _roleRank: {
             $switch: {
               branches: [
@@ -106,7 +108,7 @@ export async function GET(req: Request) {
             {
               $project: {
                 name: 1, nickname: 1, email: 1, phone: 1, pin: 1, password: 1, parentId: 1,
-                userId: 1, signupFrom: 1, adminRole: 1, createdAt: 1, lastLoginAt: 1,
+                userId: 1, signupFrom: 1, adminRole: 1, createdAt: 1, lastLoginAt: 1, igTidyAllowed: 1,
               },
             },
           ],
@@ -119,7 +121,7 @@ export async function GET(req: Request) {
     type Row = {
       _id: unknown; name?: string; nickname?: string; email?: string; phone?: string; pin?: string;
       password?: string; parentId?: unknown; userId?: string; signupFrom?: string;
-      adminRole?: string; createdAt?: unknown; lastLoginAt?: unknown;
+      adminRole?: string; createdAt?: unknown; lastLoginAt?: unknown; igTidyAllowed?: boolean;
     };
     const users = ((result?.rows ?? []) as Row[]).map((u) => ({
       id: String(u._id),
@@ -133,6 +135,8 @@ export async function GET(req: Request) {
       userId: u.userId ?? null,
       signupFrom: u.signupFrom ?? null,
       adminRole: u.adminRole ?? null,
+      /** IG Tidy 데스크톱 앱 사용 허용 → /api/admin/users/:id/ig-tidy */
+      igTidyAllowed: u.igTidyAllowed === true,
       /** 자녀 프로필이면 보호자 회원 id → lib/family.ts */
       parentId: u.parentId ? String(u.parentId) : null,
       createdAt: iso(u.createdAt),
