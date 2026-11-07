@@ -170,8 +170,13 @@ function dominant({ ko, ja, en, total }: LangScore): CommentLang {
   if (en > ko && en > ja) return "en";
   return "ko";
 }
-export function commentLanguage(caption: string, fallback: CommentLang = "ko"): { code: CommentLang; rule: string; source: "body" | "tags" | "fallback" } {
-  const raw = String(caption || "").replace(/https?:\/\/\S+/g, " ");
+export function commentLanguage(caption: string, fallback: CommentLang = "ko", author = ""): { code: CommentLang; rule: string; source: "body" | "tags" | "fallback" } {
+  // 글쓴이 아이디 · 아이디처럼 생긴 낱말(밑줄 · 점이 낀 영숫자, 예 ya_runlife)은 언어로 세지 않는다 —
+  // 앱이 피드 카드에서 본문을 읽을 때 아이디가 섞여 짧은 한글 글이 영어로 판정됐다(2026-11-08)
+  const who = String(author || "").trim();
+  let raw = String(caption || "").replace(/https?:\/\/\S+/g, " ");
+  if (who) raw = raw.split(who).join(" ");
+  raw = raw.replace(/(^|\s)(?=[A-Za-z0-9._]*[._])[A-Za-z0-9._]{3,30}(?=\s|$)/g, " ");
   const body = scoreLang(raw.replace(/[#@][^\s#@]+/g, " "));
   const tags = scoreLang((raw.match(/#[^\s#@]+/g) || []).map((x) => x.slice(1)).join(" "));
   const pick = (code: CommentLang, source: "body" | "tags" | "fallback") => ({ code, rule: LANG_RULE[code], source });
@@ -227,7 +232,7 @@ export async function generateIgComment(input: AiCommentInput): Promise<AiCommen
   const tone = (input.tone ?? "").trim().slice(0, 300);
   const custom = input.style === "custom" && (input.customGuide ?? "").trim();
   const style = custom ? customStyle(custom) : IG_COMMENT_STYLES[styleOf(input.style)];
-  const lang = commentLanguage(input.caption, input.fallbackLang ?? "ko");
+  const lang = commentLanguage(input.caption, input.fallbackLang ?? "ko", input.author);
   const system = `${BASE}\n\n[스타일 — ${style.label}]\n${style.guide}`
     + `${tone ? `\n\n[사용자가 정한 말투 · 계정 성격]\n${tone}` : ""}\n\n${POLICY}`
     + `\n\n[이 글의 댓글 언어 — 무엇보다 우선]\n${lang.rule}`
