@@ -50,7 +50,7 @@ const CAP_LABEL: Record<string, string> = {
   comment: "댓글", dm: "인사 메시지",
 };
 const VIEWS = [
-  ["members", "사용자"], ["live", "실행 중"], ["plays", "실행 이력"], ["ai", "AI 댓글 기록"], ["notices", "공지"], ["settings", "운영 설정"], ["releases", "배포 버전"],
+  ["members", "사용자"], ["live", "실행 중"], ["plays", "실행 이력"], ["ai", "AI 댓글 기록"], ["insights", "현황"], ["notices", "공지"], ["settings", "운영 설정"], ["releases", "배포 버전"],
 ] as const;
 type View = (typeof VIEWS)[number][0];
 
@@ -67,6 +67,7 @@ export function IgTidyPanel() {
   const [data, setData] = useState<Overview | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
+  const [noticeDraft, setNoticeDraft] = useState<string | undefined>(undefined);
   const { ask, dialog } = useConfirm();
 
   const load = useCallback(async () => {
@@ -143,7 +144,7 @@ export function IgTidyPanel() {
     <>
       <div className="adm-subtabs">
         {VIEWS.map(([k, label]) => (
-          <button key={k} type="button" className="adm-subtab" data-active={view === k} onClick={() => setView(k)}>
+          <button key={k} type="button" className="adm-subtab" data-active={view === k} onClick={() => { setNoticeDraft(undefined); setView(k); }}>
             {label}
             {k === "live" && data?.live.length ? ` (${data.live.length})` : ""}
             {k === "members" && data?.waiting.length ? ` · 대기 ${data.waiting.length}` : ""}
@@ -276,7 +277,10 @@ export function IgTidyPanel() {
 
       {data && view === "plays" ? <PlaysView members={data.members} /> : null}
       {data && view === "ai" ? <AiLogsView members={data.members} /> : null}
-      {data && view === "notices" ? <NoticesView /> : null}
+      {data && view === "insights" ? (
+        <InsightsView settings={data.settings} onSaved={load} onWriteNotice={(draft) => { setNoticeDraft(draft); setView("notices"); }} />
+      ) : null}
+      {data && view === "notices" ? <NoticesView draft={noticeDraft} /> : null}
       {data && view === "settings" ? <SettingsView settings={data.settings} onSaved={load} onGoNotices={() => setView("notices")} /> : null}
       {data && view === "releases" ? <ReleasesView onSaved={load} /> : null}
       {dialog}
@@ -614,6 +618,179 @@ function SettingsView({ settings, onSaved, onGoNotices }: { settings: Settings; 
         {msg ? <span className={msg.ok ? "adm-msg adm-msg--ok" : "adm-msg adm-msg--bad"}>{msg.text}</span> : null}
       </div>
     </div>
+  );
+}
+
+/* ── 현황 — 제한에 걸린 기록으로 하루 상한 고르기 (2026-11-08) ─────────────
+ * 여러 사람의 기록(blocks · daily · plays)을 모아 행동마다 「몇 건에서 걸렸나」 와 「무사한 날 얼마나 했나」 를 본다.
+ * 추천 상한 규칙은 API 에 있다 → app/api/admin/ig-tidy/insights/route.ts
+ * 저장은 운영 설정과 같은 API(PUT /api/admin/ig-tidy/settings 의 dailyCaps)다. */
+type Dist = { n: number; min: number; p25: number; median: number; p75: number; p90: number; max: number };
+type InsightAction = {
+  action: string; cap: number; suggested: number | null; basis: string; lowData: boolean;
+  blocks: number; accounts: number; blockedPlays: number; blockDay: Dist | null; safeDay: Dist | null;
+};
+type Insights = {
+  days: number; since: string; until: string; actions: InsightAction[];
+  series: Array<{ day: string; blocks: number; blockedPlays: number }>;
+  totals: { blocks: number; accounts: number; blockedPlays: number };
+};
+const capName = (k: string) => CAP_LABEL[k] ?? k;
+const distText = (d: Dist | null) => (d ? `${d.min} · ${d.p25} · ${d.median} · ${d.p75} · ${d.max}` : "—");
+
+function InsightsView({ settings, onSaved, onWriteNotice }: {
+  settings: Settings; onSaved: () => Promise<void>; onWriteNotice: (draft: string) => void;
+}) {
+  const [days, setDays] = useState(30);
+  const [data, setData] = useState<Insights | null>(null);
+  const [caps, setCaps] = useState<Record<string, number>>(() => ({ ...settings.dailyCaps }));
+  const [changed, setChanged] = useState<Array<[string, number, number]>>([]);   // 저장한 바뀜 [칸, 전, 후]
+  const [msg, setMsg] = useState<{ ok: boolean; text: string } | null>(null);
+  const [busy, setBusy] = useState(false);
+
+  const load = useCallback(async () => {
+    setMsg(null);
+    try {
+      setData(await adminApi<Insights>(`/api/admin/ig-tidy/insights?days=${days}`));
+    } catch (err) {
+      setMsg({ ok: false, text: adminErrorMessage(err) });
+    }
+  }, [days]);
+  useEffect(() => { void load(); }, [load]);
+
+  async function save() {
+    setBusy(true);
+    setMsg(null);
+    const before = settings.dailyCaps;
+    try {
+      await adminApi("/api/admin/ig-tidy/settings", { method: "PUT", body: { dailyCaps: caps } });
+      const diff = Object.keys(CAP_LABEL)
+        .filter((k) => (Number(before[k]) || 0) !== (Number(caps[k]) || 0))
+        .map((k) => [k, Number(before[k]) || 0, Number(caps[k]) || 0] as [string, number, number]);
+      setChanged(diff);
+      setMsg({ ok: true, text: diff.length ? `${diff.length}칸을 바꿨어요. 실행 중인 앱도 1분 안에 새 값을 받아요.` : "바뀐 칸이 없어요." });
+      await onSaved();
+      await load();
+    } catch (err) {
+      setMsg({ ok: false, text: adminErrorMessage(err) });
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  function writeNotice() {
+    const lines = changed.length
+      ? changed.map(([k, a, b]) => `· ${capName(k)}: 하루 ${a ? a.toLocaleString() : "제한 없음"} → ${b ? b.toLocaleString() : "제한 없음"}건`)
+      : Object.keys(CAP_LABEL).filter((k) => caps[k]).map((k) => `· ${capName(k)}: 하루 ${Number(caps[k]).toLocaleString()}건`);
+    onWriteNotice([
+      "하루 권장 횟수를 조정했어요",
+      "여러분의 기록에서 인스타그램 제한이 걸린 건수를 모아 보고, 계정을 지키도록 하루 상한을 맞췄어요.",
+      "",
+      ...lines,
+      "",
+      "제한 안내를 받았다면 하루 이틀 쉬었다가 다시 시작해 주세요.",
+    ].join("\n"));
+  }
+
+  const peak = Math.max(1, ...(data?.series ?? []).map((d) => d.blocks + d.blockedPlays));
+  return (
+    <>
+      <div className="adm-card">
+        <p className="adm-card-title">제한 현황</p>
+        <p className="adm-card-sub">
+          모든 사용자의 기록을 모았어요. 「제한 기록」 은 앱이 제한 안내를 받고 멈출 때 그날 건수와 함께 남긴 것이고,
+          「제한으로 끝난 실행」 은 실행 이력에서 상태가 제한 안내인 것이에요(기록이 아직 안 올라온 것도 보여요).
+        </p>
+        <div className="adm-row" style={{ gap: 8, marginBottom: 10 }}>
+          <select className="adm-input" style={{ maxWidth: 140 }} value={days} onChange={(e) => setDays(Number(e.target.value))}>
+            {[7, 14, 30, 60, 90, 180].map((d) => <option key={d} value={d}>최근 {d}일</option>)}
+          </select>
+          <button className="adm-btn adm-btn--ghost" disabled={busy} onClick={() => void load()}>새로 보기</button>
+          {data ? (
+            <span className="adm-muted">
+              제한 기록 {data.totals.blocks}건 · 아이디 {data.totals.accounts}개 · 제한으로 끝난 실행 {data.totals.blockedPlays}건
+            </span>
+          ) : null}
+        </div>
+        {!data ? <p className="adm-empty">불러오는 중…</p> : (
+          <>
+            {/* 날마다 — 진한 칸은 제한 기록, 옅은 칸은 제한으로 끝난 실행 */}
+            <div style={{ display: "flex", alignItems: "flex-end", gap: 2, height: 90, padding: "4px 0", borderBottom: "1px solid var(--border)" }}>
+              {data.series.map((d) => (
+                <div key={d.day} title={`${d.day} · 제한 기록 ${d.blocks} · 제한으로 끝난 실행 ${d.blockedPlays}`}
+                  style={{ flex: 1, minWidth: 2, display: "flex", flexDirection: "column", justifyContent: "flex-end", height: "100%" }}>
+                  <div style={{ height: `${(d.blockedPlays / peak) * 100}%`, background: "var(--danger-subtle)" }} />
+                  <div style={{ height: `${(d.blocks / peak) * 100}%`, background: "var(--danger)" }} />
+                </div>
+              ))}
+            </div>
+            <div className="adm-row adm-muted" style={{ justifyContent: "space-between", fontSize: 12, marginTop: 4 }}>
+              <span>{data.since}</span>
+              <span>■ 진한 칸 제한 기록 · 옅은 칸 제한으로 끝난 실행 · 가장 많은 날 {peak}건</span>
+              <span>{data.until}</span>
+            </div>
+          </>
+        )}
+      </div>
+
+      <div className="adm-card">
+        <p className="adm-card-title">행동별 하루 건수와 추천 상한</p>
+        <p className="adm-card-sub">
+          분포는 <b>가장 적음 · 아래 25% · 중간 · 위 25% · 가장 많음</b> 이에요. 「걸린 날」 은 제한에 걸렸을 때 그날 그 행동을 몇 건 했는지,
+          「무사한 날」 은 제한이 없던 날(그 아이디에 제한이 있던 날은 뺌) 몇 건 했는지예요.
+        </p>
+        <p className="adm-note adm-note--info" style={{ marginBottom: 12 }}>
+          추천 상한 = 걸린 날의 <b>아래 25% 값 × 0.8</b>(걸린 사람 넷 중 하나는 이보다 적게 하고도 걸렸으니 20% 더 물린다).
+          단 무사한 날의 <b>위 10% 값(p90)</b> 을 넘지 않게 하고, 20 이상이면 5 단위로 내려요. 제한 기록이 없으면 추천하지 않아요.
+          기록이 3건 미만이면 「근거 적음」 — 참고만 하세요.
+        </p>
+        {!data ? null : (
+          <div className="adm-table-wrap">
+            <table className="adm-table">
+              <thead>
+                <tr><th>행동</th><th>제한 기록 · 아이디</th><th>제한으로 끝난 실행</th><th>걸린 날 건수</th><th>무사한 날 건수</th><th>지금 상한</th><th>추천</th><th>새 상한</th></tr>
+              </thead>
+              <tbody>
+                {data.actions.map((a) => (
+                  <tr key={a.action}>
+                    <td style={{ fontWeight: 700 }}>{capName(a.action)}</td>
+                    <td>{a.blocks}건 · {a.accounts}개</td>
+                    <td>{a.blockedPlays}건</td>
+                    <td className="adm-muted">{distText(a.blockDay)}{a.blockDay ? <div>({a.blockDay.n}번)</div> : null}</td>
+                    <td className="adm-muted">{distText(a.safeDay)}{a.safeDay ? <div>(p90 {a.safeDay.p90} · {a.safeDay.n}일)</div> : null}</td>
+                    <td>{a.cap ? a.cap.toLocaleString() : "제한 없음"}</td>
+                    <td className="adm-wrap-cell">
+                      {a.suggested === null ? <span className="adm-muted">—</span> : (
+                        <>
+                          <b>{a.suggested.toLocaleString()}</b>
+                          {a.lowData ? <span className="adm-pill adm-pill--wait" style={{ marginLeft: 6 }}>근거 적음</span> : null}
+                          {" "}
+                          <button className="adm-btn adm-btn--ghost adm-btn--sm" onClick={() => setCaps({ ...caps, [a.action]: a.suggested ?? 0 })}>넣기</button>
+                        </>
+                      )}
+                      <div className="adm-muted" style={{ fontSize: 12 }}>{a.basis}</div>
+                    </td>
+                    <td>
+                      <input className="adm-input" style={{ width: 90 }} type="number" min={0} value={caps[a.action] ?? 0}
+                        onChange={(e) => setCaps({ ...caps, [a.action]: Number(e.target.value) })} />
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+        <div className="adm-row" style={{ marginTop: 14, gap: 8, flexWrap: "wrap" }}>
+          <button className="adm-btn" disabled={busy || !data} onClick={() => void save()}>상한 저장</button>
+          <button className="adm-btn adm-btn--ghost" disabled={busy} onClick={writeNotice}>사용자에게 공지 쓰기</button>
+          {msg ? <span className={msg.ok ? "adm-msg adm-msg--ok" : "adm-msg adm-msg--bad"}>{msg.text}</span> : null}
+        </div>
+        <p className="adm-card-sub" style={{ marginTop: 8 }}>
+          0 = 제한 없음. 저장하면 운영 설정의 「인스타그램 아이디당 하루 상한」 과 같은 값이 바뀌어요.
+          「사용자에게 공지 쓰기」 는 바꾼 칸을 담은 초안으로 공지 탭을 열어요(올리기 전에 고칠 수 있어요).
+        </p>
+      </div>
+    </>
   );
 }
 
