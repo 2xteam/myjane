@@ -17,7 +17,7 @@ import { getIgAccountModel, getIgPlayModel } from "@/models/IgTidy";
 
 export const runtime = "nodejs";
 
-const KINDS = new Set(["follow", "unfollow", "leavers", "mutual", "ratio", "like", "feed", "story", "refresh", "aicomment"]);
+const KINDS = new Set(["follow", "unfollow", "leavers", "mutual", "ratio", "like", "feed", "story", "refresh", "aicomment", "aireply", "aipost"]);
 
 /**
  * 실행을 시작한다 — 「시작」 을 누를 때마다 한 번.
