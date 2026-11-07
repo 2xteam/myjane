@@ -50,7 +50,7 @@ const CAP_LABEL: Record<string, string> = {
   comment: "댓글", dm: "인사 메시지",
 };
 const VIEWS = [
-  ["members", "사용자"], ["live", "실행 중"], ["plays", "실행 이력"], ["ai", "AI 댓글 기록"], ["settings", "운영 설정"], ["releases", "배포 버전"],
+  ["members", "사용자"], ["live", "실행 중"], ["plays", "실행 이력"], ["ai", "AI 댓글 기록"], ["notices", "공지"], ["settings", "운영 설정"], ["releases", "배포 버전"],
 ] as const;
 type View = (typeof VIEWS)[number][0];
 
@@ -276,7 +276,8 @@ export function IgTidyPanel() {
 
       {data && view === "plays" ? <PlaysView members={data.members} /> : null}
       {data && view === "ai" ? <AiLogsView members={data.members} /> : null}
-      {data && view === "settings" ? <SettingsView settings={data.settings} onSaved={load} /> : null}
+      {data && view === "notices" ? <NoticesView /> : null}
+      {data && view === "settings" ? <SettingsView settings={data.settings} onSaved={load} onGoNotices={() => setView("notices")} /> : null}
       {data && view === "releases" ? <ReleasesView onSaved={load} /> : null}
       {dialog}
     </>
@@ -513,7 +514,7 @@ function AiLogsView({ members }: { members: Member[] }) {
 }
 
 /* ── 운영 설정 ───────────────────────────────────────────── */
-function SettingsView({ settings, onSaved }: { settings: Settings; onSaved: () => Promise<void> }) {
+function SettingsView({ settings, onSaved, onGoNotices }: { settings: Settings; onSaved: () => Promise<void>; onGoNotices: () => void }) {
   const [form, setForm] = useState(settings);
   const [msg, setMsg] = useState<{ ok: boolean; text: string } | null>(null);
   const [busy, setBusy] = useState(false);
@@ -551,12 +552,11 @@ function SettingsView({ settings, onSaved }: { settings: Settings; onSaved: () =
         </label>
       ) : null}
 
-      <label className="adm-field">
-        <span className="adm-label">앱 공지 — 앱 위쪽 띠에 보여요(닫으면 그 공지는 다시 안 떠요). 비우면 내려요</span>
-        <textarea className="adm-textarea" rows={2} maxLength={500} value={form.notice}
-          onChange={(e) => setForm({ ...form, notice: e.target.value })}
-          placeholder="예) 11/10 새벽 2~3시 점검이 있어요. 그 시간에는 실행이 멈출 수 있어요." />
-      </label>
+      {/* 한 줄 공지는 「공지」 탭(게시판)으로 옮겼다(2026-11-08). 예전 앱 띠에는 가장 최근에 켜진 공지가 나간다 */}
+      <p className="adm-note adm-note--info" style={{ margin: "6px 0 12px" }}>
+        앱 공지는 <b>「공지」 탭</b>으로 옮겼어요. 여러 개를 쓰고 켜고 끌 수 있어요.{" "}
+        <button type="button" className="adm-btn adm-btn--ghost adm-btn--sm" onClick={onGoNotices}>공지 탭으로</button>
+      </p>
 
       <label className="adm-field">
         <span className="adm-label">최소 앱 버전 — 이보다 낮으면 시작 전에 업데이트를 요구해요</span>
@@ -615,6 +615,181 @@ function SettingsView({ settings, onSaved }: { settings: Settings; onSaved: () =
       </div>
     </div>
   );
+}
+
+/* ── 공지 게시판 (2026-11-08) ─────────────────────────────────
+ * 예전에는 운영 설정의 한 줄이었다. 이제 여러 개를 쓰고 · 고치고 · 켜고 끈다.
+ * 새 앱은 켜진 공지를 모두 받는다(/api/ig-tidy/notices). 예전 앱 띠에는 **가장 최근에 켜진 하나**가 나간다. */
+type Notice = { id: string; title: string; body: string; level: "info" | "important"; active: boolean; publishedAt: string | null; updatedAt: string | null };
+type NoticeDraft = { title: string; body: string; level: "info" | "important"; active: boolean; republish: boolean };
+const EMPTY_NOTICE: NoticeDraft = { title: "", body: "", level: "info", active: true, republish: false };
+
+/** 앱에서 보이는 모양을 흉내 낸다 — 위쪽 띠(예전 앱도 이 한 줄) + 펼친 본문 */
+function NoticePreview({ n }: { n: Pick<Notice, "title" | "body" | "level"> }) {
+  const important = n.level === "important";
+  const first = n.body.split("\n").map((x) => x.trim()).find(Boolean) ?? "";
+  const bar = first ? `${n.title} — ${first.length > 80 ? `${first.slice(0, 80)}…` : first}` : n.title;
+  return (
+    <div style={{ border: "1px solid var(--border)", borderRadius: 10, overflow: "hidden" }}>
+      <div style={{
+        padding: "8px 12px", fontSize: 13, fontWeight: 600,
+        background: important ? "var(--danger-subtle)" : "var(--accent-soft)",
+        color: important ? "var(--danger-ink)" : "var(--accent-ink)",
+      }}>
+        {important ? "중요 · " : "알림 · "}{bar || "제목을 적으면 여기 보여요"}
+      </div>
+      <div style={{ padding: "10px 12px", background: "var(--surface)" }}>
+        <p style={{ margin: 0, fontWeight: 700 }}>{n.title || "제목"}</p>
+        {n.body ? <p className="adm-muted" style={{ margin: "6px 0 0", whiteSpace: "pre-wrap", lineHeight: 1.6 }}>{n.body}</p> : null}
+      </div>
+    </div>
+  );
+}
+
+function NoticesView({ draft }: { draft?: string }) {
+  const [rows, setRows] = useState<Notice[] | null>(null);
+  const [editing, setEditing] = useState<string | null>(null);   // null = 새 공지
+  const [form, setForm] = useState<NoticeDraft>(() => (draft ? { ...EMPTY_NOTICE, ...splitDraft(draft) } : EMPTY_NOTICE));
+  const [msg, setMsg] = useState<{ ok: boolean; text: string } | null>(null);
+  const [busy, setBusy] = useState(false);
+  const { ask, dialog } = useConfirm();
+
+  const load = useCallback(async () => {
+    try {
+      setRows((await adminApi<{ notices: Notice[] }>("/api/admin/ig-tidy/notices")).notices);
+    } catch (err) {
+      setMsg({ ok: false, text: adminErrorMessage(err) });
+      setRows([]);
+    }
+  }, []);
+  useEffect(() => { void load(); }, [load]);
+
+  async function act(fn: () => Promise<unknown>, ok: string): Promise<boolean> {
+    setBusy(true);
+    setMsg(null);
+    try {
+      await fn();
+      setMsg({ ok: true, text: ok });
+      await load();
+      return true;
+    } catch (err) {
+      setMsg({ ok: false, text: adminErrorMessage(err) });
+      return false;
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  function startEdit(n: Notice) {
+    setEditing(n.id);
+    setForm({ title: n.title, body: n.body, level: n.level, active: n.active, republish: false });
+    setMsg(null);
+  }
+  function reset() { setEditing(null); setForm(EMPTY_NOTICE); }
+
+  async function save() {
+    const done = editing
+      ? await act(() => adminApi("/api/admin/ig-tidy/notices", { method: "PATCH", body: { id: editing, ...form } }),
+          form.republish ? "고쳤어요. 새 공지로 다시 띄워요(닫았던 사람에게도 떠요)." : "고쳤어요. 앱은 1분 안에 새 글을 받아요.")
+      : await act(() => adminApi("/api/admin/ig-tidy/notices", { method: "POST", body: form }),
+          form.active ? "올렸어요. 켜져 있는 앱은 1분 안에 띄워요." : "꺼 둔 채로 저장했어요.");
+    if (done) reset();
+  }
+
+  async function toggle(n: Notice) {
+    await act(() => adminApi("/api/admin/ig-tidy/notices", { method: "PATCH", body: { id: n.id, active: !n.active } }),
+      n.active ? "내렸어요. 앱에서 곧 사라져요." : "다시 켰어요.");
+  }
+
+  async function remove(n: Notice) {
+    if (!(await ask({ title: `「${n.title}」 공지를 지울까요?`, lines: ["되돌릴 수 없어요. 잠깐 내리기만 하려면 「내리기」 를 쓰세요."], confirmLabel: "지우기", danger: true }))) return;
+    await act(() => adminApi("/api/admin/ig-tidy/notices", { method: "DELETE", body: { id: n.id } }), "지웠어요.");
+    if (editing === n.id) reset();
+  }
+
+  const latestActive = rows?.find((r) => r.active);
+  return (
+    <>
+      <div className="adm-card">
+        <p className="adm-card-title">{editing ? "공지 고치기" : "새 공지"}</p>
+        <p className="adm-card-sub">
+          켜진 공지는 앱에 모두 보여요(최근 것부터). 예전 버전 앱은 위쪽 띠 한 줄만 보여서 <b>가장 최근에 켜진 공지</b>의
+          제목(+ 본문 첫 줄)이 나가요. 띠를 닫은 사람에게는 같은 공지가 다시 뜨지 않아요.
+        </p>
+        <label className="adm-field"><span className="adm-label">제목</span>
+          <input className="adm-input" maxLength={120} value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })}
+            placeholder="예) 11/10 새벽 2~3시 점검" /></label>
+        <label className="adm-field"><span className="adm-label">본문 (여러 줄)</span>
+          <textarea className="adm-textarea" rows={5} maxLength={3000} value={form.body} onChange={(e) => setForm({ ...form, body: e.target.value })}
+            placeholder={"그 시간에는 실행이 멈출 수 있어요.\n점검이 끝나면 다시 시작해 주세요."} /></label>
+        <div className="adm-row" style={{ gap: 14, flexWrap: "wrap" }}>
+          <label className="adm-field" style={{ minWidth: 180 }}><span className="adm-label">중요도</span>
+            <select className="adm-input" value={form.level} onChange={(e) => setForm({ ...form, level: e.target.value === "important" ? "important" : "info" })}>
+              <option value="info">알림</option>
+              <option value="important">중요 — 눈에 띄게</option>
+            </select></label>
+          <label className="adm-row" style={{ gap: 6 }}>
+            <input type="checkbox" checked={form.active} onChange={(e) => setForm({ ...form, active: e.target.checked })} />
+            <span>앱에 보이기</span>
+          </label>
+          {editing ? (
+            <label className="adm-row" style={{ gap: 6 }}>
+              <input type="checkbox" checked={form.republish} onChange={(e) => setForm({ ...form, republish: e.target.checked })} />
+              <span>새 공지로 다시 띄우기 — 닫았던 사람에게도 다시 떠요</span>
+            </label>
+          ) : null}
+        </div>
+        <p className="adm-label" style={{ marginTop: 12 }}>미리 보기 — 앱에서 이렇게 보여요</p>
+        <NoticePreview n={form} />
+        <div className="adm-row" style={{ marginTop: 12, gap: 8 }}>
+          <button className="adm-btn" disabled={busy || !form.title.trim()} onClick={() => void save()}>{editing ? "고치기" : "올리기"}</button>
+          {editing ? <button className="adm-btn adm-btn--ghost" disabled={busy} onClick={reset}>취소</button> : null}
+          {msg ? <span className={msg.ok ? "adm-msg adm-msg--ok" : "adm-msg adm-msg--bad"}>{msg.text}</span> : null}
+        </div>
+      </div>
+
+      <div className="adm-card">
+        <p className="adm-card-title">공지 목록</p>
+        <p className="adm-card-sub">
+          지금 예전 앱 띠에 나가는 공지: <b>{latestActive ? latestActive.title : "없음(띠가 내려가요)"}</b>
+        </p>
+        {rows === null ? <p className="adm-empty">불러오는 중…</p> : rows.length === 0 ? <p className="adm-empty">아직 공지가 없어요.</p> : (
+          <div className="adm-table-wrap">
+            <table className="adm-table">
+              <thead><tr><th>올린 때</th><th>상태</th><th>중요도</th><th>제목 · 본문</th><th /></tr></thead>
+              <tbody>
+                {rows.map((n) => (
+                  <tr key={n.id}>
+                    <td className="adm-muted">{shortDate(n.publishedAt)}</td>
+                    <td>{n.active ? <span className="adm-pill adm-pill--done">보이는 중</span> : <span className="adm-pill">내림</span>}</td>
+                    <td>{n.level === "important" ? <span className="adm-pill adm-pill--wait">중요</span> : "알림"}</td>
+                    <td className="adm-wrap-cell">
+                      <b>{n.title}</b>
+                      {n.body ? <div className="adm-muted" style={{ whiteSpace: "pre-wrap" }}>{n.body.length > 160 ? `${n.body.slice(0, 160)}…` : n.body}</div> : null}
+                    </td>
+                    <td>
+                      <div className="adm-row" style={{ gap: 6 }}>
+                        <button className="adm-btn adm-btn--ghost adm-btn--sm" disabled={busy} onClick={() => startEdit(n)}>고치기</button>
+                        <button className="adm-btn adm-btn--ghost adm-btn--sm" disabled={busy} onClick={() => void toggle(n)}>{n.active ? "내리기" : "다시 켜기"}</button>
+                        <button className="adm-btn adm-btn--danger adm-btn--sm" disabled={busy} onClick={() => void remove(n)}>지우기</button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </div>
+      {dialog}
+    </>
+  );
+}
+
+/** 「현황」 탭이 넘겨준 초안 — 첫 줄은 제목, 나머지는 본문 */
+function splitDraft(text: string): Pick<NoticeDraft, "title" | "body"> {
+  const [title, ...rest] = text.split("\n");
+  return { title: title.trim(), body: rest.join("\n").trim() };
 }
 
 /* ── 새 버전 올리기 ─────────────────────────────────────────

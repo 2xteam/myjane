@@ -321,7 +321,8 @@ const SettingsSchema = new Schema(
     aiFreePhotoDaily: { type: Number, default: 50 },
     aiApprovedPhotoDaily: { type: Number, default: 300 },
     aiPhotoWeight: { type: Number, default: 4 },
-    /** 앱 공지 — 앱 위쪽 띠에 보인다(닫으면 그 공지는 다시 안 뜬다). 비우면 안 보인다 */
+    /** 예전 앱 공지 한 줄 — 공지 게시판(notices)으로 옮겼다(2026-11-08). 값은 지우지 않고 남겨 둔다.
+        게시판이 비어 있을 때 한 번 게시판으로 옮겨 담는다 → lib/igTidy.ts migrateLegacyNotice */
     notice: { type: String, default: "" },
     noticeAt: { type: Date, default: null },
     updatedAt: { type: Date, default: Date.now },
@@ -331,6 +332,29 @@ const SettingsSchema = new Schema(
 );
 export type IgTidySettings = InferSchemaType<typeof SettingsSchema>;
 export const getIgSettingsModel = () => model<IgTidySettings>("IgTidySettings", SettingsSchema, "settings");
+
+/* ── 공지 게시판 (2026-11-08) ────────────────────────────────
+ * 예전에는 운영 설정의 한 줄(settings.notice · noticeAt)이었다. 여러 개를 쓰고 · 고치고 · 내리려고 게시판으로 옮겼다.
+ * 앱은 /api/ig-tidy/notices 로 켜진 것만 받는다. **예전 앱**은 여전히 /api/ig-tidy/me 의
+ * settings.notice · noticeAt 을 읽으므로, 그 두 칸은 가장 최근 켜진 공지로 채워 내려 준다 → lib/igTidy.ts noticeCompat
+ * 앱은 publishedAt 으로 "새 공지" 를 가린다 — 글을 고쳐도 시각은 그대로(다시 띄우려면 republish). */
+const NoticeSchema = new Schema(
+  {
+    title: { type: String, required: true, trim: true },
+    /** 여러 줄 본문 */
+    body: { type: String, default: "" },
+    /** info = 알림 · important = 중요(앱이 눈에 띄게) */
+    level: { type: String, enum: ["info", "important"], default: "info" },
+    active: { type: Boolean, default: true },
+    publishedAt: { type: Date, default: Date.now },
+    updatedAt: { type: Date, default: Date.now },
+    createdBy: { type: Schema.Types.ObjectId, default: null },
+  },
+  { versionKey: false },
+);
+NoticeSchema.index({ active: 1, publishedAt: -1 });
+NoticeSchema.index({ publishedAt: -1 });
+export const getIgNoticeModel = () => model<Record<string, unknown>>("IgTidyNotice", NoticeSchema, "notices");
 
 /* ── 배포한 버전 ──────────────────────────────────────────
  * 새 설치 파일을 올리면 한 줄 더한다. 앱은 가장 최근 것을 보고 "새 버전이 있어요" 를 띄운다.

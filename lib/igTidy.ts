@@ -3,6 +3,7 @@ import type { Types } from "mongoose";
 import { requireSessionUser } from "@/lib/serverSession";
 import type { UserDocument } from "@/models/User";
 import {
+  getIgNoticeModel,
   getIgPlayModel,
   getIgReleaseModel,
   getIgSettingsModel,
@@ -220,6 +221,66 @@ export function publicSettings(s: IgTidySettings) {
     notice: String((s as { notice?: string }).notice ?? ""),
     noticeAt: (s as { noticeAt?: Date | null }).noticeAt instanceof Date
       ? ((s as { noticeAt: Date }).noticeAt).toISOString() : null,
+  };
+}
+
+/* ── 공지 게시판 (2026-11-08) ─────────────────────────────── */
+
+export type NoticeLevel = "info" | "important";
+export const noticeLevelOf = (v: unknown): NoticeLevel => (v === "important" ? "important" : "info");
+
+/** 앱 · 관리 화면에 내려 주는 공지 모양 */
+export function noticeView(n: Record<string, unknown>) {
+  const iso = (d: unknown) => (d instanceof Date ? d.toISOString() : null);
+  return {
+    id: String(n._id),
+    title: String(n.title ?? ""),
+    body: String(n.body ?? ""),
+    level: noticeLevelOf(n.level),
+    active: n.active !== false,
+    publishedAt: iso(n.publishedAt),
+    updatedAt: iso(n.updatedAt),
+  };
+}
+
+/**
+ * 예전 한 줄 공지(settings.notice)를 게시판으로 한 번 옮긴다.
+ * 게시판이 **완전히 비어 있을 때만** 옮긴다 — 한 번 옮기고 나면(또는 관리자가 하나라도 쓰면) 다시 하지 않는다.
+ * 시각은 예전 noticeAt 그대로 — 그 공지를 이미 닫은 예전 앱에 다시 뜨지 않게.
+ */
+export async function migrateLegacyNotice(settings?: IgTidySettings) {
+  const s = settings ?? (await loadSettings());
+  const legacy = String((s as { notice?: string }).notice ?? "").trim();
+  if (!legacy) return;
+  const Notices = getIgNoticeModel();
+  if ((await Notices.estimatedDocumentCount().exec()) > 0) return;
+  const at = (s as { noticeAt?: Date | null }).noticeAt instanceof Date ? (s as { noticeAt: Date }).noticeAt : new Date();
+  const [first, ...rest] = legacy.split(/\r?\n/);
+  await Notices.create({
+    title: first.slice(0, 120), body: rest.join("\n").trim(), level: "info", active: true, publishedAt: at, updatedAt: at,
+  });
+}
+
+/** 앱에 보여 줄 공지 — 켜진 것만, 최근 것부터 */
+export async function activeNotices(limit = 20) {
+  const rows = await getIgNoticeModel().find({ active: true }).sort({ publishedAt: -1, _id: -1 }).limit(limit).lean().exec();
+  return rows.map((r) => noticeView(r as Record<string, unknown>));
+}
+
+/**
+ * 예전 앱 호환 — 예전 앱은 /api/ig-tidy/me 의 settings.notice · noticeAt 한 줄을 띠로 보여 준다.
+ * 그 두 칸을 **가장 최근에 켜진 공지**로 채운다: notice = 제목(+ 본문 첫 줄 짧게), noticeAt = publishedAt.
+ * 켜진 공지가 없으면 빈 칸(띠가 내려간다). 예전 앱은 noticeAt 이 바뀌면 새 공지로 알아본다.
+ */
+export async function noticeCompat(settings: IgTidySettings): Promise<{ notice: string; noticeAt: string | null }> {
+  await migrateLegacyNotice(settings);
+  const [latest] = await activeNotices(1);
+  if (!latest) return { notice: "", noticeAt: null };
+  const firstLine = latest.body.split(/\r?\n/).map((x) => x.trim()).find(Boolean) ?? "";
+  const short = firstLine.length > 80 ? `${firstLine.slice(0, 80)}…` : firstLine;
+  return {
+    notice: (short ? `${latest.title} — ${short}` : latest.title).slice(0, 500),
+    noticeAt: latest.publishedAt,
   };
 }
 
