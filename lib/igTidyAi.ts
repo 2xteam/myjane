@@ -47,7 +47,7 @@ export const IG_COMMENT_STYLES = {
   hip: {
     label: "힙한",
     temperature: 1.0,
-    must: "요즘 감탄어 하나를 꼭 넣으세요(미쳤어요 · 찢었어요 · 실화예요 · 레전드예요 · 무드 · 갬성 · ㄷㄷ / 영어면 insane · vibes · no way). 인사말(축하드려요 · 좋으시겠어요)로 쓰지 마세요. 30자 안쪽.",
+    must: "요즘 감탄어 하나를 꼭 넣으세요(미쳤어요 · 찢었어요 · 실화예요 · 레전드예요 · 무드 · 갬성 · ㄷㄷ — 영어 글에 쓸 때만 insane · vibes · no way, 한국어 댓글에는 영어 감탄어를 쓰지 마세요). 인사말(축하드려요 · 좋으시겠어요)로 쓰지 마세요. 30자 안쪽.",
     guide: `요즘 인스타 감성으로 **툭 던지는 한 마디**. 8~25자, 문장 하나.
 요즘 말 하나를 꼭 넣어요 — 미쳤다 · 찢었다 · 폼 미쳤다 · 무드 · 갬성 · 실화 · ㄷㄷ · 레전드 · 킹받네(좋은 뜻) 같은 것.
 "축하드려요", "좋으시겠어요" 같은 인사말로 쓰지 말고 **요즘 감탄 한마디**로 시작해요. 끝만 존댓말("~요", "~네요"). 반말 · 명령조는 쓰지 않아요.
@@ -87,8 +87,9 @@ const BASE = `당신은 인스타그램 사용자 대신 다른 사람의 피드
 글쓴이, 글 본문, 사진(또는 사진 설명)을 보고 **그 글에만 어울리는** 짧은 댓글 하나를 씁니다.
 
 [댓글]
-- **글이 쓰인 언어로** 씁니다. 영어 글이면 영어로, 일본어 글이면 일본어로.
-  여러 언어가 섞인 글(예: 한국어 + 영어)이면 댓글도 **비슷한 비율로 섞어** 씁니다. 본문이 없거나 해시태그뿐이면 한국어로 씁니다.
+- **글의 주된 언어 하나로만** 씁니다. 한국어 글이면 한국어로만, 영어 글이면 영어로만, 일본어 글이면 일본어로만.
+  다른 언어를 **섞지 않습니다** — 한국어 댓글에 영어 단어 · 영어 감탄사(wow · vibe · insane · cool …)를 넣지 않습니다.
+  글에 나온 고유명사 · 브랜드 이름만 예외입니다. 본문이 없거나 해시태그뿐이면 한국어로 씁니다.
 - 한국어로 쓸 때는 **어느 스타일이든 존댓말(해요체)** 로 끝냅니다. "~하다", "~네", "~야", "~지" 같은 반말로 끝내지 않습니다.
   다른 언어로 쓸 때는 그 언어에서 처음 보는 사람에게 쓰는 다정하고 예의 있는 말투로 씁니다.
 - 1~2문장, 60자 안팎. 길게 쓰지 않습니다.
@@ -115,15 +116,18 @@ const POLICY = `[반드시 지킬 것 — 위 말투 지시보다 우선]
 - 외모 평가 · 체형 언급 · 지나친 칭찬으로 부담을 주지 않습니다.
 - 질문은 넣더라도 한 번만, 가볍게.
 - 상대를 "당신", "님" 으로 부르지 않습니다(인스타 댓글에서 어색합니다). 호칭 없이 씁니다.
-- 한국어 댓글은 스타일과 상관없이 **존댓말로 끝냅니다.** 글의 언어와 다른 언어로 쓰지 않습니다.
+- 한국어 댓글은 스타일과 상관없이 **존댓말로 끝냅니다.**
+- 댓글은 [이 글의 댓글 언어] 하나로만 씁니다. 스타일 예시에 다른 언어 단어가 있어도 섞지 않습니다.
 - 스타일이 정한 글자 수를 넘기지 않습니다.`;
 
 /**
  * 댓글 언어 — 모델에 맡기지 않고 **글자로 정한다**(2026-11-07).
- * 지침에 "글의 언어로" 라고만 적었더니 영어 글에 한국어로 답하고, 한·영이 섞인 글에 한국어로만 답했다.
- * 스타일 설명이 한국어라 모델이 그쪽으로 끌려간다. 해시태그 · @ · 링크는 빼고 센다.
+ * 지침에 "글의 언어로" 라고만 적었더니 영어 글에 한국어로 답했다(스타일 설명이 한국어라 끌려간다).
+ * 처음엔 한·영이 섞인 글에 섞어 쓰게 했는데 한국어 글에 영어가 끼어든다는 말이 나와서(2026-11-07, 사용자)
+ * **주된 언어 하나로만** 쓰게 바꿨다. 해시태그 · @ · 링크는 빼고 센다.
  */
-export function commentLanguage(caption: string): { code: string; rule: string } {
+export type CommentLang = "ko" | "en" | "ja";
+export function commentLanguage(caption: string): { code: CommentLang; rule: string } {
   const t = String(caption || "")
     .replace(/https?:\/\/\S+/g, " ")
     .replace(/[#@][^\s#@]+/g, " ");
@@ -132,14 +136,27 @@ export function commentLanguage(caption: string): { code: string; rule: string }
   const ja = count(/[\u3040-\u30ff]/g);
   const en = count(/[A-Za-z]/g) / 2.5;   // 영문은 글자당 정보가 적어 한글 1자 ≈ 영문 2.5자로 본다
   const total = ko + ja + en;
-  if (total < 4) return { code: "ko", rule: "한국어로만 쓰세요(본문이 거의 없음)." };
-  if (ja / total > 0.3) return { code: "ja", rule: "일본어로 쓰세요. 존댓말(です・ます)로." };
-  if (en / total >= 0.85) return { code: "en", rule: "Write the comment in ENGLISH ONLY. Do not use any Korean." };
-  if (ko / total >= 0.85) return { code: "ko", rule: "한국어로만 쓰세요. 존댓말(해요체)로 끝내세요." };
-  return {
-    code: "ko+en",
-    rule: "한국어와 영어가 섞인 글이에요. 댓글도 한국어와 영어를 자연스럽게 섞어 쓰세요(예: 한 문장은 한국어, 짧은 영어 감탄 한마디). 한국어 부분은 존댓말로.",
-  };
+  const KO = "한국어로만 쓰세요. 영어 단어 · 영어 감탄사 · 로마자를 섞지 마세요(글에 나온 고유명사 · 브랜드만 예외). 존댓말(해요체)로 끝내세요.";
+  if (total < 4) return { code: "ko", rule: KO };
+  if (ja / total > 0.3 && ja >= ko) return { code: "ja", rule: "日本語だけで書いてください。韓国語や英語を混ぜないでください。です・ます調で。" };
+  if (en > ko && en > ja) return { code: "en", rule: "Write the comment in ENGLISH ONLY. Do not use any Korean or other languages." };
+  return { code: "ko", rule: KO };
+}
+
+/**
+ * 만든 댓글이 정한 언어를 지켰나. 어기면 한 번 다시 만들고, 그래도 어기면 건너뛴다.
+ *   ko — 글에 없던 영어 단어(2글자 이상)가 있으면 어김. 글에 나온 고유명사 · 브랜드는 봐준다
+ *   en · ja — 한글이 있으면 어김
+ */
+export function languageSlip(code: CommentLang, comment: string, caption: string): string | null {
+  if (code === "ko") {
+    const seen = new Set((String(caption || "").match(/[A-Za-z][A-Za-z'’.-]+/g) || []).map((w) => w.toLowerCase()));
+    for (const unit of ["km", "kg", "cm", "mm", "ml", "kcal", "pb"]) seen.add(unit);   // 단위 · 기록 약어는 한국어 글에도 흔하다
+    const foreign = (comment.match(/[A-Za-z][A-Za-z'’.-]+/g) || []).filter((w) => !seen.has(w.toLowerCase()));
+    return foreign.length ? foreign.join(", ") : null;
+  }
+  const hangul = comment.match(/[\uac00-\ud7a3]+/g);
+  return hangul ? hangul.join(" ") : null;
 }
 
 function extractJson(raw: string): Record<string, unknown> | null {
@@ -193,27 +210,55 @@ export async function generateIgComment(input: AiCommentInput): Promise<AiCommen
   }
 
   const client = new OpenAI({ apiKey });
-  const completion = await client.chat.completions.create({
-    model,
-    temperature: style.temperature,
-    max_tokens: 200,
-    response_format: { type: "json_object" },
-    messages: [
-      { role: "system", content: system },
-      { role: "user", content },
-    ],
-  });
+  const messages: OpenAI.Chat.Completions.ChatCompletionMessageParam[] = [
+    { role: "system", content: system },
+    { role: "user", content },
+  ];
+  const usage = { prompt: 0, completion: 0, total: 0 };
+  let usedModel = model;
+  let skip = false;
+  let reason = "";
+  let comment = "";
+  // 언어를 어기면 한 번만 다시 — 두 번째도 어기면 그 글은 건너뛴다(다른 언어가 섞인 댓글을 올리지 않는다)
+  for (let attempt = 0; attempt < 2; attempt++) {
+    const completion = await client.chat.completions.create({
+      model,
+      temperature: attempt ? Math.min(style.temperature, 0.7) : style.temperature,
+      max_tokens: 200,
+      response_format: { type: "json_object" },
+      messages,
+    });
+    usedModel = completion.model || model;
+    const u = completion.usage;
+    usage.prompt += u?.prompt_tokens ?? 0;
+    usage.completion += u?.completion_tokens ?? 0;
+    usage.total += u?.total_tokens ?? 0;
 
-  const raw = completion.choices[0]?.message?.content ?? "";
-  const j = extractJson(raw) ?? {};
-  const skip = j.skip === true;
-  const comment = skip ? "" : cleanComment(String(j.comment ?? ""));
-  const u = completion.usage;
+    const raw = completion.choices[0]?.message?.content ?? "";
+    const j = extractJson(raw) ?? {};
+    skip = j.skip === true;
+    reason = skip ? String(j.reason ?? "").slice(0, 120) : "";
+    comment = skip ? "" : cleanComment(String(j.comment ?? ""));
+    if (skip || !comment) break;
+
+    const slip = languageSlip(lang.code, comment, input.caption);
+    if (!slip) break;
+    if (attempt === 1) {
+      skip = true;
+      reason = `댓글 언어를 맞추지 못해 건너뜀(${slip.slice(0, 40)})`;
+      comment = "";
+      break;
+    }
+    messages.push(
+      { role: "assistant", content: raw },
+      { role: "user", content: `방금 댓글에 다른 언어가 섞였어요: ${slip}. ${lang.rule} 같은 뜻을 이 언어로만 다시 써서 같은 JSON 으로 답하세요.` },
+    );
+  }
   return {
     skip: skip || !comment,
-    reason: skip ? String(j.reason ?? "").slice(0, 120) : comment ? "" : "댓글을 만들지 못했어요",
+    reason: skip ? reason : comment ? "" : "댓글을 만들지 못했어요",
     comment,
-    model: completion.model || model,
-    usage: { prompt: u?.prompt_tokens ?? null, completion: u?.completion_tokens ?? null, total: u?.total_tokens ?? null },
+    model: usedModel,
+    usage: { prompt: usage.prompt || null, completion: usage.completion || null, total: usage.total || null },
   };
 }
