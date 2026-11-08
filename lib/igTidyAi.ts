@@ -5,7 +5,7 @@ import OpenAI from "openai";
  *  gpt-4o-mini 같은 예전 모델은 그대로 temperature · max_tokens. */
 export function samplingFor(model: string, temperature: number, maxTokens: number) {
   // 생각 깊이 — gpt-6 계열은 none(생각 없이 바로), gpt-5 · o 계열은 minimal(가장 짧게). 환경 변수가 있으면 그것
-  const effort = (process.env.OPENAI_REASONING_EFFORT ?? "").trim() || (/^gpt-[6-9]/.test(model) ? "none" : "minimal");
+  const effort = (process.env.OPENAI_REASONING_EFFORT ?? "").trim() || (/^gpt-(5\.[4-9]|[6-9])/.test(model) ? "none" : "minimal");
   return /^(gpt-[5-9]|o\d)/.test(model)
     ? { max_completion_tokens: maxTokens + 1200, reasoning_effort: effort as "minimal" | "low" | "medium" | "none" }
     : { temperature, max_tokens: maxTokens };
@@ -40,6 +40,8 @@ export type AiCommentInput = {
   customGuide?: string;
   /** 글의 언어를 정할 수 없을 때 쓸 언어(앱 설정 「우선 언어」) — 기본 ko */
   fallbackLang?: CommentLang;
+  /** 사진을 읽을 모델 — 서버가 오늘 무료 토큰을 보고 정한다(lib/igTidyFree.ts). 없으면 photoModel() */
+  photoModel?: string;
 };
 
 /**
@@ -244,6 +246,11 @@ export const textModel = () => (process.env.OPENAI_MODEL ?? "gpt-4o-mini").trim(
  * 무료 토큰에는 들지 않는다(처음부터 유료). 모델 시험(부고 건너뛰기 · 말투)도 가장 나았다.
  */
 export const photoModel = () => (process.env.OPENAI_PHOTO_MODEL ?? "gpt-6-luna").trim() || "gpt-6-luna";
+/**
+ * 하루 무료 토큰이 남았을 때 사진을 읽는 모델 — gpt-5.4-nano(2026-11-08 시험).
+ * 무료 묶음이라 0원이고, 사진 한 건이 약 1,500 토큰이라 gpt-4o-mini(약 4,100)보다 무료 한도를 1/3 만 쓴다.
+ */
+export const freePhotoModel = () => (process.env.OPENAI_FREE_PHOTO_MODEL ?? "gpt-5.4-nano").trim() || "gpt-5.4-nano";
 
 /** 본문에서 해시태그 · @아이디 · 이모지 · 공백을 뺀 「읽을거리」 글자 수 — 사진을 보낼지 정할 때 쓴다 */
 export function captionWeight(caption: string): number {
@@ -289,7 +296,7 @@ export async function generateIgComment(input: AiCommentInput): Promise<AiCommen
   const apiKey = process.env.OPENAI_API_KEY;
   if (!apiKey) throw new Error("OPENAI_API_KEY 환경 변수가 설정되지 않았습니다.");
   const withPhoto = !!(input.imageDataUrl && /^data:image\/(jpeg|png|webp);base64,/.test(input.imageDataUrl));
-  const model = withPhoto ? photoModel() : textModel();
+  const model = withPhoto ? (input.photoModel || photoModel()) : textModel();
 
   const tone = (input.tone ?? "").trim().slice(0, 300);
   const custom = input.style === "custom" && (input.customGuide ?? "").trim();

@@ -1,7 +1,8 @@
 import { NextResponse } from "next/server";
 import { connectDB } from "@/lib/db";
 import { aiQuota, igError, loadSettings, normalizeIg, publicSettings, requireIgTidyUser } from "@/lib/igTidy";
-import { captionWeight, generateIgComment, langOf, matchSkipWord, styleIdOf } from "@/lib/igTidyAi";
+import { captionWeight, freePhotoModel, generateIgComment, langOf, matchSkipWord, photoModel, styleIdOf } from "@/lib/igTidyAi";
+import { noteFreeTokens, photoFitsFree } from "@/lib/igTidyFree";
 import { getIgAccountModel, getIgAiLogModel, getIgPermModel } from "@/models/IgTidy";
 
 export const runtime = "nodejs";
@@ -25,7 +26,8 @@ export const maxDuration = 30;
  * 원가 줄이기(2026-11-08)
  *   · 건너뛸 키워드(기본: 부고 · 조문)가 든 글은 AI 를 부르지 않고 건너뛴다 — skipCondolence(기본 켜짐) · skipWords. 한도도 쓰지 않는다
  *   · 본문이 aiPhotoMaxCaption 글자보다 길면 사진을 빼고 글만으로 만든다(사진 몫 대신 글 몫만 센다)
- *   · 사진을 읽을 때만 gpt-6-luna(lib/igTidyAi.ts photoModel) — 실패하면 사진 없이 기본 모델로 한 번 더
+ *   · 사진 — 하루 무료 토큰이 남았으면 gpt-5.4-nano(무료), 다 쓰면 gpt-6-luna(lib/igTidyFree.ts)
+ *     실패하면 사진 없이 기본 모델로 한 번 더
  */
 const MAX_IMAGE = 1_500_000;   // data URL 길이(약 1.1MB 사진)
 
@@ -105,6 +107,7 @@ export async function POST(req: Request) {
       style: base.style,
       customGuide: customGuide || undefined,
       fallbackLang: langOf(body.lang),
+      photoModel: imageDataUrl ? ((await photoFitsFree()) ? freePhotoModel() : photoModel()) : undefined,
     };
     let r;
     try {
@@ -116,6 +119,7 @@ export async function POST(req: Request) {
       imageDataUrl = undefined; base.withImage = false; photoSkipped = "error";
       r = await generateIgComment({ ...input, imageDataUrl: undefined });
     }
+    noteFreeTokens(r.model, r.usage.total);
     await Logs.create({
       ...base, model: r.model, promptTokens: r.usage.prompt, completionTokens: r.usage.completion,
       totalTokens: r.usage.total, cachedTokens: r.usage.cached, ms: Date.now() - t0, ok: true, skip: r.skip, comment: r.comment, reason: r.reason,

@@ -3,6 +3,8 @@ import { connectDB } from "@/lib/db";
 import { adminError, requireAdmin } from "@/lib/adminAuth";
 import { loadSettings, publicSettings } from "@/lib/igTidy";
 import { getIgBlockModel, getIgDailyModel, getIgPlayModel } from "@/models/IgTidy";
+import { freeUsage } from "@/lib/igTidyFree";
+import { freePhotoModel, photoModel } from "@/lib/igTidyAi";
 
 export const runtime = "nodejs";
 
@@ -166,8 +168,13 @@ export async function GET(req: Request) {
       };
     });
 
+    // 오늘 OpenAI 무료 토큰 — 남았으면 사진도 무료 모델, 다 쓰면 유료 사진 모델(2026-11-08)
+    const free = await freeUsage().catch(() => null);
+    const ai = free ? { ...free, photoModelNow: free.left > 2000 ? freePhotoModel() : photoModel(), freePhotoModel: freePhotoModel(), paidPhotoModel: photoModel() } : null;
+
     return NextResponse.json({
       ok: true,
+      ai,
       days,
       since: sinceDay,
       until: untilDay,

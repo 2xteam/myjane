@@ -641,7 +641,12 @@ type InsightAction = {
   action: string; cap: number; suggested: number | null; basis: string; lowData: boolean;
   blocks: number; accounts: number; blockedPlays: number; blockDay: Dist | null; safeDay: Dist | null;
 };
+type FreeAi = {
+  day: string; used: number; limit: number; cutoff: number; left: number; source: "api" | "logs";
+  apiAt: string | null; apiError?: string; photoModelNow: string; freePhotoModel: string; paidPhotoModel: string;
+};
 type Insights = {
+  ai?: FreeAi | null;
   days: number; since: string; until: string; actions: InsightAction[];
   series: Array<{ day: string; blocks: number; blockedPlays: number }>;
   totals: { blocks: number; accounts: number; blockedPlays: number };
@@ -704,8 +709,24 @@ function InsightsView({ settings, onSaved, onWriteNotice }: {
   }
 
   const peak = Math.max(1, ...(data?.series ?? []).map((d) => d.blocks + d.blockedPlays));
+  const ai = data?.ai;
   return (
     <>
+      {ai ? (
+        <div className="adm-card">
+          <p className="adm-card-title">오늘 OpenAI 무료 토큰</p>
+          <p className="adm-card-sub">
+            {(ai.used / 10000).toFixed(1)}만 / {(ai.limit / 10000).toFixed(0)}만 토큰 ({Math.min(100, Math.round((ai.used / ai.limit) * 100))}%) ·
+            지금 사진 모델 <b>{ai.photoModelNow}</b>{ai.photoModelNow === ai.freePhotoModel ? " (무료)" : " (유료 — 무료분을 다 씀)"}
+          </p>
+          <p className="adm-card-sub" style={{ marginTop: 0 }}>
+            {ai.source === "api"
+              ? `OpenAI 사용량(myjane · SnapWord · SnapNote 합계, ${ai.apiAt ? new Date(ai.apiAt).toLocaleTimeString("ko-KR") : "-"} 기준) + 그 뒤 IG Tidy 기록.`
+              : `IG Tidy 기록 + 다른 앱 몫 고정값으로 어림했어요(OPENAI_ADMIN_KEY 를 넣으면 OpenAI 사용량으로 정확히 셉니다${ai.apiError ? ` — 사용량 API 오류: ${ai.apiError}` : ""}).`}
+            {" "}한도의 90%({(ai.cutoff / 10000).toFixed(0)}만)에서 사진을 {ai.paidPhotoModel} 로 넘겨요. 매일 한국 오전 9시(UTC 0시)에 다시 차요.
+          </p>
+        </div>
+      ) : null}
       <div className="adm-card">
         <p className="adm-card-title">제한 현황</p>
         <p className="adm-card-sub">
