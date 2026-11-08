@@ -9,9 +9,8 @@ export function IgTidyBrand() {
   return (
     <Link href="/ig-tidy/about" className="auth-brand" aria-label="IG Tidy 소개">
       <Image src="/ig-tidy-icon.png" alt="" width={26} height={26} style={{ borderRadius: 7 }} />
-      <span className="brand-word">
-        IG <span>Tidy</span>
-      </span>
+      {/* myjane 워드마크처럼 뒷부분만 색을 넣지 않는다 — 한 색 그대로(2026-11-08) */}
+      <span className="brand-word">IG Tidy</span>
     </Link>
   );
 }
