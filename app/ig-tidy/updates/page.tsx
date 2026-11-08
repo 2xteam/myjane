@@ -7,6 +7,7 @@ import { IgTidyShell } from "../IgTidyShell";
 export const metadata: Metadata = {
   title: "IG Tidy 업데이트 내역",
   robots: { index: false },
+  alternates: { canonical: "/ig-tidy/updates" },
 };
 
 /** 새 버전을 올리면 곧 보이게 — 캐시 60초 */

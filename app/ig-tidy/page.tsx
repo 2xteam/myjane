@@ -4,7 +4,7 @@ import { IgTidyStatus } from "./IgTidyStatus";
 
 export const metadata: Metadata = {
   title: "IG Tidy",
-  description: "허용된 myjane 회원이 쓰는 인스타그램 정리 도우미(윈도우 앱).",
+  // 설명 · 공유 미리보기는 layout(IG Tidy) 것을 쓴다
   robots: { index: false },
 };
 

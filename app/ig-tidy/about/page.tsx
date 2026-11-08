@@ -4,10 +4,21 @@ import Image from "next/image";
 import Link from "next/link";
 import { ScrollProgress } from "@/components/ScrollProgress";
 
+const ABOUT_DESC = "IG Tidy 소개 — 팔로우 정리 · 좋아요 · AI 댓글을 사람처럼 천천히 대신 눌러 주는 윈도우 앱. 하는 일 · 시작하는 법 · 자주 묻는 것.";
 export const metadata: Metadata = {
   title: "IG Tidy 소개",
-  description: "허용된 myjane 회원이 쓰는 인스타그램 정리 · 소통 도우미(윈도우 앱) 소개와 기본 사용법.",
+  description: ABOUT_DESC,
   robots: { index: false },
+  alternates: { canonical: "/ig-tidy/about" },
+  openGraph: {
+    type: "website",
+    url: "/ig-tidy/about",
+    siteName: "IG Tidy",
+    title: "IG Tidy 소개 — 인스타그램 정리 도우미",
+    description: ABOUT_DESC,
+    images: [{ url: "/ig-tidy-og.png", width: 1200, height: 630, alt: "IG Tidy — 인스타그램 정리 도우미" }],
+  },
+  twitter: { card: "summary_large_image", title: "IG Tidy 소개 — 인스타그램 정리 도우미", description: ABOUT_DESC, images: ["/ig-tidy-og.png"] },
 };
 
 /**
