@@ -108,7 +108,7 @@ export type AiCommentResult = {
   reason: string;
   comment: string;
   model: string;
-  usage: { prompt: number | null; completion: number | null; total: number | null };
+  usage: { prompt: number | null; completion: number | null; total: number | null; cached: number | null };
 };
 
 const BASE = `당신은 인스타그램 사용자 대신 다른 사람의 피드 글에 댓글을 쓰는 도우미입니다.
@@ -267,7 +267,7 @@ export async function generateIgComment(input: AiCommentInput): Promise<AiCommen
     { role: "system", content: system },
     { role: "user", content },
   ];
-  const usage = { prompt: 0, completion: 0, total: 0 };
+  const usage = { prompt: 0, completion: 0, total: 0, cached: 0 };
   let usedModel = model;
   let skip = false;
   let reason = "";
@@ -277,6 +277,7 @@ export async function generateIgComment(input: AiCommentInput): Promise<AiCommen
     const completion = await client.chat.completions.create({
       model,
       ...samplingFor(model, attempt ? Math.min(style.temperature, 0.7) : style.temperature, 200),
+      prompt_cache_key: `igt-comment-${custom ? "custom" : styleOf(input.style)}-${lang.code}`,
       response_format: { type: "json_object" },
       messages,
     });
@@ -285,6 +286,7 @@ export async function generateIgComment(input: AiCommentInput): Promise<AiCommen
     usage.prompt += u?.prompt_tokens ?? 0;
     usage.completion += u?.completion_tokens ?? 0;
     usage.total += u?.total_tokens ?? 0;
+    usage.cached += u?.prompt_tokens_details?.cached_tokens ?? 0;
 
     const raw = completion.choices[0]?.message?.content ?? "";
     const j = extractJson(raw) ?? {};
@@ -311,7 +313,7 @@ export async function generateIgComment(input: AiCommentInput): Promise<AiCommen
     reason: skip ? reason : comment ? "" : "댓글을 만들지 못했어요",
     comment,
     model: usedModel,
-    usage: { prompt: usage.prompt || null, completion: usage.completion || null, total: usage.total || null },
+    usage: { prompt: usage.prompt || null, completion: usage.completion || null, total: usage.total || null, cached: usage.cached || null },
   };
 }
 
@@ -325,7 +327,7 @@ export type StyleAnalysis = {
   guide: string;
   summary: string;
   model: string;
-  usage: { prompt: number | null; completion: number | null; total: number | null };
+  usage: { prompt: number | null; completion: number | null; total: number | null; cached: number | null };
 };
 
 const STYLE_SYSTEM = `당신은 인스타그램 사용자의 댓글 습관을 읽고, 다른 AI 가 그 사람처럼 댓글을 쓰도록 **스타일 지침**을 만드는 분석가입니다.
@@ -405,6 +407,7 @@ export async function analyzeIgStyle(input: { igUsername: string; samples: Style
   const completion = await client.chat.completions.create({
     model,
     ...samplingFor(model, 0.4, 700),
+    prompt_cache_key: "igt-style",
     response_format: { type: "json_object" },
     messages: [
       { role: "system", content: STYLE_SYSTEM },
@@ -420,7 +423,7 @@ export async function analyzeIgStyle(input: { igUsername: string; samples: Style
     guide,
     summary: String(j.summary ?? "").trim().slice(0, 300),
     model: completion.model || model,
-    usage: { prompt: u?.prompt_tokens ?? null, completion: u?.completion_tokens ?? null, total: u?.total_tokens ?? null },
+    usage: { prompt: u?.prompt_tokens ?? null, completion: u?.completion_tokens ?? null, total: u?.total_tokens ?? null, cached: u?.prompt_tokens_details?.cached_tokens ?? null },
   };
 }
 
@@ -450,7 +453,7 @@ export type AiReplyResult = {
   reply: string;
   lang: CommentLang;
   model: string;
-  usage: { prompt: number | null; completion: number | null; total: number | null };
+  usage: { prompt: number | null; completion: number | null; total: number | null; cached: number | null };
 };
 
 /** 스타일마다 답글에 꼭 넣을 것 — 댓글용 must 는 "글 속 구체적인 것을 짚어라" 라 답글에 맞지 않는다 */
@@ -582,7 +585,7 @@ export async function generateIgReply(input: AiReplyInput): Promise<AiReplyResul
     { role: "user", content: text },
   ];
   const seen = `${input.caption}\n${input.commentText}`;
-  const usage = { prompt: 0, completion: 0, total: 0 };
+  const usage = { prompt: 0, completion: 0, total: 0, cached: 0 };
   let usedModel = model;
   let skip = false;
   let reason = "";
@@ -592,6 +595,7 @@ export async function generateIgReply(input: AiReplyInput): Promise<AiReplyResul
     const completion = await client.chat.completions.create({
       model,
       ...samplingFor(model, attempt ? Math.min(style.temperature, 0.7) : style.temperature, 160),
+      prompt_cache_key: "igt-reply",
       response_format: { type: "json_object" },
       messages,
     });
@@ -600,6 +604,7 @@ export async function generateIgReply(input: AiReplyInput): Promise<AiReplyResul
     usage.prompt += u?.prompt_tokens ?? 0;
     usage.completion += u?.completion_tokens ?? 0;
     usage.total += u?.total_tokens ?? 0;
+    usage.cached += u?.prompt_tokens_details?.cached_tokens ?? 0;
 
     const raw = completion.choices[0]?.message?.content ?? "";
     const j = extractJson(raw) ?? {};
@@ -627,6 +632,6 @@ export async function generateIgReply(input: AiReplyInput): Promise<AiReplyResul
     reply,
     lang: lang.code,
     model: usedModel,
-    usage: { prompt: usage.prompt || null, completion: usage.completion || null, total: usage.total || null },
+    usage: { prompt: usage.prompt || null, completion: usage.completion || null, total: usage.total || null, cached: usage.cached || null },
   };
 }

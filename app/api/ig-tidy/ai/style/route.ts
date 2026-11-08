@@ -106,7 +106,7 @@ export async function POST(req: Request) {
   try {
     const r = await analyzeIgStyle({ igUsername: ig, samples });
     await Logs.create({
-      ...base, model: r.model, promptTokens: r.usage.prompt, completionTokens: r.usage.completion, totalTokens: r.usage.total,
+      ...base, model: r.model, promptTokens: r.usage.prompt, completionTokens: r.usage.completion, totalTokens: r.usage.total, cachedTokens: r.usage.cached,
       ms: Date.now() - t0, ok: true, comment: r.guide.slice(0, 500), reason: `글 ${samples.length} · 내 댓글 ${commentCount}`,
     });
     await getIgAccountModel().updateOne({ _id: account._id }, {

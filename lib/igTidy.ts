@@ -217,7 +217,7 @@ export function publicSettings(s: IgTidySettings) {
     aiEnabled: (s as { aiEnabled?: boolean }).aiEnabled !== false,
     aiFreePhotoDaily: Math.max(0, Number((s as { aiFreePhotoDaily?: number }).aiFreePhotoDaily ?? 50)),
     aiApprovedPhotoDaily: Math.max(0, Number((s as { aiApprovedPhotoDaily?: number }).aiApprovedPhotoDaily ?? 300)),
-    aiPhotoWeight: Math.max(1, Number((s as { aiPhotoWeight?: number }).aiPhotoWeight ?? 4) || 4),
+    aiPhotoWeight: Math.max(1, Number((s as { aiPhotoWeight?: number }).aiPhotoWeight ?? 3) || 3),
     notice: String((s as { notice?: string }).notice ?? ""),
     noticeAt: (s as { noticeAt?: Date | null }).noticeAt instanceof Date
       ? ((s as { noticeAt: Date }).noticeAt).toISOString() : null,

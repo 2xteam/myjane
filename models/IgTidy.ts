@@ -274,6 +274,8 @@ const AiLogSchema = new Schema(
     promptTokens: { type: Number, default: null },
     completionTokens: { type: Number, default: null },
     totalTokens: { type: Number, default: null },
+    /** 입력 중 OpenAI 프롬프트 캐시로 반값에 처리된 토큰(2026-11-08~) */
+    cachedTokens: { type: Number, default: null },
     withImage: { type: Boolean, default: false },
     /** 댓글 스타일 — basic · hip · lively · humor · custom(맞춤), 스타일 분석은 analyze */
     style: { type: String, default: "basic" },
@@ -319,7 +321,7 @@ const SettingsSchema = new Schema(
     minDelaySec: { type: Number, default: 4 },
     /**
      * AI 댓글 — 하루 사용량은 **단위**로 센다(2026-11-07 사용자 결정).
-     *   글만 = 1단위 · 사진 포함 = aiPhotoWeight(4)단위
+     *   글만 = 1단위 · 사진 포함 = aiPhotoWeight(3)단위 — 원가 비율(사진 ≈ 글만 2.7배, 2026-11-08 실측)에 맞춘 값
      *   승인 전(무료) 하루 한도 = 사진 포함 aiFreePhotoDaily(50)개 = 200단위
      *   관리자 승인 후            = 사진 포함 aiApprovedPhotoDaily(300)개 = 1,200단위
      * myjane 계정 단위로 센다(인스타 아이디를 합쳐서) — 비용이 사람 단위로 나간다.
@@ -327,7 +329,7 @@ const SettingsSchema = new Schema(
     aiEnabled: { type: Boolean, default: true },
     aiFreePhotoDaily: { type: Number, default: 50 },
     aiApprovedPhotoDaily: { type: Number, default: 300 },
-    aiPhotoWeight: { type: Number, default: 4 },
+    aiPhotoWeight: { type: Number, default: 3 },
     /** 예전 앱 공지 한 줄 — 공지 게시판(notices)으로 옮겼다(2026-11-08). 값은 지우지 않고 남겨 둔다.
         게시판이 비어 있을 때 한 번 게시판으로 옮겨 담는다 → lib/igTidy.ts migrateLegacyNotice */
     notice: { type: String, default: "" },

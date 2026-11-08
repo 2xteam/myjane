@@ -85,7 +85,7 @@ export async function POST(req: Request) {
     });
     await Logs.create({
       ...base, model: r.model, promptTokens: r.usage.prompt, completionTokens: r.usage.completion,
-      totalTokens: r.usage.total, ms: Date.now() - t0, ok: true, skip: r.skip, comment: r.reply, reason: r.reason,
+      totalTokens: r.usage.total, cachedTokens: r.usage.cached, ms: Date.now() - t0, ok: true, skip: r.skip, comment: r.reply, reason: r.reason,
     });
     const after = { ...quota, usedUnits: quota.usedUnits + 1, leftUnits: Math.max(0, quota.leftUnits - 1) };
     return NextResponse.json({ ok: true, skip: r.skip, reason: r.reason, reply: r.reply, quota: after });
