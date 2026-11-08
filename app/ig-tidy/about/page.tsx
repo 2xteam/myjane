@@ -1,3 +1,4 @@
+import { IgTidyBrand } from "../IgTidyBrand";
 import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
@@ -55,12 +56,7 @@ export default function IgTidyAboutPage() {
   return (
     <div className="legal">
       <header className="auth-topbar">
-        <Link href="/" className="auth-brand">
-          <Image src="/myjane-icon.png" alt="" width={26} height={26} />
-          <span className="brand-word">
-            my<span>jane</span>
-          </span>
-        </Link>
+        <IgTidyBrand />
         <ScrollProgress />
       </header>
 

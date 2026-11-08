@@ -1,3 +1,4 @@
+import { IgTidyBrand } from "./IgTidyBrand";
 import Image from "next/image";
 import Link from "next/link";
 import type { ReactNode } from "react";
@@ -8,12 +9,7 @@ export function IgTidyShell({ children }: { children: ReactNode }) {
   return (
     <div className="legal">
       <header className="auth-topbar">
-        <Link href="/" className="auth-brand">
-          <Image src="/myjane-icon.png" alt="" width={26} height={26} />
-          <span className="brand-word">
-            my<span>jane</span>
-          </span>
-        </Link>
+        <IgTidyBrand />
         <ScrollProgress />
       </header>
       <main className="legal-sheets" style={{ marginTop: 28 }}>
