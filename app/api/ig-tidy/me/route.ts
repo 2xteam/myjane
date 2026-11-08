@@ -52,6 +52,8 @@ export async function GET(req: Request) {
         id: String(user._id),
         name: user.nickname ?? user.name ?? "",
         email: user.email ?? null,
+        // myjane 관리자(master · operator) — 앱이 개발자 도구 메뉴를 이 사람에게만 보인다(2026-11-08)
+        admin: ["master", "operator"].includes(String((user as { adminRole?: unknown }).adminRole ?? "")),
       },
       allowed: !!user.igTidyAllowed,
       settings: s,
