@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { connectDB } from "@/lib/db";
 import { aiQuota, igError, loadSettings, normalizeIg, publicSettings, requireIgTidyUser } from "@/lib/igTidy";
-import { captionWeight, generateIgComment, isCondolence, langOf, styleIdOf } from "@/lib/igTidyAi";
+import { captionWeight, generateIgComment, langOf, matchSkipWord, styleIdOf } from "@/lib/igTidyAi";
 import { getIgAccountModel, getIgAiLogModel, getIgPermModel } from "@/models/IgTidy";
 
 export const runtime = "nodejs";
@@ -23,7 +23,7 @@ export const maxDuration = 30;
  * 만든 문구는 기록(ai_logs)에 남는다. 게시는 앱이 한다 — 서버는 만들기만 한다.
  *
  * 원가 줄이기(2026-11-08)
- *   · 부고 · 조문 글은 AI 를 부르지 않고 건너뛴다 — 본문 skipCondolence(기본 켜짐). 한도도 쓰지 않는다
+ *   · 건너뛸 키워드(기본: 부고 · 조문)가 든 글은 AI 를 부르지 않고 건너뛴다 — skipCondolence(기본 켜짐) · skipWords. 한도도 쓰지 않는다
  *   · 본문이 aiPhotoMaxCaption 글자보다 길면 사진을 빼고 글만으로 만든다(사진 몫 대신 글 몫만 센다)
  *   · 사진을 읽을 때만 gpt-6-luna(lib/igTidyAi.ts photoModel) — 실패하면 사진 없이 기본 모델로 한 번 더
  */
@@ -35,7 +35,7 @@ export async function POST(req: Request) {
   const user = auth.user;
 
   const body = (await req.json().catch(() => ({}))) as {
-    igUsername?: unknown; tone?: unknown; style?: unknown; lang?: unknown; skipCondolence?: unknown;
+    igUsername?: unknown; tone?: unknown; style?: unknown; lang?: unknown; skipCondolence?: unknown; skipWords?: unknown;
     post?: { author?: unknown; caption?: unknown; imageAlt?: unknown; imageDataUrl?: unknown; permalink?: unknown };
   };
   const ig = normalizeIg(body.igUsername);
@@ -56,9 +56,10 @@ export async function POST(req: Request) {
 
   const caption = String(post.caption ?? "");
   const Logs0 = getIgAiLogModel();
-  // 부고 · 조문 — AI 없이 바로 건너뛴다(원가 · 한도 0). 기록은 남겨 대시보드 「건너뜀」 에 센다
-  if (body.skipCondolence !== false && isCondolence(caption)) {
-    const reason = "부고 · 조문 글이라 건너뜀(설정)";
+  // 건너뛸 키워드(기본 부고 · 조문) — AI 없이 바로 건너뛴다(원가 · 한도 0). 기록은 남겨 대시보드 「건너뜀」 에 센다
+  const hit = body.skipCondolence !== false ? matchSkipWord(caption, body.skipWords) : "";
+  if (hit) {
+    const reason = `건너뛸 키워드 「${hit}」 가 든 글`;
     await Logs0.create({
       uid: user._id, igUsername: ig, target: author, permalink: String(post.permalink ?? "").slice(0, 200),
       withImage: false, units: 0, style: styleIdOf(body.style), model: "", ok: true, skip: true, reason, comment: "", ms: 0,

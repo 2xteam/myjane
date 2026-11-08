@@ -255,19 +255,34 @@ export function captionWeight(caption: string): number {
 }
 
 /**
- * 부고 · 조문 글인지 — 「부고 글은 건너뛰기」 설정(기본 켜짐)이면 **AI 를 부르지 않고** 건너뛴다(2026-11-08).
+ * 건너뛸 키워드(2026-11-08) — 「건너뛸 키워드가 든 글은 건너뛴다」(기본 켜짐)면 **AI 를 부르지 않고** 건너뛴다.
+ * 앱 설정에서 사용자가 고친다. 앱이 목록을 안 보내면(예전 앱 · 비워 둠) 아래 기본 목록 — 부고 · 조문 중심.
  * AI 도 대개 건너뛰지만 그래도 원가가 나가고, 작은 모델은 놓치기도 했다(gpt-5-nano 시험).
- * 「편히 쉬세요」 처럼 주말 인사에도 쓰는 말은 넣지 않는다 — 잘못 걸러도 댓글 하나 덜 다는 정도지만 줄인다.
+ * 「편히 쉬세요」 처럼 주말 인사에도 쓰는 말은 넣지 않는다. 「고인의」 로 적어 고인돌에 안 걸리게 한다.
+ * 앱 popup.js DEFAULT_SKIP_WORDS 와 같은 목록이다 — 고치면 둘 다.
  */
-const CONDOLENCE = [
-  /부고|訃告|별세|영면|소천|타계|작고하|하늘나라|하늘의\s*별이\s*되|돌아가셨|세상을\s*떠나|명복을|고인(?!돌)|빈소|발인|장례식|조문|추모|애도|무지개\s*다리/,
-  /\brest in peace\b|\bpassed away\b|\bfuneral\b|\bcondolences?\b|\bin loving memory\b|\bobituary\b/i,
-  /(^|[^A-Za-z])R\.?I\.?P([^A-Za-z]|$)/,   // 대문자 RIP 만 — trip · ripe 같은 낱말에 걸리지 않게
-  /ご冥福|訃報|逝去|永眠|告別式|お悔やみ/,
+export const DEFAULT_SKIP_WORDS = [
+  "부고", "별세", "영면", "소천", "타계", "작고", "운명하셨", "돌아가셨", "세상을 떠나", "하늘나라", "하늘의 별",
+  "천국에서", "편히 잠드", "고인의", "명복", "삼가", "근조", "조의", "조문", "빈소", "발인", "장례", "영결식",
+  "추모", "애도", "49재", "사십구재", "무지개다리", "투병", "위독", "중환자실", "실종",
+  "RIP", "R.I.P", "rest in peace", "passed away", "funeral", "condolences", "in loving memory", "obituary",
+  "ご冥福", "訃報", "逝去", "永眠", "お悔やみ", "告別式",
 ];
-export function isCondolence(caption: string): boolean {
-  const t = String(caption || "");
-  return CONDOLENCE.some((re) => re.test(t));
+const escRe = (t: string) => t.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+/** 본문에 든 첫 키워드(없으면 ""). 영어 낱말은 낱말 단위로만(RIP 가 trip 에 걸리지 않게), 나머지는 들어 있기만 하면 */
+export function matchSkipWord(caption: string, words?: unknown): string {
+  const list = (Array.isArray(words) ? words : [])
+    .map((w) => String(w ?? "").trim().slice(0, 40)).filter(Boolean).slice(0, 200);
+  const use = list.length ? list : DEFAULT_SKIP_WORDS;
+  const text = String(caption || "");
+  const lower = text.toLowerCase();
+  for (const w of use) {
+    if (/^[A-Za-z0-9 .'-]+$/.test(w)) {
+      const re = new RegExp(`(^|[^A-Za-z0-9])${escRe(w).replace(/ +/g, "\\s+")}([^A-Za-z0-9]|$)`, "i");
+      if (re.test(text)) return w;
+    } else if (lower.includes(w.toLowerCase())) return w;
+  }
+  return "";
 }
 
 export async function generateIgComment(input: AiCommentInput): Promise<AiCommentResult> {
