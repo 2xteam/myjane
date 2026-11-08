@@ -30,6 +30,7 @@ const ALLOW = [
   { match: "opengraph-image", why: "OG 이미지 — 런타임 CSS 가 없다" },
   { match: "palette.css", why: "생성 파일 — 원본은 design/palette.json" },
   { match: "admin.css", why: "포털 admin — 팔레트 별칭을 쓰는 별도 화면" },
+  { match: "ig-theme.css", why: "IG Tidy 화면(/ig-tidy/*) — 인스타그램 브랜드 팔레트로 토큰을 바꿔 끼운다(앱 ig-tidy-desktop 과 같은 값, 여섯 앱 팔레트와 별개)" },
 ];
 const allowed = (p) => ALLOW.find((a) => p.includes(a.match));
 

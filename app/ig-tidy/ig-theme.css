@@ -1,0 +1,79 @@
+/* IG Tidy 화면들(/ig-tidy/*)의 인스타그램 테마 (2026-11-08).
+ *
+ * myjane 화면은 색을 전부 토큰(app/palette.css — 생성 파일)으로 쓴다. 그래서 이 묶음 안에서만
+ * 토큰 값을 인스타그램 색으로 바꿔 끼운다 — 시트 · 단추 · 형광 밑줄 · 진행 띠가 저절로 따라온다.
+ * palette.css 는 건드리지 않는다(여섯 앱 공유). 앱(ig-tidy-desktop popup.css)의 라이트 팔레트와 같은 값.
+ * app/ig-tidy/layout.tsx 가 .ig-theme 로 감싼다. */
+.ig-theme {
+  /* 면 · 글자 · 선 */
+  --bg: #fafafa;
+  --surface: #ffffff;
+  --surface-hover: #f7f7f7;
+  --border: #dbdbdb;
+  --border-strong: #a8a8a8;
+  --text: #262626;
+  --text-dim: #555555;
+  --text-muted: #737373;
+  --placeholder: #8e8e8e;
+
+  /* 강조 — 인스타그램 파랑 */
+  --accent: #0095f6;
+  --accent-ink: #0064e0;
+  --accent-soft: rgba(0, 149, 246, 0.1);
+  --accent-on-dark: #ffffff;
+  --on-accent: #ffffff;
+  --btn-gradient: linear-gradient(90deg, #0095f6, #1877f2);
+  --btn-shadow: rgba(0, 149, 246, 0.25);
+
+  /* 짙은 시트 → 인스타그램 그라디언트(보라 · 분홍 · 주황) */
+  --sheet-dark: linear-gradient(120deg, #4f5bd5 0%, #962fbf 32%, #d62976 68%, #fa7e1e 100%);
+  --sheet-dark-glow: rgba(255, 255, 255, 0.14);
+  --on-dark: #ffffff;
+  --on-dark-dim: rgba(255, 255, 255, 0.92);
+  --on-dark-faint: rgba(255, 255, 255, 0.84);
+  --border-on-dark: rgba(255, 255, 255, 0.42);
+
+  /* 포인트(형광 밑줄 · 배지) → 인스타그램 분홍 */
+  --gold: #d62976;
+  --gold-from: #fa7e1e;
+  --gold-to: #d62976;
+  --gold-soft: rgba(214, 41, 118, 0.1);
+  --gold-on-dark: #ffe3a3;
+  --point-ink: #b52a6b;
+
+  --progress-from: #962fbf;
+  --progress-to: #fa7e1e;
+  --shadow-rgb: 0, 0, 0;
+  --footer-bg: #262626;
+
+  min-height: 100dvh;
+  background: var(--bg);
+  color: var(--text);
+}
+
+/* 바탕의 옅은 원(.legal 의 accent-soft 원)도 인스타그램 빛으로 — 왼쪽 아래는 분홍 */
+.ig-theme .legal {
+  background:
+    radial-gradient(circle at 88% 4%, rgba(0, 149, 246, 0.08), transparent 38%),
+    radial-gradient(circle at 4% 78%, rgba(214, 41, 118, 0.08), transparent 42%),
+    var(--bg);
+}
+
+/* globals.css 가 리터럴로 칠한 자리 — 토큰을 바꿔도 안 따라온다. 이 묶음 안에서만 토큰으로 다시 칠한다 */
+.ig-theme .sheet--dark {
+  background: var(--sheet-dark);
+  color: var(--on-dark);
+  box-shadow: 0 24px 65px rgba(150, 47, 191, 0.22);
+}
+.ig-theme .sheet--dark .eyebrow { color: var(--gold-on-dark); }
+.ig-theme .btn-primary {
+  background: var(--btn-gradient);
+  box-shadow: 0 10px 24px var(--btn-shadow);
+}
+/* btn-ghost 는 짙은 시트용(반투명 · 흰 글자)이다 — 흰 시트(설치 화면의 「회원가입」)에서는 안 보였다 */
+.ig-theme .sheet:not(.sheet--dark) .btn-ghost {
+  background: var(--surface);
+  border-color: var(--border-strong);
+  color: var(--text);
+}
+.ig-theme .sheet:not(.sheet--dark) .btn-ghost:hover { border-color: var(--accent); color: var(--accent-ink); }
