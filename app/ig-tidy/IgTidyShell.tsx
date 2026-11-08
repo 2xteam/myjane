@@ -23,6 +23,11 @@ export function IgTidyShell({ children }: { children: ReactNode }) {
             <p className="eyebrow" style={{ margin: 0 }}>IG TIDY</p>
           </div>
           {children}
+          {/* 어느 IG Tidy 화면에서든 소개 · 업데이트 내역으로(2026-11-08) */}
+          <p className="lead" style={{ marginTop: 22, fontSize: "0.88rem", display: "flex", gap: 14, flexWrap: "wrap" }}>
+            <Link href="/ig-tidy/about">IG Tidy 소개</Link>
+            <Link href="/ig-tidy/updates">업데이트 내역</Link>
+          </p>
         </section>
       </main>
     </div>
