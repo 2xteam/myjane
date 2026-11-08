@@ -16,6 +16,7 @@ export function samplingFor(model: string, temperature: number, maxTokens: numbe
  *
  * 피드 글(글쓴이 · 본문 · 사진)을 읽고 그 글에 어울리는 짧은 댓글 하나를 만든다.
  * 호출 방식은 SnapWord 와 같다 — OpenAI SDK · `OPENAI_API_KEY` · 모델 `OPENAI_MODEL`(기본 gpt-4o-mini)
+ * 키는 OpenAI 프로젝트 「IG Tidy」 것을 쓴다 — SnapWord 키를 빌려 쓰다 2026-11-08 에 나눴다(사용량 · 예산을 따로 보려고)
  * → SnapWord/lib/llm.ts
  *
  * 지키는 것 → my-obsidian-vault / 30-Patterns/AI 채팅 패턴.md

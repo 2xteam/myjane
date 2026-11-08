@@ -16,6 +16,8 @@ import { IG_TIDY_DB, getIgAiLogModel } from "@/models/IgTidy";
  *   어느 쪽이든 한도의 90% 에서 끊는다(사용량 API 가 몇 분 늦고, 다른 앱이 그 사이 쓸 수 있다)
  *
  * 관리자 키는 사용량 읽기에만 쓴다. 사용자가 OpenAI 설정 → Admin keys 에서 직접 만들어 Vercel 에 넣는다.
+ * IG Tidy 는 SnapWord 와 키를 나눠(2026-11-08) OpenAI 프로젝트 「IG Tidy」 의 키를 쓴다. 무료 토큰은 그래도 **조직 전체**
+ * 몫이라 끊는 판단은 조직 합계로 하고, OPENAI_PROJECT_ID 가 있으면 그중 IG Tidy 몫을 따로 보여 준다.
  */
 
 /** 무료 묶음(하루 250만) 모델 — 이름 앞부분으로 맞춘다(gpt-4o-mini-2024-07-18 처럼 날짜가 붙어 온다) */
@@ -45,32 +47,36 @@ export function utcDayStart(now = new Date()): Date {
 }
 const dayKey = (d: Date) => d.toISOString().slice(0, 10);
 
-type Snapshot = { _id: string; tokens: number; fetchedAt: Date; byModel?: Record<string, number> };
+type Snapshot = { _id: string; tokens: number; fetchedAt: Date; byModel?: Record<string, number>; project?: number | null };
 const snapshots = () => mongoose.connection.useDb(IG_TIDY_DB, { useCache: true }).collection<Snapshot>("free_usage");
 
 /** OpenAI 사용량 API — 오늘 무료 묶음 모델이 쓴 토큰(입력 + 출력) */
-async function fetchOrgUsage(adminKey: string, since: Date): Promise<{ tokens: number; byModel: Record<string, number> }> {
+async function fetchOrgUsage(adminKey: string, since: Date): Promise<{ tokens: number; byModel: Record<string, number>; project: number | null }> {
+  const projectId = (process.env.OPENAI_PROJECT_ID ?? "").trim();
   const url = new URL("https://api.openai.com/v1/organization/usage/completions");
   url.searchParams.set("start_time", String(Math.floor(since.getTime() / 1000)));
   url.searchParams.set("bucket_width", "1d");
   url.searchParams.append("group_by", "model");
+  url.searchParams.append("group_by", "project_id");
   url.searchParams.set("limit", "2");
   const res = await fetch(url, { headers: { Authorization: `Bearer ${adminKey}` }, signal: AbortSignal.timeout(8000) });
   if (!res.ok) throw new Error(`usage API ${res.status}`);
   const j = (await res.json()) as {
-    data?: { results?: { model?: string; input_tokens?: number; output_tokens?: number }[] }[];
+    data?: { results?: { model?: string; project_id?: string; input_tokens?: number; output_tokens?: number }[] }[];
   };
   const byModel: Record<string, number> = {};
   let tokens = 0;
+  let project = 0;
   for (const b of j.data ?? []) {
     for (const r of b.results ?? []) {
       const t = (r.input_tokens ?? 0) + (r.output_tokens ?? 0);
       const m = String(r.model || "?");
       byModel[m] = (byModel[m] ?? 0) + t;
       if (isFreeModel(m)) tokens += t;
+      if (projectId && r.project_id === projectId) project += t;
     }
   }
-  return { tokens, byModel };
+  return { tokens, byModel, project: projectId ? project : null };
 }
 
 /** ai_logs 에서 since 이후 무료 묶음 모델 토큰 */
@@ -90,6 +96,7 @@ export type FreeUsage = {
   left: number;                // cutoff 까지 남은 것
   source: "api" | "logs";      // A(사용량 API + 기록) · B(기록 + 다른 앱 몫)
   apiAt: string | null;        // 사용량 API 를 마지막으로 읽은 때
+  project: number | null;      // 그중 IG Tidy 프로젝트(OPENAI_PROJECT_ID)가 쓴 것 — 모든 모델, 사용량 API 기준
   apiError?: string;
 };
 
@@ -113,20 +120,20 @@ export async function freeUsage(): Promise<FreeUsage> {
       if (!snap || Date.now() - new Date(snap.fetchedAt).getTime() > API_EVERY_MS) {
         const fetchedAt = new Date();
         const r = await fetchOrgUsage(adminKey, since);
-        snap = { _id: day, tokens: r.tokens, fetchedAt, byModel: r.byModel };
-        await col.updateOne({ _id: day }, { $set: { tokens: r.tokens, fetchedAt, byModel: r.byModel } }, { upsert: true });
+        snap = { _id: day, tokens: r.tokens, fetchedAt, byModel: r.byModel, project: r.project };
+        await col.updateOne({ _id: day }, { $set: { tokens: r.tokens, fetchedAt, byModel: r.byModel, project: r.project } }, { upsert: true });
       }
       // 사용량 API 는 몇 분 늦다 — 읽은 때보다 조금 앞부터 IG Tidy 기록을 더한다(겹쳐 세는 쪽이 안전하다)
       const after = new Date(Math.max(since.getTime(), new Date(snap.fetchedAt).getTime() - 5 * 60_000));
       const used = snap.tokens + (await logTokens(after));
-      v = { day, used, limit, cutoff, left: Math.max(0, cutoff - used), source: "api", apiAt: new Date(snap.fetchedAt).toISOString() };
+      v = { day, used, limit, cutoff, left: Math.max(0, cutoff - used), source: "api", apiAt: new Date(snap.fetchedAt).toISOString(), project: snap.project ?? null };
     } catch (e) {
       apiError = e instanceof Error ? e.message : String(e);
     }
   }
   if (!v) {
     const used = (await logTokens(since)) + reserve();
-    v = { day, used, limit, cutoff, left: Math.max(0, cutoff - used), source: "logs", apiAt: null, ...(apiError ? { apiError } : {}) };
+    v = { day, used, limit, cutoff, left: Math.max(0, cutoff - used), source: "logs", apiAt: null, project: null, ...(apiError ? { apiError } : {}) };
   }
   memo = { at: Date.now(), v };
   return v;

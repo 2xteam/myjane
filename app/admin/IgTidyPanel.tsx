@@ -643,7 +643,7 @@ type InsightAction = {
 };
 type FreeAi = {
   day: string; used: number; limit: number; cutoff: number; left: number; source: "api" | "logs";
-  apiAt: string | null; apiError?: string; photoModelNow: string; freePhotoModel: string; paidPhotoModel: string;
+  apiAt: string | null; apiError?: string; project: number | null; photoModelNow: string; freePhotoModel: string; paidPhotoModel: string;
 };
 type Insights = {
   ai?: FreeAi | null;
@@ -721,7 +721,7 @@ function InsightsView({ settings, onSaved, onWriteNotice }: {
           </p>
           <p className="adm-card-sub" style={{ marginTop: 0 }}>
             {ai.source === "api"
-              ? `OpenAI 사용량(myjane · SnapWord · SnapNote 합계, ${ai.apiAt ? new Date(ai.apiAt).toLocaleTimeString("ko-KR") : "-"} 기준) + 그 뒤 IG Tidy 기록.`
+              ? `OpenAI 사용량(조직 전체 — 다른 앱 포함, ${ai.apiAt ? new Date(ai.apiAt).toLocaleTimeString("ko-KR") : "-"} 기준) + 그 뒤 IG Tidy 기록.${ai.project != null ? ` 그중 IG Tidy 프로젝트 ${(ai.project / 10000).toFixed(1)}만.` : ""}`
               : `IG Tidy 기록 + 다른 앱 몫 고정값으로 어림했어요(OPENAI_ADMIN_KEY 를 넣으면 OpenAI 사용량으로 정확히 셉니다${ai.apiError ? ` — 사용량 API 오류: ${ai.apiError}` : ""}).`}
             {" "}한도의 90%({(ai.cutoff / 10000).toFixed(0)}만)에서 사진을 {ai.paidPhotoModel} 로 넘겨요. 매일 한국 오전 9시(UTC 0시)에 다시 차요.
           </p>
