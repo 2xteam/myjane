@@ -4,7 +4,8 @@ import OpenAI from "openai";
  *  max_completion_tokens 를 쓴다 — 그 안에 생각 토큰도 들어가니 넉넉히 두고, 생각은 가장 짧게(minimal).
  *  gpt-4o-mini 같은 예전 모델은 그대로 temperature · max_tokens. */
 export function samplingFor(model: string, temperature: number, maxTokens: number) {
-  const effort = (process.env.OPENAI_REASONING_EFFORT ?? "").trim() || "minimal";
+  // 생각 깊이 — gpt-6 계열은 none(생각 없이 바로), gpt-5 · o 계열은 minimal(가장 짧게). 환경 변수가 있으면 그것
+  const effort = (process.env.OPENAI_REASONING_EFFORT ?? "").trim() || (/^gpt-[6-9]/.test(model) ? "none" : "minimal");
   return /^(gpt-[5-9]|o\d)/.test(model)
     ? { max_completion_tokens: maxTokens + 1200, reasoning_effort: effort as "minimal" | "low" | "medium" | "none" }
     : { temperature, max_tokens: maxTokens };
@@ -234,10 +235,46 @@ function cleanComment(s: string): string {
     .slice(0, 150);
 }
 
+/** 기본 모델(글만) — gpt-4o-mini. 하루 무료 토큰 안에 든다 */
+export const textModel = () => (process.env.OPENAI_MODEL ?? "gpt-4o-mini").trim() || "gpt-4o-mini";
+/**
+ * 사진을 읽을 때 쓰는 모델(2026-11-08 사용자 결정) — gpt-6-luna.
+ * gpt-4o-mini 는 사진 한 장을 약 2,800 토큰으로 세서 사진 댓글 원가가 글만의 2.7배였다.
+ * gpt-6-luna 는 같은 사진을 약 1,400 토큰(입력 전체)으로 읽고 단가도 싸서 사진 댓글 원가가 약 1/4.
+ * 무료 토큰에는 들지 않는다(처음부터 유료). 모델 시험(부고 건너뛰기 · 말투)도 가장 나았다.
+ */
+export const photoModel = () => (process.env.OPENAI_PHOTO_MODEL ?? "gpt-6-luna").trim() || "gpt-6-luna";
+
+/** 본문에서 해시태그 · @아이디 · 이모지 · 공백을 뺀 「읽을거리」 글자 수 — 사진을 보낼지 정할 때 쓴다 */
+export function captionWeight(caption: string): number {
+  return String(caption || "")
+    .replace(/(^|\s)[#@][^\s#@]+/g, " ")
+    .replace(/\p{Extended_Pictographic}|[‍️]/gu, "")
+    .replace(/\s+/g, "")
+    .length;
+}
+
+/**
+ * 부고 · 조문 글인지 — 「부고 글은 건너뛰기」 설정(기본 켜짐)이면 **AI 를 부르지 않고** 건너뛴다(2026-11-08).
+ * AI 도 대개 건너뛰지만 그래도 원가가 나가고, 작은 모델은 놓치기도 했다(gpt-5-nano 시험).
+ * 「편히 쉬세요」 처럼 주말 인사에도 쓰는 말은 넣지 않는다 — 잘못 걸러도 댓글 하나 덜 다는 정도지만 줄인다.
+ */
+const CONDOLENCE = [
+  /부고|訃告|별세|영면|소천|타계|작고하|하늘나라|하늘의\s*별이\s*되|돌아가셨|세상을\s*떠나|명복을|고인(?!돌)|빈소|발인|장례식|조문|추모|애도|무지개\s*다리/,
+  /\brest in peace\b|\bpassed away\b|\bfuneral\b|\bcondolences?\b|\bin loving memory\b|\bobituary\b/i,
+  /(^|[^A-Za-z])R\.?I\.?P([^A-Za-z]|$)/,   // 대문자 RIP 만 — trip · ripe 같은 낱말에 걸리지 않게
+  /ご冥福|訃報|逝去|永眠|告別式|お悔やみ/,
+];
+export function isCondolence(caption: string): boolean {
+  const t = String(caption || "");
+  return CONDOLENCE.some((re) => re.test(t));
+}
+
 export async function generateIgComment(input: AiCommentInput): Promise<AiCommentResult> {
   const apiKey = process.env.OPENAI_API_KEY;
   if (!apiKey) throw new Error("OPENAI_API_KEY 환경 변수가 설정되지 않았습니다.");
-  const model = (process.env.OPENAI_MODEL ?? "gpt-4o-mini").trim() || "gpt-4o-mini";
+  const withPhoto = !!(input.imageDataUrl && /^data:image\/(jpeg|png|webp);base64,/.test(input.imageDataUrl));
+  const model = withPhoto ? photoModel() : textModel();
 
   const tone = (input.tone ?? "").trim().slice(0, 300);
   const custom = input.style === "custom" && (input.customGuide ?? "").trim();
@@ -257,7 +294,7 @@ export async function generateIgComment(input: AiCommentInput): Promise<AiCommen
   ].filter(Boolean).join("\n\n");
 
   const content: OpenAI.Chat.Completions.ChatCompletionContentPart[] = [{ type: "text", text }];
-  if (input.imageDataUrl && /^data:image\/(jpeg|png|webp);base64,/.test(input.imageDataUrl)) {
+  if (withPhoto && input.imageDataUrl) {
     // 사진은 낮은 해상도로 — 댓글 하나에는 충분하고 비용이 가장 싸다
     content.push({ type: "image_url", image_url: { url: input.imageDataUrl, detail: "low" } });
   }

@@ -218,6 +218,8 @@ export function publicSettings(s: IgTidySettings) {
     aiFreePhotoDaily: Math.max(0, Number((s as { aiFreePhotoDaily?: number }).aiFreePhotoDaily ?? 50)),
     aiApprovedPhotoDaily: Math.max(0, Number((s as { aiApprovedPhotoDaily?: number }).aiApprovedPhotoDaily ?? 300)),
     aiPhotoWeight: Math.max(1, Number((s as { aiPhotoWeight?: number }).aiPhotoWeight ?? 3) || 3),
+    /** 본문(해시태그 · 이모지 뺀 글자 수)이 이보다 길면 사진을 보내지 않는다. 0 = 늘 보낸다 */
+    aiPhotoMaxCaption: Math.max(0, Number((s as { aiPhotoMaxCaption?: number }).aiPhotoMaxCaption ?? 40)),
     notice: String((s as { notice?: string }).notice ?? ""),
     noticeAt: (s as { noticeAt?: Date | null }).noticeAt instanceof Date
       ? ((s as { noticeAt: Date }).noticeAt).toISOString() : null,

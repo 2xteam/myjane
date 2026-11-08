@@ -330,6 +330,8 @@ const SettingsSchema = new Schema(
     aiFreePhotoDaily: { type: Number, default: 50 },
     aiApprovedPhotoDaily: { type: Number, default: 300 },
     aiPhotoWeight: { type: Number, default: 3 },
+    /** 본문(해시태그 · 이모지 뺀 글자 수)이 이보다 길면 사진을 보내지 않는다(2026-11-08, 원가 줄이기). 0 = 늘 보낸다 */
+    aiPhotoMaxCaption: { type: Number, default: 40 },
     /** 예전 앱 공지 한 줄 — 공지 게시판(notices)으로 옮겼다(2026-11-08). 값은 지우지 않고 남겨 둔다.
         게시판이 비어 있을 때 한 번 게시판으로 옮겨 담는다 → lib/igTidy.ts migrateLegacyNotice */
     notice: { type: String, default: "" },

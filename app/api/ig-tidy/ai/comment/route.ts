@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { connectDB } from "@/lib/db";
 import { aiQuota, igError, loadSettings, normalizeIg, publicSettings, requireIgTidyUser } from "@/lib/igTidy";
-import { generateIgComment, langOf, styleIdOf } from "@/lib/igTidyAi";
+import { captionWeight, generateIgComment, isCondolence, langOf, styleIdOf } from "@/lib/igTidyAi";
 import { getIgAccountModel, getIgAiLogModel, getIgPermModel } from "@/models/IgTidy";
 
 export const runtime = "nodejs";
@@ -21,6 +21,11 @@ export const maxDuration = 30;
  * 사용량은 단위 — 글만 1 · 사진 포함 aiPhotoWeight → lib/igTidy.ts aiQuota
  *
  * 만든 문구는 기록(ai_logs)에 남는다. 게시는 앱이 한다 — 서버는 만들기만 한다.
+ *
+ * 원가 줄이기(2026-11-08)
+ *   · 부고 · 조문 글은 AI 를 부르지 않고 건너뛴다 — 본문 skipCondolence(기본 켜짐). 한도도 쓰지 않는다
+ *   · 본문이 aiPhotoMaxCaption 글자보다 길면 사진을 빼고 글만으로 만든다(사진 몫 대신 글 몫만 센다)
+ *   · 사진을 읽을 때만 gpt-6-luna(lib/igTidyAi.ts photoModel) — 실패하면 사진 없이 기본 모델로 한 번 더
  */
 const MAX_IMAGE = 1_500_000;   // data URL 길이(약 1.1MB 사진)
 
@@ -30,7 +35,7 @@ export async function POST(req: Request) {
   const user = auth.user;
 
   const body = (await req.json().catch(() => ({}))) as {
-    igUsername?: unknown; tone?: unknown; style?: unknown; lang?: unknown;
+    igUsername?: unknown; tone?: unknown; style?: unknown; lang?: unknown; skipCondolence?: unknown;
     post?: { author?: unknown; caption?: unknown; imageAlt?: unknown; imageDataUrl?: unknown; permalink?: unknown };
   };
   const ig = normalizeIg(body.igUsername);
@@ -49,6 +54,18 @@ export async function POST(req: Request) {
     return igError("account_taken", `@${ig} 는 이 계정에 등록된 아이디가 아니에요.`, 409);
   }
 
+  const caption = String(post.caption ?? "");
+  const Logs0 = getIgAiLogModel();
+  // 부고 · 조문 — AI 없이 바로 건너뛴다(원가 · 한도 0). 기록은 남겨 대시보드 「건너뜀」 에 센다
+  if (body.skipCondolence !== false && isCondolence(caption)) {
+    const reason = "부고 · 조문 글이라 건너뜀(설정)";
+    await Logs0.create({
+      uid: user._id, igUsername: ig, target: author, permalink: String(post.permalink ?? "").slice(0, 200),
+      withImage: false, units: 0, style: styleIdOf(body.style), model: "", ok: true, skip: true, reason, comment: "", ms: 0,
+    }).catch(() => {});
+    return NextResponse.json({ ok: true, skip: true, reason, comment: "", photoDropped: false, photoSkipped: "", quota: await aiQuota(user._id, approved, settings) });
+  }
+
   /* 한도 — 승인 전에도 무료로 쓴다. 사진 몫(weight)이 모자라고 글 몫(1)은 남으면
      사진을 빼고 글만으로 만든다(남은 한도를 끝까지 쓸 수 있게). */
   const Logs = getIgAiLogModel();
@@ -56,6 +73,11 @@ export async function POST(req: Request) {
   let imageDataUrl = typeof post.imageDataUrl === "string" && post.imageDataUrl.length <= MAX_IMAGE ? post.imageDataUrl : undefined;
   let photoDropped = false;
   if (imageDataUrl && quota.leftUnits < quota.weight) { imageDataUrl = undefined; photoDropped = true; }
+  // 글이 길면 사진 없이 — 본문만으로 충분하다(0 이면 늘 사진을 쓴다)
+  let photoSkipped = "";
+  if (imageDataUrl && settings.aiPhotoMaxCaption > 0 && captionWeight(caption) > settings.aiPhotoMaxCaption) {
+    imageDataUrl = undefined; photoSkipped = "long";
+  }
   if (quota.leftUnits < 1) {
     const msg = approved
       ? `오늘 AI 댓글 한도(사진 포함 ${quota.photoDaily}개 분)를 다 썼어요. 내일 다시 할 수 있어요.`
@@ -73,16 +95,26 @@ export async function POST(req: Request) {
   if (base.style === "custom" && !customGuide) base.style = "basic";
   const t0 = Date.now();
   try {
-    const r = await generateIgComment({
+    const input = {
       author,
-      caption: String(post.caption ?? ""),
+      caption,
       imageAlt: typeof post.imageAlt === "string" ? post.imageAlt : undefined,
       imageDataUrl,
       tone: typeof body.tone === "string" ? body.tone : "",
       style: base.style,
       customGuide: customGuide || undefined,
       fallbackLang: langOf(body.lang),
-    });
+    };
+    let r;
+    try {
+      r = await generateIgComment(input);
+    } catch (photoErr) {
+      if (!imageDataUrl) throw photoErr;
+      // 사진 모델이 실패하면(모델 중단 · 일시 오류) 사진 없이 기본 모델로 한 번 더 — 글 몫만 센다
+      await Logs.create({ ...base, ms: Date.now() - t0, ok: false, error: `사진 모델 실패 — ${photoErr instanceof Error ? photoErr.message : ""}`.slice(0, 300) }).catch(() => {});
+      imageDataUrl = undefined; base.withImage = false; photoSkipped = "error";
+      r = await generateIgComment({ ...input, imageDataUrl: undefined });
+    }
     await Logs.create({
       ...base, model: r.model, promptTokens: r.usage.prompt, completionTokens: r.usage.completion,
       totalTokens: r.usage.total, cachedTokens: r.usage.cached, ms: Date.now() - t0, ok: true, skip: r.skip, comment: r.comment, reason: r.reason,
@@ -90,7 +122,7 @@ export async function POST(req: Request) {
     const cost = imageDataUrl ? quota.weight : 1;
     const after = { ...quota, usedUnits: quota.usedUnits + cost, leftUnits: Math.max(0, quota.leftUnits - cost) };
     return NextResponse.json({
-      ok: true, skip: r.skip, reason: r.reason, comment: r.comment, photoDropped, quota: after,
+      ok: true, skip: r.skip, reason: r.reason, comment: r.comment, photoDropped, photoSkipped, quota: after,
     });
   } catch (err) {
     const message = err instanceof Error ? err.message : "알 수 없는 오류";

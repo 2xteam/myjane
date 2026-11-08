@@ -27,7 +27,7 @@ type Found = { id: string; name: string; email: string | null; signupFrom: strin
 type Live = { id: string; member: string; deviceName: string; igUsername: string; kind: string; startedAt: string | null; lastBeatAt: string | null; done: number };
 type Settings = {
   enabled: boolean; disabledMessage: string; minVersion: string; dailyCaps: Record<string, number>; minDelaySec: number;
-  aiEnabled: boolean; aiFreePhotoDaily: number; aiApprovedPhotoDaily: number; aiPhotoWeight: number;
+  aiEnabled: boolean; aiFreePhotoDaily: number; aiApprovedPhotoDaily: number; aiPhotoWeight: number; aiPhotoMaxCaption: number;
   notice: string; noticeAt: string | null;
 };
 type Release = { version: string; notes: string; url: string; key: string; sha256: string; size: number; mandatory: boolean; publishedAt: string | null };
@@ -603,6 +603,10 @@ function SettingsView({ settings, onSaved, onGoNotices }: { settings: Settings; 
         <label className="adm-field" style={{ minWidth: 150 }}>
           <span className="adm-label">사진 1개 = 글 몇 개</span>
           <input className="adm-input" type="number" min={1} max={20} value={form.aiPhotoWeight} onChange={(e) => setForm({ ...form, aiPhotoWeight: Number(e.target.value) })} />
+        </label>
+        <label className="adm-field" style={{ minWidth: 150 }}>
+          <span className="adm-label">본문 몇 자 넘으면 사진 생략</span>
+          <input className="adm-input" type="number" min={0} max={2000} value={form.aiPhotoMaxCaption ?? 40} onChange={(e) => setForm({ ...form, aiPhotoMaxCaption: Number(e.target.value) })} />
         </label>
       </div>
 

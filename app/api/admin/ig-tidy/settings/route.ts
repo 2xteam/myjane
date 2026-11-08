@@ -42,6 +42,7 @@ export async function PUT(req: Request) {
     if (body.aiFreePhotoDaily !== undefined) set.aiFreePhotoDaily = n(body.aiFreePhotoDaily, 0, 5000);
     if (body.aiApprovedPhotoDaily !== undefined) set.aiApprovedPhotoDaily = n(body.aiApprovedPhotoDaily, 0, 5000);
     if (body.aiPhotoWeight !== undefined) set.aiPhotoWeight = n(body.aiPhotoWeight, 1, 20);
+    if (body.aiPhotoMaxCaption !== undefined) set.aiPhotoMaxCaption = n(body.aiPhotoMaxCaption, 0, 2000);
     // 공지(notice · noticeAt)는 여기서 받지 않는다 — 공지 게시판으로 옮겼다(2026-11-08) → /api/admin/ig-tidy/notices
     // 저장된 값은 지우지 않는다. 예전 앱이 읽는 두 칸은 /api/ig-tidy/me 가 게시판에서 채운다.
     if (body.dailyCaps && typeof body.dailyCaps === "object") {
