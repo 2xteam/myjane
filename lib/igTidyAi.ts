@@ -1,5 +1,15 @@
 import OpenAI from "openai";
 
+/** 모델마다 받는 값이 다르다(2026-11-08). gpt-5 · o 계열(생각하는 모델)은 temperature 를 안 받고
+ *  max_completion_tokens 를 쓴다 — 그 안에 생각 토큰도 들어가니 넉넉히 두고, 생각은 가장 짧게(minimal).
+ *  gpt-4o-mini 같은 예전 모델은 그대로 temperature · max_tokens. */
+export function samplingFor(model: string, temperature: number, maxTokens: number) {
+  const effort = (process.env.OPENAI_REASONING_EFFORT ?? "").trim() || "minimal";
+  return /^(gpt-[5-9]|o\d)/.test(model)
+    ? { max_completion_tokens: maxTokens + 1200, reasoning_effort: effort as "minimal" | "low" | "medium" | "none" }
+    : { temperature, max_tokens: maxTokens };
+}
+
 /**
  * IG Tidy — AI 댓글 만들기 (2026-11-07).
  *
@@ -266,8 +276,7 @@ export async function generateIgComment(input: AiCommentInput): Promise<AiCommen
   for (let attempt = 0; attempt < 2; attempt++) {
     const completion = await client.chat.completions.create({
       model,
-      temperature: attempt ? Math.min(style.temperature, 0.7) : style.temperature,
-      max_tokens: 200,
+      ...samplingFor(model, attempt ? Math.min(style.temperature, 0.7) : style.temperature, 200),
       response_format: { type: "json_object" },
       messages,
     });
@@ -395,8 +404,7 @@ export async function analyzeIgStyle(input: { igUsername: string; samples: Style
   const client = new OpenAI({ apiKey });
   const completion = await client.chat.completions.create({
     model,
-    temperature: 0.4,
-    max_tokens: 700,
+    ...samplingFor(model, 0.4, 700),
     response_format: { type: "json_object" },
     messages: [
       { role: "system", content: STYLE_SYSTEM },
@@ -583,8 +591,7 @@ export async function generateIgReply(input: AiReplyInput): Promise<AiReplyResul
   for (let attempt = 0; attempt < 2; attempt++) {
     const completion = await client.chat.completions.create({
       model,
-      temperature: attempt ? Math.min(style.temperature, 0.7) : style.temperature,
-      max_tokens: 160,
+      ...samplingFor(model, attempt ? Math.min(style.temperature, 0.7) : style.temperature, 160),
       response_format: { type: "json_object" },
       messages,
     });
