@@ -1,8 +1,8 @@
 import { NextResponse } from "next/server";
 import { connectDB } from "@/lib/db";
 import { aiQuota, igError, loadSettings, normalizeIg, publicSettings, requireIgTidyUser } from "@/lib/igTidy";
-import { captionWeight, freePhotoModel, generateIgComment, langOf, matchSkipWord, photoModel, styleIdOf } from "@/lib/igTidyAi";
-import { noteFreeTokens, photoFitsFree } from "@/lib/igTidyFree";
+import { captionWeight, cleanPeerComments, freePhotoModel, freeTextModel, generateIgComment, langOf, matchSkipWord, photoModel, recentAiTexts, styleIdOf } from "@/lib/igTidyAi";
+import { noteFreeTokens, photoFitsFree, textFitsFree } from "@/lib/igTidyFree";
 import { getIgAccountModel, getIgAiLogModel, getIgPermModel } from "@/models/IgTidy";
 
 export const runtime = "nodejs";
@@ -27,6 +27,7 @@ export const maxDuration = 30;
  *   · 건너뛸 키워드(기본: 부고 · 조문)가 든 글은 AI 를 부르지 않고 건너뛴다 — skipCondolence(기본 켜짐) · skipWords. 한도도 쓰지 않는다
  *   · 본문이 aiPhotoMaxCaption 글자보다 길면 사진을 빼고 글만으로 만든다(사진 몫 대신 글 몫만 센다)
  *   · 사진 — 하루 무료 토큰이 남았으면 gpt-5.4-nano(무료), 다 쓰면 gpt-6-luna(lib/igTidyFree.ts)
+ *   · 글만 — 무료 토큰이 남았으면 gpt-5.4-mini, 다 쓰면 gpt-4o-mini(2026-11-09)
  *     실패하면 사진 없이 기본 모델로 한 번 더
  */
 const MAX_IMAGE = 1_500_000;   // data URL 길이(약 1.1MB 사진)
@@ -38,7 +39,9 @@ export async function POST(req: Request) {
 
   const body = (await req.json().catch(() => ({}))) as {
     igUsername?: unknown; tone?: unknown; style?: unknown; lang?: unknown; skipCondolence?: unknown; skipWords?: unknown;
-    post?: { author?: unknown; caption?: unknown; imageAlt?: unknown; imageDataUrl?: unknown; permalink?: unknown };
+    post?: { author?: unknown; caption?: unknown; imageAlt?: unknown; imageDataUrl?: unknown; permalink?: unknown; comments?: unknown };
+    /** 앱이 함께 보내는 참고 자료(2026-11-09~) — 새 칸이 생겨도 앱 업데이트 없이 넘어오게 덩어리째 받는다 */
+    context?: { comments?: unknown };
   };
   const ig = normalizeIg(body.igUsername);
   const post = body.post ?? {};
@@ -58,6 +61,11 @@ export async function POST(req: Request) {
 
   const caption = String(post.caption ?? "");
   const Logs0 = getIgAiLogModel();
+  const rawComments = body.context?.comments ?? post.comments;
+  if (Array.isArray(rawComments) && rawComments.some((x) => String((x as { user?: unknown })?.user ?? "").toLowerCase() === ig)) {
+    return NextResponse.json({ ok: true, skip: true, reason: "이미 내 댓글이 있는 글", comment: "", photoDropped: false, photoSkipped: "", quota: await aiQuota(user._id, approved, settings) });
+  }
+  const peers = cleanPeerComments(rawComments, ig);
   // 건너뛸 키워드(기본 부고 · 조문) — AI 없이 바로 건너뛴다(원가 · 한도 0). 기록은 남겨 대시보드 「건너뜀」 에 센다
   const hit = body.skipCondolence !== false ? matchSkipWord(caption, body.skipWords) : "";
   if (hit) {
@@ -108,6 +116,9 @@ export async function POST(req: Request) {
       customGuide: customGuide || undefined,
       fallbackLang: langOf(body.lang),
       photoModel: imageDataUrl ? ((await photoFitsFree()) ? freePhotoModel() : photoModel()) : undefined,
+      textModel: imageDataUrl ? undefined : ((await textFitsFree()) ? freeTextModel() : undefined),
+      comments: peers,
+      recent: await recentAiTexts(ig),
     };
     let r;
     try {

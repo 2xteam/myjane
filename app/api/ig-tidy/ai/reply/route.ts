@@ -1,7 +1,8 @@
 import { NextResponse } from "next/server";
 import { connectDB } from "@/lib/db";
 import { aiQuota, igError, loadSettings, normalizeIg, publicSettings, requireIgTidyUser } from "@/lib/igTidy";
-import { generateIgReply, langOf, replyPrecheck, styleIdOf } from "@/lib/igTidyAi";
+import { cleanPeerComments, freeTextModel, generateIgReply, langOf, recentAiTexts, replyPrecheck, styleIdOf } from "@/lib/igTidyAi";
+import { noteFreeTokens, textFitsFree } from "@/lib/igTidyFree";
 import { getIgAccountModel, getIgAiLogModel, getIgPermModel } from "@/models/IgTidy";
 
 export const runtime = "nodejs";
@@ -32,6 +33,8 @@ export async function POST(req: Request) {
     igUsername?: unknown; tone?: unknown; style?: unknown; lang?: unknown;
     post?: { caption?: unknown; permalink?: unknown };
     comment?: { author?: unknown; text?: unknown };
+    /** 같은 글의 다른 댓글 · 내 답글(2026-11-09~) — 덩어리째 받아 앱 업데이트 없이 칸을 늘린다 */
+    context?: { others?: unknown };
   };
   const ig = normalizeIg(body.igUsername);
   const post = body.post ?? {};
@@ -82,7 +85,12 @@ export async function POST(req: Request) {
       style: base.style,
       customGuide: customGuide || undefined,
       fallbackLang: langOf(body.lang),
+      // 내 답글도 맥락으로 넘긴다(같은 문장 되풀이 막기) — 그래서 내 것을 빼지 않는다
+      others: cleanPeerComments(body.context?.others, "").filter((x) => !(x.user.toLowerCase() === author.toLowerCase() && x.text === text.replace(/\s+/g, " ").trim())),
+      recent: await recentAiTexts(ig),
+      model: (await textFitsFree()) ? freeTextModel() : undefined,
     });
+    noteFreeTokens(r.model, r.usage.total);
     await Logs.create({
       ...base, model: r.model, promptTokens: r.usage.prompt, completionTokens: r.usage.completion,
       totalTokens: r.usage.total, cachedTokens: r.usage.cached, ms: Date.now() - t0, ok: true, skip: r.skip, comment: r.reply, reason: r.reason,

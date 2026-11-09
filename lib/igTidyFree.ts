@@ -148,6 +148,15 @@ export async function photoFitsFree(): Promise<boolean> {
   }
 }
 
+/** 글 댓글 · 답글 하나를 무료 모델(gpt-5.4-mini)로 써도 되나 — 한 건 약 2,500 토큰 */
+export async function textFitsFree(): Promise<boolean> {
+  try {
+    return (await freeUsage()).left > 3_000;
+  } catch {
+    return false;   // 모르면 싼 쪽(gpt-4o-mini)
+  }
+}
+
 /** 방금 쓴 만큼 인스턴스 기억을 줄여 둔다 — 30초 사이 여러 건이 와도 넘치지 않게 */
 export function noteFreeTokens(model: string, tokens: number | null | undefined) {
   if (!memo || !isFreeModel(model) || !tokens) return;
