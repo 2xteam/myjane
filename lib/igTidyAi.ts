@@ -158,12 +158,26 @@ const POLICY = `[반드시 지킬 것 — 위 말투 지시보다 우선]
  * 처음엔 한·영이 섞인 글에 섞어 쓰게 했는데 한국어 글에 영어가 끼어든다는 말이 나와서(2026-11-07, 사용자)
  * **주된 언어 하나로만** 쓰게 바꿨다. 해시태그 · @ · 링크는 빼고 센다.
  */
-export type CommentLang = "ko" | "en" | "ja";
-const LANG_RULE: Record<CommentLang, string> = {
+export type CommentLang = "ko" | "en" | "ja" | "zh" | "ru" | "other";
+/**
+ * 2026-11-09 — 한 · 영 · 일만 세던 것을 넓혔다. 러시아어 글(키릴 문자)은 아무 글자도 안 세어져
+ * 「언어 모름」 → 앱의 우선 언어(한국어)로 넘어가 러시아어 글에 한국어 댓글이 달렸다(사용자 신고).
+ *   zh — 가나 없는 한자 · ru — 키릴 문자(우크라이나어 등도 같은 글자라 「글과 같은 말」 로 쓰게 한다)
+ *   other — 태국 · 아랍 · 히브리 · 그리스 · 인도 문자, 그리고 **영어가 아닌 로마자 글**(스페인어 · 독일어 …)
+ *           — 정해진 언어 이름 대신 본문 일부를 보여 주고 「이 글과 같은 언어로」 쓰게 한다
+ */
+const LANG_RULE: Record<Exclude<CommentLang, "other">, string> = {
   ko: "한국어로만 쓰세요. 영어 단어 · 영어 감탄사 · 로마자를 섞지 마세요(글에 나온 고유명사 · 브랜드만 예외). 존댓말(해요체)로 끝내세요.",
   en: "Write the comment in ENGLISH ONLY. Do not use any Korean or other languages.",
   ja: "日本語だけで書いてください。韓国語や英語を混ぜないでください。です・ます調で。",
+  zh: "只用中文写评论，跟原文用同样的中文（简体或繁体）。不要混用韩语、英语或日语。",
+  ru: "Write the comment ONLY in the same language as the post — it is written in Cyrillic (e.g. Russian or Ukrainian; match the post's language exactly). Do NOT use Korean or English.",
 };
+export function langRule(code: CommentLang, sample = ""): string {
+  if (code !== "other") return LANG_RULE[code];
+  const quote = sample.replace(/\s+/g, " ").trim().slice(0, 80);
+  return `Write the comment ONLY in the same language as the post${quote ? ` — the language of this text: "${quote}"` : ""}. Do NOT use Korean. Do not use English unless the post itself is in English.`;
+}
 export const langOf = (v: unknown): CommentLang => (v === "en" || v === "ja" ? v : "ko");
 
 /**
@@ -171,38 +185,67 @@ export const langOf = (v: unknown): CommentLang => (v === "en" || v === "ja" ? v
  * 해시태그는 **본문이 없을 때만** 본다 — 한국어 글에도 #running #nrc 같은 영어 태그가 흔해서
  * 본문과 같이 세면 한국어 글이 영어로 넘어간다(2026-11-07 사용자 제안으로 ② 추가).
  */
-type LangScore = { ko: number; ja: number; en: number; total: number };
+type LangScore = { ko: number; ja: number; zh: number; ru: number; oth: number; en: number; latinOther: boolean; total: number };
+// 로마자 글이 영어인지 — 흔한 낱말로 가른다(헷갈리는 a · e · o · in 같은 낱말은 뺐다)
+const EN_WORDS = new Set("the and is are to of my for with this that it you your on so was have just what love".split(" "));
+const LATIN_OTHER_WORDS = new Set((
+  "que el los las por para una muy pero del mis como esta este con " +
+  "não uma muito meu minha com você está isso " +
+  "les et des une est pour avec je très c'est mais pas sur dans " +
+  "und der die das ist nicht mit ich ein eine auf für noch auch " +
+  "che il per non sono molto della questo " +
+  "dan yang ini itu aku untuk dengan tidak sangat " +
+  "ve bir bu çok için ile"
+).split(" "));
 function scoreLang(text: string): LangScore {
   const count = (re: RegExp) => (text.match(re) || []).length;
   const ko = count(/[가-힣]/g);
-  const ja = count(/[぀-ヿ]/g);
-  const en = count(/[A-Za-z]/g) / 2.5;   // 영문은 글자당 정보가 적어 한글 1자 ≈ 영문 2.5자로 본다
-  return { ko, ja, en, total: ko + ja + en };
+  const kana = count(/[぀-ヿ]/g);
+  const han = count(/[一-鿿]/g);
+  const ru = count(/[Ѐ-ӿ]/g);
+  const oth = count(/[\u0e00-\u0e7f\u0600-\u06ff\u0590-\u05ff\u0370-\u03ff\u0900-\u097f]/g);   // 태국 · 아랍 · 히브리 · 그리스 · 데바나가리
+  // 한자는 가나가 있으면 일본어로 센다(일본어 글에도 한자가 많다)
+  const ja = kana + (kana ? han : 0);
+  const zh = kana ? 0 : han;
+  const en = count(/[A-Za-z\u00c0-\u024f]/g) / 2.5;   // 영문은 글자당 정보가 적어 한글 1자 ≈ 영문 2.5자로 본다
+  const words = (text.toLowerCase().match(/[a-z\u00c0-\u024f']+/g) || []);
+  const enHits = words.filter((w) => EN_WORDS.has(w)).length;
+  const otherHits = words.filter((w) => LATIN_OTHER_WORDS.has(w)).length
+    + (count(/[ñçãõßğşı¿¡]/gi) >= 1 ? 1 : 0) + (count(/[áéíóúàèìòùâêîôûäöü]/gi) >= 3 ? 1 : 0);
+  const latinOther = otherHits >= 2 && otherHits > enHits;
+  return { ko, ja, zh, ru, oth, en, latinOther, total: ko + ja + zh + ru + oth + en };
 }
-function dominant({ ko, ja, en, total }: LangScore): CommentLang {
+function dominant(sc: LangScore): CommentLang {
+  const { ko, ja, zh, ru, oth, en, total } = sc;
   if (ja / total > 0.3 && ja >= ko) return "ja";
-  if (en > ko && en > ja) return "en";
-  return "ko";
+  const best = Math.max(ko, zh, ru, oth, en);
+  if (ko > 0 && best === ko) return "ko";
+  if (zh > 0 && best === zh) return "zh";
+  if (ru > 0 && best === ru) return "ru";
+  if (oth > 0 && best === oth) return "other";
+  return sc.latinOther ? "other" : "en";
 }
-export function commentLanguage(caption: string, fallback: CommentLang = "ko", author = ""): { code: CommentLang; rule: string; source: "body" | "tags" | "fallback" } {
+export function commentLanguage(caption: string, fallback: CommentLang = "ko", author = ""): { code: CommentLang; rule: string; source: "body" | "tags" | "fallback"; sample: string } {
   // 글쓴이 아이디 · 아이디처럼 생긴 낱말(밑줄 · 점이 낀 영숫자, 예 ya_runlife)은 언어로 세지 않는다 —
   // 앱이 피드 카드에서 본문을 읽을 때 아이디가 섞여 짧은 한글 글이 영어로 판정됐다(2026-11-08)
   const who = String(author || "").trim();
   let raw = String(caption || "").replace(/https?:\/\/\S+/g, " ");
   if (who) raw = raw.split(who).join(" ");
   raw = raw.replace(/(^|\s)(?=[A-Za-z0-9._]*[._])[A-Za-z0-9._]{3,30}(?=\s|$)/g, " ");
-  const body = scoreLang(raw.replace(/[#@][^\s#@]+/g, " "));
-  const tags = scoreLang((raw.match(/#[^\s#@]+/g) || []).map((x) => x.slice(1)).join(" "));
-  const pick = (code: CommentLang, source: "body" | "tags" | "fallback") => ({ code, rule: LANG_RULE[code], source });
-  if (body.total >= 4) return pick(dominant(body), "body");
-  if (tags.total >= 3) return pick(dominant(tags), "tags");
-  return pick(fallback, "fallback");
+  const bodyText = raw.replace(/[#@][^\s#@]+/g, " ");
+  const body = scoreLang(bodyText);
+  const tagText = (raw.match(/#[^\s#@]+/g) || []).map((x) => x.slice(1)).join(" ");
+  const tags = scoreLang(tagText);
+  const pick = (code: CommentLang, source: "body" | "tags" | "fallback", sample: string) => ({ code, rule: langRule(code, sample), source, sample });
+  if (body.total >= 4) return pick(dominant(body), "body", bodyText);
+  if (tags.total >= 3) return pick(dominant(tags), "tags", tagText);
+  return pick(fallback, "fallback", "");
 }
 
 /**
  * 만든 댓글이 정한 언어를 지켰나. 어기면 한 번 다시 만들고, 그래도 어기면 건너뛴다.
  *   ko — 글에 없던 영어 단어(2글자 이상)가 있으면 어김. 글에 나온 고유명사 · 브랜드는 봐준다
- *   en · ja — 한글이 있으면 어김
+ *   그 밖 — 한글이 있으면 어김. ru 는 키릴 문자가, zh 는 한자가 하나도 없으면 어김(영어로 답한 경우)
  */
 export function languageSlip(code: CommentLang, comment: string, caption: string): string | null {
   if (code === "ko") {
@@ -212,7 +255,10 @@ export function languageSlip(code: CommentLang, comment: string, caption: string
     return foreign.length ? foreign.join(", ") : null;
   }
   const hangul = comment.match(/[\uac00-\ud7a3]+/g);
-  return hangul ? hangul.join(" ") : null;
+  if (hangul) return hangul.join(" ");
+  if (code === "ru" && !/[Ѐ-ӿ]/.test(comment)) return "키릴 문자가 없음";
+  if (code === "zh" && !/[一-鿿]/.test(comment)) return "한자가 없음";
+  return null;
 }
 
 function extractJson(raw: string): Record<string, unknown> | null {
@@ -545,18 +591,21 @@ export function replyPoliteness(style: string | undefined, customGuide: string |
  *      ("Love it 😍" 같은 짧은 영어 댓글이 본문 언어(한국어)로 넘어가지 않게. commentLanguage 는 피드 본문용이라 4점이 문턱이다)
  *   ③ 이모지뿐이면 본문 언어(commentLanguage, 내 아이디는 빼고) ④ 그래도 모르면 앱의 「우선 언어」
  */
-export function replyLanguage(commentText: string, caption: string, fallback: CommentLang, commentAuthor = "", owner = ""): { code: CommentLang; source: "comment" | "caption" | "fallback" } {
+export function replyLanguage(commentText: string, caption: string, fallback: CommentLang, commentAuthor = "", owner = ""): { code: CommentLang; source: "comment" | "caption" | "fallback"; sample: string } {
   const fromComment = commentLanguage(commentText, fallback, commentAuthor);
-  if (fromComment.source !== "fallback") return { code: fromComment.code, source: "comment" };
+  if (fromComment.source !== "fallback") return { code: fromComment.code, source: "comment", sample: fromComment.sample };
   let bare = String(commentText || "").replace(/https?:\/\/\S+/g, " ").replace(/[#@][^\s#@]+/g, " ");
   if (commentAuthor) bare = bare.split(commentAuthor).join(" ");
   const s = scoreLang(bare);
-  if (s.ja >= 1 && s.ja >= s.ko) return { code: "ja", source: "comment" };
-  if (s.ko >= 1) return { code: "ko", source: "comment" };
-  if (s.en * 2.5 >= 3) return { code: "en", source: "comment" };
+  if (s.ja >= 1 && s.ja >= s.ko) return { code: "ja", source: "comment", sample: bare };
+  if (s.ko >= 1) return { code: "ko", source: "comment", sample: bare };
+  if (s.ru >= 1) return { code: "ru", source: "comment", sample: bare };
+  if (s.zh >= 1) return { code: "zh", source: "comment", sample: bare };
+  if (s.oth >= 1) return { code: "other", source: "comment", sample: bare };
+  if (s.en * 2.5 >= 3) return { code: s.latinOther ? "other" : "en", source: "comment", sample: bare };
   const fromCaption = commentLanguage(caption, fallback, owner);
-  if (fromCaption.source !== "fallback") return { code: fromCaption.code, source: "caption" };
-  return { code: fallback, source: "fallback" };
+  if (fromCaption.source !== "fallback") return { code: fromCaption.code, source: "caption", sample: fromCaption.sample };
+  return { code: fallback, source: "fallback", sample: "" };
 }
 
 /**
@@ -606,8 +655,8 @@ function replyPolicy(politeness: "polite" | "casual") {
 - 한 문장, 40자 안팎을 넘기지 않습니다.`;
 }
 
-function replyLangRule(code: CommentLang, politeness: "polite" | "casual"): string {
-  if (code !== "ko") return LANG_RULE[code].replace("the comment", "the reply");
+function replyLangRule(code: CommentLang, politeness: "polite" | "casual", sample = ""): string {
+  if (code !== "ko") return langRule(code, sample).replace("the comment", "the reply").replace("评论", "回复");
   return politeness === "casual"
     ? "한국어로만 쓰세요. 영어 단어 · 영어 감탄사 · 로마자를 섞지 마세요(본문 · 댓글에 나온 고유명사만 예외). 끝맺음은 계정 주인의 평소 말투를 따르세요."
     : LANG_RULE.ko;
@@ -624,7 +673,7 @@ export async function generateIgReply(input: AiReplyInput): Promise<AiReplyResul
   const must = custom ? style.must : REPLY_MUST[styleOf(input.style)];
   const politeness = replyPoliteness(custom ? "custom" : input.style, custom || undefined);
   const lang = replyLanguage(input.commentText, input.caption, input.fallbackLang ?? "ko", input.commentAuthor, input.owner);
-  const rule = replyLangRule(lang.code, politeness);
+  const rule = replyLangRule(lang.code, politeness, lang.sample);
   const system = `${REPLY_BASE}\n\n[스타일 — ${style.label}]\n${style.guide}`
     + `${tone ? `\n\n[사용자가 정한 말투 · 계정 성격]\n${tone}` : ""}\n\n${replyPolicy(politeness)}`
     + `\n\n[이 답글의 언어 — 무엇보다 우선]\n${rule}`
