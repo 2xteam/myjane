@@ -78,7 +78,7 @@ export default async function SharePage() {
                         flex: "0 0 auto",
                         display: "grid",
                         placeItems: "center",
-                        background: "var(--sheet-dark, #116271)",
+                        background: "var(--sheet-dark, #962fbf)",
                         color: "#fff",
                         fontSize: l.emoji ? 26 : 18,
                         fontWeight: 800,

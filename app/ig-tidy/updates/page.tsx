@@ -50,8 +50,8 @@ export default async function IgTidyUpdates() {
               <div style={{ display: "flex", gap: 8, alignItems: "baseline", flexWrap: "wrap" }}>
                 <b style={{ fontSize: "1.05rem" }}>{r.version}</b>
                 <span className="lead" style={{ fontSize: "0.85rem", margin: 0 }}>{date(r.publishedAt)}</span>
-                {i === 0 ? <span style={{ fontSize: "0.75rem", padding: "2px 8px", borderRadius: 999, background: "var(--accent, #116271)", color: "var(--on-accent)" }}>최신</span> : null}
-                {r.mandatory ? <span style={{ fontSize: "0.75rem", padding: "2px 8px", borderRadius: 999, border: "1px solid #c9a84c" }}>꼭 올려야 해요</span> : null}
+                {i === 0 ? <span style={{ fontSize: "0.75rem", padding: "2px 8px", borderRadius: 999, background: "var(--accent, #962fbf)", color: "var(--on-accent)" }}>최신</span> : null}
+                {r.mandatory ? <span style={{ fontSize: "0.75rem", padding: "2px 8px", borderRadius: 999, border: "1px solid #fa7e1e" }}>꼭 올려야 해요</span> : null}
               </div>
               <p className="lead" style={{ margin: "6px 0 0", whiteSpace: "pre-line", fontSize: "0.95rem" }}>{r.notes || "바뀐 점을 적지 않았어요."}</p>
             </li>

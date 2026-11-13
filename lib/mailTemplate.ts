@@ -15,10 +15,10 @@
  */
 
 /** 먹청 팔레트에서 옮겨 온 값. palette.json 을 바꾸면 여기도 함께 고친다 */
-const INK = "#116271";
-const INK_DEEP = "#0d5866";
-const TEXT = "#0f2027";
-const DIM = "#566b70";
+const INK = "#962fbf";
+const INK_DEEP = "#7e24a3";
+const TEXT = "#1c1c1e";
+const DIM = "#5c5866";
 const FAINT = "#8a9a9e";
 const DANGER = "#a83447";
 

@@ -2,8 +2,8 @@
 
 /*
  * myjane 팔레트 — 먹청(Petrol).
- *   옅은 청백 #F7FBFB 바탕 위에 먹청 #116271.
- *   금 #C9A84C 은 배지·구분선 같은 좁은 면적에만.
+ *   옅은 청백 #F6F3FB 바탕 위에 먹청 #962fbf.
+ *   금 #FA7E1E 은 배지·구분선 같은 좁은 면적에만.
  *   구조는 결쩜사 패턴 그대로 — 시트를 쌓고 **짙은 시트로 히어로를 잡고
  *   어두운 푸터로 닫는다.**
  *
@@ -163,8 +163,8 @@ a {
 .site-nav a.cta {
   padding: 9px 16px;
   border-radius: 999px;
-  background: linear-gradient(135deg, #14788a, #0d5866);
-  box-shadow: 0 10px 24px rgba(6, 60, 72, 0.22);
+  background: linear-gradient(135deg, #962fbf, #7e24a3);
+  box-shadow: 0 10px 24px rgba(214, 41, 118, 0.22);
   color: var(--on-accent);
 }
 
@@ -185,7 +185,7 @@ a {
   border-radius: 24px;
   background: var(--surface);
   /* 흰 시트와 바탕은 1.04:1 이라 색으로는 안 갈린다. 분리는 이 그림자가 한다 */
-  box-shadow: 0 24px 65px rgba(6, 34, 40, 0.1);
+  box-shadow: 0 24px 65px rgba(40, 20, 70, 0.1);
 }
 
 .sheet--tint {
@@ -202,10 +202,10 @@ a {
  */
 .sheet--dark {
   background:
-    radial-gradient(circle at 78% 16%, rgba(95, 184, 201, 0.16), transparent 36%),
-    linear-gradient(150deg, #071c22, #0e3037 65%, #134450);
-  color: #eef7f8;
-  box-shadow: 0 24px 65px rgba(6, 34, 40, 0.2);
+    radial-gradient(circle at 78% 16%, rgba(246, 165, 211, 0.16), transparent 36%),
+    linear-gradient(150deg, #120f1c, #1d1330 65%, #2a1238);
+  color: #f6f2fb;
+  box-shadow: 0 24px 65px rgba(40, 20, 70, 0.2);
 }
 
 /* 시트 머리 */
@@ -219,7 +219,7 @@ a {
 
 /* 짙은 시트에서는 금색. 밝은 면에서는 2.19:1 이라 못 쓰지만 여기서는 9.62:1 이다 */
 .sheet--dark .eyebrow {
-  color: #ead58c;
+  color: #feda75;
 }
 
 
@@ -241,11 +241,11 @@ a {
 }
 
 .sheet--dark .headline {
-  color: #eef7f8;
+  color: #f6f2fb;
 }
 
 .sheet--dark .lead {
-  color: rgba(230, 244, 246, 0.74);
+  color: rgba(255, 255, 255, 0.74);
 }
 
 .lead {
@@ -269,7 +269,7 @@ a {
   margin-bottom: 20px;
   border-radius: 999px;
   background: rgba(255, 255, 255, 0.1);
-  border: 1px solid rgba(150, 205, 216, 0.3);
+  border: 1px solid rgba(255, 255, 255, 0.3);
   font-size: 12px;
   color: #d8ecef;
 }
@@ -292,20 +292,20 @@ a {
 }
 
 .btn-primary {
-  background: linear-gradient(135deg, #14788a, #0d5866);
-  box-shadow: 0 10px 24px rgba(6, 60, 72, 0.22);
+  background: linear-gradient(135deg, #962fbf, #7e24a3);
+  box-shadow: 0 10px 24px rgba(214, 41, 118, 0.22);
   color: var(--on-accent);
 }
 
 /* 보조 버튼 — 짙은 시트 위에 놓이므로 반투명 + 흰 글자 */
 .btn-ghost {
   background: rgba(255, 255, 255, 0.08);
-  border: 1px solid rgba(150, 205, 216, 0.32);
-  color: #eef7f8;
+  border: 1px solid rgba(255, 255, 255, 0.32);
+  color: #f6f2fb;
 }
 
 .btn-ghost:hover {
-  border-color: rgba(150, 205, 216, 0.55);
+  border-color: rgba(255, 255, 255, 0.55);
 }
 
 /* 앱 카드 그리드 */
@@ -346,7 +346,7 @@ a {
 .card:focus-visible {
   border-color: var(--border-strong);
   transform: translateY(-3px);
-  box-shadow: 0 18px 40px rgba(6, 34, 40, 0.13);
+  box-shadow: 0 18px 40px rgba(40, 20, 70, 0.13);
 }
 
 .card-head {
@@ -487,8 +487,8 @@ a {
 /* 어두운 푸터 — 밝은 페이지를 닫는다 (결쩜사 패턴) */
 .site-footer {
   padding: clamp(34px, 5vw, 56px) 20px;
-  background: #061a1f;
-  color: rgba(230, 244, 246, 0.68);
+  background: #120f1c;
+  color: rgba(255, 255, 255, 0.68);
   text-align: center;
   font-size: 0.78rem;
   line-height: 2;
@@ -501,7 +501,7 @@ a {
   margin-bottom: 14px;
   font-size: 1rem;
   font-weight: 800;
-  color: #eef7f8;
+  color: #f6f2fb;
 }
 
 .site-footer-brand img {
@@ -510,7 +510,7 @@ a {
 
 /* 어두운 푸터에서는 my 를 청백, jane 을 밝은 먹청으로 */
 .site-footer-brand .brand-word > span {
-  color: #5fb8c9;
+  color: #f6a5d3;
 }
 
 .site-footer-logout {
@@ -520,7 +520,7 @@ a {
   font-family: inherit;
   font-size: inherit;
   font-weight: 600;
-  color: rgba(230, 244, 246, 0.86);
+  color: rgba(255, 255, 255, 0.86);
   cursor: pointer;
 }
 
@@ -529,7 +529,7 @@ a {
 }
 
 .site-footer a {
-  color: rgba(230, 244, 246, 0.86);
+  color: rgba(255, 255, 255, 0.86);
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -621,7 +621,7 @@ a {
   inset: -20%;
   z-index: 0;
   background:
-    linear-gradient(104deg, transparent 49.9%, rgba(17, 98, 113, 0.09) 50%,
+    linear-gradient(104deg, transparent 49.9%, rgba(150, 47, 191, 0.09) 50%,
       transparent 50.1%);
   pointer-events: none;
 }
@@ -636,7 +636,7 @@ a {
   max-width: 700px;
   border-radius: 24px;
   overflow: hidden;
-  box-shadow: 0 24px 65px rgba(6, 34, 40, 0.14);
+  box-shadow: 0 24px 65px rgba(40, 20, 70, 0.14);
 }
 
 @media (min-width: 860px) {
@@ -661,12 +661,12 @@ a {
     align-self: stretch;
     margin: 0;
     border-radius: 24px 0 0 24px;
-    box-shadow: 0 24px 65px rgba(6, 34, 40, 0.14);
+    box-shadow: 0 24px 65px rgba(40, 20, 70, 0.14);
   }
 
   .auth-shell > .auth-card {
     border-radius: 0 24px 24px 0;
-    box-shadow: 0 24px 65px rgba(6, 34, 40, 0.14);
+    box-shadow: 0 24px 65px rgba(40, 20, 70, 0.14);
   }
 }
 
@@ -676,9 +676,9 @@ a {
   overflow: hidden;
   padding: 30px 28px;
   background:
-    radial-gradient(circle at 72% 20%, rgba(95, 184, 201, 0.16), transparent 34%),
-    linear-gradient(150deg, #071c22, #0e3037 65%, #134450);
-  color: #eef7f8;
+    radial-gradient(circle at 72% 20%, rgba(246, 165, 211, 0.16), transparent 34%),
+    linear-gradient(150deg, #120f1c, #1d1330 65%, #2a1238);
+  color: #f6f2fb;
   display: flex;
   flex-direction: column;
   justify-content: flex-end;
@@ -704,7 +704,7 @@ a {
   font-size: 9px;
   font-weight: 900;
   letter-spacing: 2px;
-  color: #ead58c;
+  color: #feda75;
 }
 
 .auth-headline {
@@ -715,7 +715,7 @@ a {
   font-weight: 700;
   line-height: 1.42;
   letter-spacing: -0.8px;
-  color: #eef7f8;
+  color: #f6f2fb;
   word-break: keep-all;
 }
 
@@ -723,7 +723,7 @@ a {
   margin: 14px 0 0;
   font-size: 12.5px;
   line-height: 1.75;
-  color: rgba(230, 244, 246, 0.74);
+  color: rgba(255, 255, 255, 0.74);
   word-break: keep-all;
 }
 
@@ -775,7 +775,7 @@ a {
   background: var(--surface);
   color: var(--text);
   font-weight: 800;
-  box-shadow: 0 4px 15px rgba(6, 34, 40, 0.09);
+  box-shadow: 0 4px 15px rgba(40, 20, 70, 0.09);
 }
 
 .auth-title {
@@ -853,8 +853,8 @@ a {
   margin-top: 10px;
   border: none;
   border-radius: 11px;
-  background: linear-gradient(135deg, #14788a, #0d5866);
-  box-shadow: 0 10px 24px rgba(6, 60, 72, 0.22);
+  background: linear-gradient(135deg, #962fbf, #7e24a3);
+  box-shadow: 0 10px 24px rgba(214, 41, 118, 0.22);
   color: var(--on-accent);
   font-size: 15px;
   font-weight: 700;

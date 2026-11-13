@@ -141,7 +141,22 @@ function rgb(v) {
   return [0, 2, 4].map((i) => parseInt(h.slice(i, i + 2), 16));
 }
 
-const palette = JSON.parse(await readFile(SRC, "utf8"));
+const base = JSON.parse(await readFile(SRC, "utf8"));
+
+/**
+ * 앱별 덮어쓰기(`apps.<dir>`)를 공통 값 위에 얹은 팔레트.
+ * 덮어쓰기는 라이트 · 면(surfaces)만 받는다 — 다크가 있는 앱에는 아직 쓰지 않는다.
+ */
+function paletteFor(dir) {
+  const o = base.apps?.[dir];
+  if (!o) return base;
+  return {
+    ...base,
+    roles: { ...base.roles, light: { ...base.roles.light, ...(o.light ?? {}) } },
+    surfaces: { ...base.surfaces, ...(o.surfaces ?? {}) },
+  };
+}
+let palette = base;
 
 /** "light.text" · "surfaces.footerBg" 같은 경로를 따라간다 */
 function resolve(ref) {
@@ -156,10 +171,14 @@ function resolve(ref) {
 }
 
 // ───────────────────────────── 대비 관문
-console.log("── 대비 검사 ──");
+// 공통 팔레트 한 번 + 덮어쓰기가 있는 앱마다 한 번. 다크 검사는 덮어쓰기와 무관하므로 공통에서만.
 let failed = 0;
 let skipped = 0;
+for (const target of [null, ...Object.keys(base.apps ?? {})]) {
+palette = target ? paletteFor(target) : base;
+console.log(target ? `\n── 대비 검사 · ${target} 덮어쓰기 ──` : "── 대비 검사 ──");
 for (const [fgRef, bgRef, min, label] of palette.checks) {
+  if (target && JSON.stringify([fgRef, bgRef]).includes("dark.")) continue;
   // 앞도 뒤도 배열을 받는다. 배열은 **그라디언트의 양 끝**이라는 뜻이고,
   // 모든 조합 중 가장 나쁜 값을 본다. 진행 띠처럼 칠 자체가 그라디언트인
   // 자리가 생겨서 앞쪽에도 배열을 허용했다 (전에는 뒤쪽만 됐다).
@@ -180,8 +199,10 @@ for (const [fgRef, bgRef, min, label] of palette.checks) {
       (ok ? "" : `   (${JSON.stringify(fgRef)} on ${JSON.stringify(bgRef)})`),
   );
 }
+}
+palette = base;
 console.log(
-  `\n검사 ${palette.checks.length}건 · 미달 ${failed}건` +
+  `\n검사 ${palette.checks.length}건(+앱별 덮어쓰기) · 미달 ${failed}건` +
     (skipped ? ` · 계산 불가 ${skipped}건` : ""),
 );
 if (failed > 0) {
@@ -251,7 +272,9 @@ for (const app of APPS) {
     console.log(`  ✗ ${app.dir} — app 폴더가 없다`);
     continue;
   }
-  const parts = [HEADER(palette.name)];
+  palette = paletteFor(app.dir);
+  const own = base.apps?.[app.dir] ? ` + ${app.dir} 전용 덮어쓰기 (palette.json 의 apps.${app.dir})` : "";
+  const parts = [HEADER(palette.name + own)];
   if (app.vocab === "myjane") {
     parts.push(block(":root", "myjane", palette.roles.light));
   } else if (app.dark) {

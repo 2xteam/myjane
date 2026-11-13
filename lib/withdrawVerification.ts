@@ -61,7 +61,7 @@ async function sendWithdrawMail(to: string, name: string, token: string) {
         "<p><strong>회원 탈퇴</strong>를 요청하셨습니다. 아래 버튼을 누르면 탈퇴가 완료됩니다.</p>" +
         '<div style="background:#fdf0f2;border:1px solid #f3d4da;border-radius:12px;padding:14px 16px;margin:18px 0;">' +
         '<p style="margin:0 0 6px;font-weight:700;color:#a83447;">탈퇴하면 이렇게 됩니다</p>' +
-        '<ul style="margin:0;padding-left:18px;color:#566b70;font-size:13px;line-height:1.7;">' +
+        '<ul style="margin:0;padding-left:18px;color:#5c5866;font-size:13px;line-height:1.7;">' +
         "<li>myjane · SnapWord · SnapNote · FitLog · 2hbk · TypeLog <strong>여섯 서비스가 함께 닫힙니다</strong></li>" +
         "<li>기록은 <strong>6개월 동안 보관한 뒤 폐기</strong>합니다</li>" +
         "<li>그 6개월 안에는 로그인 화면에서 되살릴 수 있습니다</li>" +

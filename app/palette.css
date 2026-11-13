@@ -4,31 +4,31 @@
  * 원본은 myjane/design/palette.json 하나다. 색을 바꾸려면 거기를 고치고
  * myjane 에서 `npm run palette -- --write` 를 돌린다. 여섯 앱이 함께 갱신된다.
  *
- * 팔레트: 먹청 (Petrol)
+ * 팔레트: 인스타 그라디언트 (TypeLog 계열, 2026-11-14)
  * 근거: my-obsidian-vault → 20-Design/먹청 톤 팔레트.md
  */
 
 :root {
-  --bg: #f7fbfb;
+  --bg: #f6f3fb;
   --surface: #ffffff;
-  --surface-hover: #e8f2f3;
-  --border: rgba(17, 98, 113, 0.14);
-  --border-strong: rgba(17, 98, 113, 0.42);
-  --text: #0f2027;
-  --text-dim: #566b70;
-  --accent: #116271;
-  --accent-ink: #116271;
-  --accent-soft: rgba(17, 98, 113, 0.08);
-  --gold-from: #1a7f8f;
-  --gold-to: #0d5866;
-  --gold: #c9a84c;
-  --gold-soft: rgba(201, 168, 76, 0.12);
-  --point-ink: #725c1a;
-  --progress-from: #116271;
-  --progress-to: #a8842f;
+  --surface-hover: #efe9f7;
+  --border: rgba(150, 47, 191, 0.16);
+  --border-strong: rgba(150, 47, 191, 0.42);
+  --text: #1c1c1e;
+  --text-dim: #5c5866;
+  --accent: #962fbf;
+  --accent-ink: #7a2399;
+  --accent-soft: rgba(150, 47, 191, 0.08);
+  --gold-from: #b13ad8;
+  --gold-to: #7e24a3;
+  --gold: #fa7e1e;
+  --gold-soft: rgba(250, 126, 30, 0.14);
+  --point-ink: #a4470b;
+  --progress-from: #962fbf;
+  --progress-to: #d62976;
   --on-accent: #ffffff;
-  --placeholder: #5e7377;
-  --text-muted: #5e7377;
+  --placeholder: #6b6676;
+  --text-muted: #5f5b69;
   --danger: #e0455f;
   --danger-subtle: rgba(224, 69, 95, 0.1);
   --danger-ink: #a83447;
@@ -45,18 +45,18 @@
    * ⚠️ 이 값들을 리터럴로 다시 쓰지 말 것. 지난 두 번의 색 교체에서 가장
    * 손이 많이 간 자리가 정확히 여기였다.
    */
-  --sheet-dark: linear-gradient(150deg, #071c22, #0e3037 65%, #134450);
-  --sheet-dark-glow: rgba(95, 184, 201, 0.16);
-  --footer-bg: #061a1f;
-  --btn-gradient: linear-gradient(135deg, #14788a, #0d5866);
-  --btn-shadow: rgba(6, 60, 72, 0.22);
+  --sheet-dark: linear-gradient(150deg, #120f1c, #1d1330 65%, #2a1238);
+  --sheet-dark-glow: rgba(214, 41, 118, 0.2);
+  --footer-bg: #120f1c;
+  --btn-gradient: linear-gradient(135deg, #962fbf, #d62976);
+  --btn-shadow: rgba(214, 41, 118, 0.28);
   /* 짙은 면 위에 얹는 색 — 밝은 면용 토큰을 쓰면 2~3:1 로 떨어진다 */
-  --on-dark: #eef7f8;
-  --on-dark-dim: rgba(230, 244, 246, 0.74);
-  --on-dark-faint: rgba(230, 244, 246, 0.68);
-  --border-on-dark: rgba(150, 205, 216, 0.3);
-  --accent-on-dark: #5fb8c9;
-  --gold-on-dark: #ead58c;
+  --on-dark: #ffffff;
+  --on-dark-dim: rgba(255, 255, 255, 0.74);
+  --on-dark-faint: rgba(255, 255, 255, 0.64);
+  --border-on-dark: rgba(255, 255, 255, 0.16);
+  --accent-on-dark: #f6a5d3;
+  --gold-on-dark: #feda75;
   /* 그림자 — rgba() 안에 넣어 쓴다: rgba(var(--shadow-rgb), 0.1) */
-  --shadow-rgb: 6, 34, 40;
+  --shadow-rgb: 40, 20, 70;
 }
