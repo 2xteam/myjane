@@ -6,6 +6,7 @@ import { Suspense, useCallback, useMemo, useState, type CSSProperties } from "re
 import { AuthShell, AuthTabs } from "@/components/AuthShell";
 import { buildReturnUrl, getApp } from "@/lib/apps";
 import { saveSession, type SessionUser } from "@/lib/session";
+import { SocialButtons } from "@/components/SocialButtons";
 
 /**
  * 통합 회원가입.
@@ -222,6 +223,8 @@ function SignupForm() {
       ) : (
         <>
           <h2 className="auth-title">처음 오셨네요</h2>
+          {/* 구글 · 카카오 · 네이버로도 가입된다 — 로그인 화면과 같은 버튼(사용자 2026-11-14) */}
+          <SocialButtons from={params.get("from")} next={params.get("next")} disabled={busy} divider="또는 이메일로 가입" />
           <p className="auth-sub">이메일과 비밀번호로 계정을 만들어요</p>
 
           <form
