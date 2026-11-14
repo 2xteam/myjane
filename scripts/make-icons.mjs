@@ -18,10 +18,10 @@ const SRC = path.join(process.cwd(), "public", "app-icon.svg");
 
 /** 이름 → 크기. 이 파일들을 실제로 참조하는 곳은 아래 주석 참고 */
 const TARGETS = [
-  ["myjane-icon.png", 512], // 랜딩·AuthShell 로고 (app/page.tsx · components/AuthShell.tsx)
-  ["icon-192.png", 192], // PWA · metadata.icons
-  ["apple-touch-icon.png", 180], // iOS 홈 화면
-  ["favicon-32.png", 32], // 탭
+  ["myjane-icon-v2.png", 512], // 랜딩·AuthShell 로고 (app/page.tsx · components/AuthShell.tsx)
+  ["icon-192-v2.png", 192], // PWA · metadata.icons
+  ["apple-touch-icon-v2.png", 180], // iOS 홈 화면
+  ["favicon-32-v2.png", 32], // 탭
 ];
 
 const svg = await readFile(SRC);

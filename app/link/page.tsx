@@ -64,7 +64,7 @@ const LINKS = [
     role: "성향 기록",
     href: "https://typelog.myjane.co.kr",
     domain: "typelog.myjane.co.kr",
-    icon: "/typelog-icon.png",
+    icon: "/typelog-icon-v2.png",
     desc: "질문에 답하면 나와 가까운 타입이 나와요. 러너 16유형도 있어요. 다시 하면 그 변화가 쌓여요.",
   },
   {
@@ -72,7 +72,7 @@ const LINKS = [
     role: "건강 기록",
     href: "https://fitlog.myjane.co.kr",
     domain: "fitlog.myjane.co.kr",
-    icon: "/fitlog-icon.png",
+    icon: "/fitlog-icon-v2.png",
     desc: "인바디·피검사 결과지를 찍으면 항목을 읽어 날짜별로 쌓고, 벗어난 수치에 근거 있는 권장사항을 붙여요.",
   },
   {
@@ -80,7 +80,7 @@ const LINKS = [
     role: "공부 기록",
     href: "https://snapword.myjane.co.kr",
     domain: "snapword.myjane.co.kr",
-    icon: "/snapword-icon.png",
+    icon: "/snapword-icon-v2.png",
     desc: "교재나 화면을 찍으면 단어와 뜻을 뽑아 단어장으로. 테스트까지 이어져요.",
   },
   {
@@ -88,7 +88,7 @@ const LINKS = [
     role: "공부 기록",
     href: "https://snapnote.myjane.co.kr",
     domain: "snapnote.myjane.co.kr",
-    icon: "/snapnote-icon.png",
+    icon: "/snapnote-icon-v2.png",
     desc: "틀린 문제를 찍어 모노톤으로 정리한 나만의 오답노트. 폴더로 묶고 인쇄해요.",
   },
   {
@@ -96,7 +96,7 @@ const LINKS = [
     role: "습관 기록",
     href: "https://2hbk.myjane.co.kr",
     domain: "2hbk.myjane.co.kr",
-    icon: "/2hbk-icon.png",
+    icon: "/2hbk-icon-v2.png",
     desc: "목표에 스티커를 모아 채워요. 혼자 해도, 친구와 같이 해도 돼요.",
   },
   {
@@ -104,7 +104,7 @@ const LINKS = [
     role: "마음 쉼",
     href: "https://calmtouch.myjane.co.kr",
     domain: "calmtouch.myjane.co.kr",
-    icon: "/calmtouch-icon.png",
+    icon: "/calmtouch-icon-v2.png",
     desc: "물감·물결·별·슬라임을 손끝으로 만져요. 손을 떼면 잔잔해져요. 로그인 없이 바로.",
   },
 ] as const;
@@ -159,7 +159,7 @@ export default function LinkPage() {
     <div className="legal">
       <header className="auth-topbar">
         <Link href="/" className="auth-brand">
-          <Image src="/myjane-icon.png" alt="" width={26} height={26} />
+          <Image src="/myjane-icon-v2.png" alt="" width={26} height={26} />
           <span className="brand-word">
             my<span>jane</span>
           </span>

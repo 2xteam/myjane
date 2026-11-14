@@ -68,7 +68,7 @@ export const APPS: Record<AppKey, AppInfo> = {
     devPort: 3001,
     name: "SnapWord",
     origin: "https://snapword.myjane.co.kr",
-    icon: "/snapword-icon.png",
+    icon: "/snapword-icon-v2.png",
     requiresSessionToken: true,
   },
   snapnote: {
@@ -76,7 +76,7 @@ export const APPS: Record<AppKey, AppInfo> = {
     devPort: 3002,
     name: "SnapNote",
     origin: "https://snapnote.myjane.co.kr",
-    icon: "/snapnote-icon.png",
+    icon: "/snapnote-icon-v2.png",
     requiresSessionToken: true,
   },
   fitlog: {
@@ -84,7 +84,7 @@ export const APPS: Record<AppKey, AppInfo> = {
     devPort: 3003,
     name: "FitLog",
     origin: "https://fitlog.myjane.co.kr",
-    icon: "/fitlog-icon.png",
+    icon: "/fitlog-icon-v2.png",
     needsBodyProfile: true,
     requiresSessionToken: true,
   },
@@ -93,7 +93,7 @@ export const APPS: Record<AppKey, AppInfo> = {
     devPort: 3004,
     name: "2hbk",
     origin: "https://2hbk.myjane.co.kr",
-    icon: "/2hbk-icon.png",
+    icon: "/2hbk-icon-v2.png",
     needsNickname: true,
     requiresSessionToken: true,
     particle: "로",
@@ -103,7 +103,7 @@ export const APPS: Record<AppKey, AppInfo> = {
     devPort: 3005,
     name: "TypeLog",
     origin: "https://typelog.myjane.co.kr",
-    icon: "/typelog-icon.png",
+    icon: "/typelog-icon-v2.png",
     /*
       TypeLog 의 API 도 쿠키의 `id` 를 믿지 않고 **서명 토큰**을 검증한다
       (`typelog/lib/auth.ts`). 그래서 토큰 없는 세션으로는 아무것도 못 한다 —
@@ -120,7 +120,7 @@ export const APPS: Record<AppKey, AppInfo> = {
     devPort: 3007,
     name: "CalmTouch",
     origin: "https://calmtouch.myjane.co.kr",
-    icon: "/calmtouch-icon.png",
+    icon: "/calmtouch-icon-v2.png",
     /*
       CalmTouch 는 회원 기능이 없다 — 로그인 없이 쓰고 API 도 없다. 그래서 서명 토큰을
       요구하지 않는다. 저장 기능이 생겨 `lib/auth.ts` 에 verifySessionToken 이 들어오면

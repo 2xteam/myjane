@@ -20,7 +20,7 @@ export default function ConsoleLayout({
       <aside className="adm-side">
         <div className="adm-side-head">
           <Link href="/admin" className="adm-side-brand">
-            <Image src="/myjane-icon.png" alt="" width={26} height={26} className="adm-side-icon" />
+            <Image src="/myjane-icon-v2.png" alt="" width={26} height={26} className="adm-side-icon" />
             <span className="adm-side-word">
               my<span>jane</span>
             </span>

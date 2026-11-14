@@ -39,7 +39,7 @@ const STUDY_APPS: App[] = [
     name: "SnapWord",
     domain: "snapword.myjane.co.kr",
     href: "https://snapword.myjane.co.kr/home",
-    icon: "/snapword-icon.png",
+    icon: "/snapword-icon-v2.png",
     role: "단어장",
     description:
       "교재나 화면을 찍으면 단어와 뜻을 뽑아 단어장으로 만들어요. 외운 것과 틀린 것을 나눠 테스트까지 이어져요.",
@@ -49,7 +49,7 @@ const STUDY_APPS: App[] = [
     name: "SnapNote",
     domain: "snapnote.myjane.co.kr",
     href: "https://snapnote.myjane.co.kr/home",
-    icon: "/snapnote-icon.png",
+    icon: "/snapnote-icon-v2.png",
     role: "오답노트",
     description:
       "틀린 문제를 찍어 모노톤으로 정리해 나만의 오답노트를 만들어요. 폴더로 묶고 인쇄해서 다시 풀어요.",
@@ -63,7 +63,7 @@ const HEALTH_APPS: App[] = [
     name: "FitLog",
     domain: "fitlog.myjane.co.kr",
     href: "https://fitlog.myjane.co.kr/home",
-    icon: "/fitlog-icon.png",
+    icon: "/fitlog-icon-v2.png",
     role: "체성분 · 피검사 기록",
     description:
       "인바디와 피검사 결과지를 찍으면 인쇄된 항목을 모두 읽어 날짜별로 쌓아둬요. 적정 범위와 겹쳐 지금 위치를 보여주고, 벗어난 수치에는 운동·식습관 권장사항을 근거와 함께 붙여요. 어떤 진료지침에서 나온 말인지 펼쳐볼 수 있어요.",
@@ -77,7 +77,7 @@ const HABIT_APPS: App[] = [
     name: "2hbk",
     domain: "2hbk.myjane.co.kr",
     href: "https://2hbk.myjane.co.kr/home",
-    icon: "/2hbk-icon.png",
+    icon: "/2hbk-icon-v2.png",
     role: "스티커 목표",
     description:
       "함히보까 — 목표와 필요한 스티커 수를 정하면 그만큼 빈 칸이 생겨요. 해낼 때마다 목표를 만든 사람이 한 장씩 붙이고, 다 채우면 금색 판으로 바뀌어요. 혼자 해도 되고 친구를 초대해 같이 채워도 돼요.",
@@ -91,7 +91,7 @@ const TYPE_APPS: App[] = [
     name: "TypeLog",
     domain: "typelog.myjane.co.kr",
     href: "https://typelog.myjane.co.kr/home",
-    icon: "/typelog-icon.png",
+    icon: "/typelog-icon-v2.png",
     role: "성향 기록",
     description:
       "질문에 답하면 나와 가까운 타입이 나와요. 몇 달 뒤 다시 해보고 지난 회차와 나란히 두면 무엇이 달라졌는지 보여요. 검사가 아니라 놀이예요.",
@@ -105,7 +105,7 @@ const CALM_APPS: App[] = [
     name: "CalmTouch",
     domain: "calmtouch.myjane.co.kr",
     href: "https://calmtouch.myjane.co.kr/home",
-    icon: "/calmtouch-icon.png",
+    icon: "/calmtouch-icon-v2.png",
     role: "마음 쉼",
     description:
       "물감, 물결, 별, 공, 슬라임. 손끝이 닿는 자리에서 움직이고, 손을 떼면 천천히 잔잔해져요. 정답도 점수도 없고 로그인도 필요 없어요. 잠깐 쉬고 싶을 때 열어요.",
@@ -201,7 +201,7 @@ export default function Home() {
     <div className="site">
       <header className="site-top">
         <Link href="/" className="auth-brand">
-          <Image src="/myjane-icon.png" alt="" width={26} height={26} />
+          <Image src="/myjane-icon-v2.png" alt="" width={26} height={26} />
           <span className="brand-word">
             my<span>jane</span>
           </span>
@@ -406,7 +406,7 @@ export default function Home() {
 
       <footer className="site-footer">
         <div className="site-footer-brand">
-          <Image src="/myjane-icon.png" alt="" width={24} height={24} />
+          <Image src="/myjane-icon-v2.png" alt="" width={24} height={24} />
           <span className="brand-word">
             my<span>jane</span>
           </span>

@@ -32,7 +32,7 @@ export function AuthShell({
     <>
       <header className="auth-topbar">
         <Link href="/" className="auth-brand">
-          <Image src="/myjane-icon.png" alt="" width={26} height={26} />
+          <Image src="/myjane-icon-v2.png" alt="" width={26} height={26} />
           <span className="brand-word">
             my<span>jane</span>
           </span>
