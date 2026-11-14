@@ -17,7 +17,7 @@ type Params = { params: Promise<{ app: string; resource: string }> };
  * 공유 비밀(`ADMIN_API_SECRET`)은 **여기서만** 쓰인다. 브라우저로 내려가지 않는다.
  */
 
-const ALLOWED: AdminFeature[] = ["stats", "notices", "inquiries", "events", "quizzes"];
+const ALLOWED: AdminFeature[] = ["stats", "notices", "inquiries", "events", "quizzes", "referrals"];
 
 /**
  * 리소스 이름과 기능 이름이 다른 경우.

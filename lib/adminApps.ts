@@ -8,7 +8,8 @@
  * 기능이 앱마다 다르다. 없는 탭을 그리면 404 를 부르게 되므로 여기서 선언한다.
  */
 
-export type AdminFeature = "stats" | "notices" | "inquiries" | "events" | "quizzes";
+/** `referrals` — 공유 성과(누구의 결과 링크로 와서 가입까지 이어졌나). 지금은 TypeLog 만 */
+export type AdminFeature = "stats" | "notices" | "inquiries" | "events" | "quizzes" | "referrals";
 
 export type AdminApp = {
   key: string;
@@ -51,7 +52,7 @@ export const ADMIN_APPS: AdminApp[] = [
     name: "TypeLog",
     origin: "https://typelog.myjane.co.kr",
     // 질문지 등록·공개가 이 앱의 관리 기능이다. 공지·문의는 아직 없다
-    features: ["stats", "quizzes"],
+    features: ["stats", "quizzes", "referrals"],
   },
 ];
 
