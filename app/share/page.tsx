@@ -18,7 +18,7 @@ export const revalidate = 60;
  * `/share` — 공유형 링크 모음 (2026-09-10).
  *
  * `/link` 는 서비스 소개 페이지 목록이고, 여기는 **앱 안에서 만들어진 공유 링크**를 모은다.
- * 첫 항목은 TypeLog 러닝 성향 결과 공유(`/r/<token>`) — 친구가 나눈 타입을 보고 로그인 없이 바로 참여한다.
+ * 첫 항목은 TypeLog 러닝 자격증 결과 공유(`/r/<token>`, 2026-11-14) · 둘째가 러닝 성향 — 친구가 나눈 결과를 보고 로그인 없이 바로 참여한다.
  * 목록은 admin(`/admin/share`)에서 등록·수정한다. 켜진 것만 보인다.
  * → models/ShareLink.ts · my-obsidian-vault / 10-Projects/MyJane.md "/share"
  */
