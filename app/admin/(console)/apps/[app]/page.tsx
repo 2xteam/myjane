@@ -5,6 +5,7 @@ import { adminApi, adminErrorMessage } from "@/lib/adminClient";
 import { AppPanel, type AdminFeature } from "../../../AppPanel";
 import { QuizPanel } from "./QuizPanel";
 import { ReferralPanel } from "./ReferralPanel";
+import { LicensePanel } from "./LicensePanel";
 
 /**
  * 서버가 주는 기능 목록은 `AppPanel` 이 아는 것보다 넓다(`quizzes` 가 더 있다).
@@ -61,6 +62,8 @@ export default function AppAdminPage({ params }: { params: Promise<{ app: string
       </div>
 
       {hasQuizzes ? <QuizPanel appKey={appKey} /> : null}
+
+      {info.features.includes("licenses") ? <LicensePanel appKey={appKey} /> : null}
 
       {info.features.includes("referrals") ? <ReferralPanel appKey={appKey} /> : null}
 

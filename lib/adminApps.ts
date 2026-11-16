@@ -9,7 +9,8 @@
  */
 
 /** `referrals` — 공유 성과(누구의 결과 링크로 와서 가입까지 이어졌나). 지금은 TypeLog 만 */
-export type AdminFeature = "stats" | "notices" | "inquiries" | "events" | "quizzes" | "referrals";
+/** `licenses` — 러닝 자격증 목록(시도한 사람들이 받은 자격증). TypeLog 만 */
+export type AdminFeature = "stats" | "notices" | "inquiries" | "events" | "quizzes" | "referrals" | "licenses";
 
 export type AdminApp = {
   key: string;
@@ -52,7 +53,7 @@ export const ADMIN_APPS: AdminApp[] = [
     name: "TypeLog",
     origin: "https://typelog.myjane.co.kr",
     // 질문지 등록·공개가 이 앱의 관리 기능이다. 공지·문의는 아직 없다
-    features: ["stats", "quizzes", "referrals"],
+    features: ["stats", "quizzes", "referrals", "licenses"],
   },
 ];
 
