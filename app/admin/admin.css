@@ -942,3 +942,10 @@
 .adm-lic-meta p { margin: 0; }
 .adm-lic-meta .adm-chip { justify-self: start; text-decoration: none; }
 .adm-lic-pager { display: flex; align-items: center; justify-content: center; gap: 12px; margin-top: 18px; }
+.adm-lic-pick { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin: -4px 0 14px; }
+.adm-lic { position: relative; }
+.adm-lic-check { position: absolute; top: 8px; left: 8px; z-index: 2; display: grid; place-items: center; width: 28px; height: 28px;
+  border-radius: 8px; background: rgba(255, 255, 255, 0.92); box-shadow: 0 1px 4px rgba(var(--shadow-rgb), 0.25); cursor: pointer; }
+.adm-lic-check input { width: 17px; height: 17px; margin: 0; cursor: pointer; accent-color: var(--danger); }
+.adm-lic[data-picked="true"] .adm-lic-card { outline: 3px solid var(--danger); outline-offset: 2px; }
+.adm-lic .adm-lic-band { padding-left: 44px; }

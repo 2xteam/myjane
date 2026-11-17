@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { adminApi, adminErrorMessage } from "@/lib/adminClient";
+import { useConfirm } from "@/app/admin/ConfirmDialog";
 
 /**
  * 러닝 자격증 목록 — 시도한 사람들이 받은 자격증을 한 장씩 본다(사용자 2026-11-17).
@@ -9,6 +10,7 @@ import { adminApi, adminErrorMessage } from "@/lib/adminClient";
  * 글자(발급처 · 급수 · 기록 · 번호)는 TypeLog `/api/admin/licenses` 가 만들어 내려 준다. 포털은 그리기만.
  * 사진은 결과 링크를 만들 때 올라간 자격증 사진(R2)뿐이다 — 기기에만 있는 사진은 서버에 없다.
  * 「모자이크」 를 누르면 사진 칸만 굵은 픽셀로 깬다(화면 공유 · 캡처할 때).
+ * 카드 왼쪽 위 체크로 골라 「선택 삭제」 — 테스트 기록 정리용. 확인 창을 거쳐 TypeLog 가 지운다(사진 포함, 되돌릴 수 없다).
  * → my-obsidian-vault / 10-Projects/TypeLog.md 「admin 자격증 목록」
  */
 
@@ -61,6 +63,19 @@ export function LicensePanel({ appKey }: { appKey: string }) {
   const [data, setData] = useState<Data | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [mosaic, setMosaic] = useState(false);
+  /** 골라 둔 자격증 — 쪽을 넘겨도 남는다. 이름은 확인 창에 보여 주려고 함께 둔다 */
+  const [picked, setPicked] = useState<Map<string, string>>(new Map());
+  const [busy, setBusy] = useState(false);
+  const [note, setNote] = useState<string | null>(null);
+  const { ask, dialog } = useConfirm();
+
+  const toggle = (it: Item) =>
+    setPicked((m) => {
+      const n = new Map(m);
+      if (n.has(it.id)) n.delete(it.id);
+      else n.set(it.id, `${it.name} · ${it.license.grade} · ${it.license.record} · ${it.owner === "member" ? "회원" : "비회원"}`);
+      return n;
+    });
 
   const load = useCallback(async () => {
     setError(null);
@@ -74,6 +89,54 @@ export function LicensePanel({ appKey }: { appKey: string }) {
   useEffect(() => {
     void load();
   }, [load]);
+
+  const pageIds = data?.items.map((i) => i.id) ?? [];
+  const allOnPage = pageIds.length > 0 && pageIds.every((id) => picked.has(id));
+  const pickPage = () =>
+    setPicked((m) => {
+      const n = new Map(m);
+      for (const it of data?.items ?? []) {
+        if (allOnPage) n.delete(it.id);
+        else n.set(it.id, `${it.name} · ${it.license.grade} · ${it.license.record} · ${it.owner === "member" ? "회원" : "비회원"}`);
+      }
+      return n;
+    });
+
+  const removePicked = async () => {
+    const ids = [...picked.keys()];
+    if (!ids.length) return;
+    const labels = [...picked.values()];
+    const ok = await ask({
+      title: `자격증 ${ids.length}장을 지울까요?`,
+      lines: [
+        ...labels.slice(0, 8),
+        ...(labels.length > 8 ? [`… 외 ${labels.length - 8}장`] : []),
+        "기록과 올라간 자격증 사진이 함께 지워지고, 결과 링크는 「없는 링크」가 돼요. 되돌릴 수 없어요.",
+      ],
+      confirmLabel: "지우기",
+      danger: true,
+    });
+    if (!ok) return;
+    setBusy(true);
+    setNote(null);
+    try {
+      const r = await adminApi<{ deleted: number; photos: number; photosDeleted: number }>(
+        `/api/admin/apps/${appKey}/licenses`,
+        { method: "POST", body: { deleteIds: ids } },
+      );
+      setPicked(new Map());
+      setNote(
+        `🗑️ ${r.deleted}장을 지웠어요.` +
+          (r.photos ? ` 사진 ${r.photosDeleted}/${r.photos}장도 지웠어요.` : "") +
+          (r.photos > r.photosDeleted ? " 남은 사진은 R2 에서 정리가 필요해요." : ""),
+      );
+      await load();
+    } catch (err) {
+      setNote(adminErrorMessage(err));
+    } finally {
+      setBusy(false);
+    }
+  };
 
   const counts = data ? ORDER.filter((c) => data.counts[c]).map((c) => ({ code: c, ...data.counts[c] })) : [];
   const sum = counts.reduce((n, c) => ({ member: n.member + c.member, guest: n.guest + c.guest }), { member: 0, guest: 0 });
@@ -168,13 +231,33 @@ export function LicensePanel({ appKey }: { appKey: string }) {
         </button>
       </div>
 
+      <div className="adm-lic-pick">
+        <button type="button" className="adm-chip" onClick={pickPage} disabled={!pageIds.length}>
+          {allOnPage ? "이 쪽 선택 풀기" : "이 쪽 모두 선택"}
+        </button>
+        {picked.size ? (
+          <button type="button" className="adm-chip" onClick={() => setPicked(new Map())}>
+            선택 해제
+          </button>
+        ) : null}
+        <button
+          type="button"
+          className="adm-btn adm-btn--sm adm-btn--solid-danger"
+          disabled={!picked.size || busy}
+          onClick={() => void removePicked()}
+        >
+          {busy ? "지우는 중…" : `🗑️ 선택 삭제${picked.size ? ` (${picked.size})` : ""}`}
+        </button>
+        {note ? <span className="adm-muted">{note}</span> : null}
+      </div>
+
       {error ? <p className="adm-card-sub">{error}</p> : null}
       {data && !data.items.length ? <p className="adm-card-sub">해당하는 자격증이 없어요.</p> : null}
 
       {data?.items.length ? (
         <div className="adm-lic-grid">
           {data.items.map((it) => (
-            <LicenseCard key={it.id} it={it} mosaic={mosaic} />
+            <LicenseCard key={it.id} it={it} mosaic={mosaic} picked={picked.has(it.id)} onPick={() => toggle(it)} />
           ))}
         </div>
       ) : null}
@@ -197,14 +280,18 @@ export function LicensePanel({ appKey }: { appKey: string }) {
           </button>
         </div>
       ) : null}
+      {dialog}
     </section>
   );
 }
 
-function LicenseCard({ it, mosaic }: { it: Item; mosaic: boolean }) {
+function LicenseCard({ it, mosaic, picked, onPick }: { it: Item; mosaic: boolean; picked: boolean; onPick: () => void }) {
   const L = it.license;
   return (
-    <article className="adm-lic" data-athlete={L.athlete}>
+    <article className="adm-lic" data-athlete={L.athlete} data-picked={picked}>
+      <label className="adm-lic-check">
+        <input type="checkbox" checked={picked} onChange={onPick} aria-label={`${it.name} 자격증 선택`} />
+      </label>
       <div className="adm-lic-card">
         <div className="adm-lic-band">
           <span className="adm-lic-ko">{L.title}</span>
