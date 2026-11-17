@@ -317,8 +317,9 @@ const SettingsSchema = new Schema(
       type: Schema.Types.Mixed,
       default: { follow: 150, unfollow: 300, like: 500, feed: 500, story: 500, comment: 30, dm: 50 },
     },
-    /** 행동 사이 최소 간격(초). 앱의 간격 설정이 이보다 짧으면 이 값으로 올린다 */
-    minDelaySec: { type: Number, default: 4 },
+    /** 행동 사이 최소 간격(초). 앱의 간격 설정이 이보다 짧으면 이 값으로 올린다.
+     *  0 = 바닥 없음 — 사용자가 앱에서 정한 간격 그대로(2026-11-17, 처음 기본 4초가 사용자 설정을 덮었다) */
+    minDelaySec: { type: Number, default: 0 },
     /**
      * AI 댓글 — 하루 사용량은 **단위**로 센다(2026-11-07 사용자 결정).
      *   글만 = 1단위 · 사진 포함 = aiPhotoWeight(3)단위 — 원가 비율(사진 ≈ 글만 2.7배, 2026-11-08 실측)에 맞춘 값

@@ -575,7 +575,7 @@ function SettingsView({ settings, onSaved, onGoNotices }: { settings: Settings; 
       </label>
 
       <label className="adm-field">
-        <span className="adm-label">행동 사이 최소 간격(초)</span>
+        <span className="adm-label">행동 사이 최소 간격(초) — 0 이면 사용자가 정한 간격 그대로. 높이면 그보다 짧은 설정을 이 값으로 올려요</span>
         <input className="adm-input" style={{ maxWidth: 120 }} type="number" min={0} max={120} value={form.minDelaySec} onChange={(e) => setForm({ ...form, minDelaySec: Number(e.target.value) })} />
       </label>
 
