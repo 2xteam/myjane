@@ -35,6 +35,7 @@ type Item = {
   };
   gender: string;
   percentile: string | null;
+  wanted?: "fast" | "slow" | null;
   race: string | null;
   photoUrl: string | null;
   link: string | null;
@@ -340,6 +341,7 @@ function LicenseCard({ it, mosaic, picked, onPick }: { it: Item; mosaic: boolean
           ) : null}
         </p>
         <p className="adm-muted">
+          {it.wanted ? (it.wanted === "fast" ? "🚨 현상수배(말도 안 되게 빠름) · " : "🚨 현상수배(말도 안 되게 느림) · ") : ""}
           {it.result.emoji} {it.result.name}
           {it.percentile ? ` · ${it.percentile}` : ""}
           {it.race ? ` · ${it.race}` : ""} · {it.gender === "f" ? "여" : "남"} · {when(it.completedAt)}
