@@ -40,10 +40,13 @@ export function AppPanel({
   appKey,
   appName,
   features,
+  statsExtra,
 }: {
   appKey: string;
   appName: string;
   features: AdminFeature[];
+  /** 요약 카드 맨 아래에 붙일 앱 전용 내용 — TypeLog 는 「등록된 질문지」 목록 */
+  statsExtra?: React.ReactNode;
 }) {
   const available = features.filter((f) => f !== "events");
   const [view, setView] = useState<AdminFeature>(available[0] ?? "stats");
@@ -72,7 +75,7 @@ export function AppPanel({
         </div>
       ) : null}
 
-      {view === "stats" ? <StatsView appKey={appKey} appName={appName} /> : null}
+      {view === "stats" ? <StatsView appKey={appKey} appName={appName} extra={statsExtra} /> : null}
       {view === "notices" ? <NoticesView appKey={appKey} appName={appName} /> : null}
       {view === "inquiries" ? <InquiriesView appKey={appKey} appName={appName} /> : null}
     </>
@@ -81,7 +84,7 @@ export function AppPanel({
 
 /* ────────────────────────────── 요약 ────────────────────────────── */
 
-function StatsView({ appKey, appName }: { appKey: string; appName: string }) {
+function StatsView({ appKey, appName, extra }: { appKey: string; appName: string; extra?: React.ReactNode }) {
   const [stats, setStats] = useState<Stat[] | null>(null);
   const [tables, setTables] = useState<Table[]>([]);
   const [dbName, setDbName] = useState<string | null>(null);
@@ -160,6 +163,8 @@ function StatsView({ appKey, appName }: { appKey: string; appName: string }) {
           </div>
         </div>
       ))}
+
+      {extra}
     </div>
   );
 }
