@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useCallback, useEffect, useState } from "react";
 import { adminApi, adminErrorMessage } from "@/lib/adminClient";
 
@@ -8,6 +9,8 @@ import { adminApi, adminErrorMessage } from "@/lib/adminClient";
  *
  * 관리자는 문항을 하나하나 확인하지 않는다. 세부는 **그 앱의 검증기**가 본다.
  * 이 화면은 결과만 그린다 — 오류·경고 목록과 무작위 응답 분포 히스토그램.
+ *
+ * 질문지마다 쌓인 데이터(러닝 자격증 · 러닝 노트 카드)는 **질문지 상세**에서 본다 → quizzes/[slug]/page.tsx
  *
  * 규격은 볼트에 있다 → my-obsidian-vault / 30-Patterns/설문지 JSON 작성 지침.md
  */
@@ -20,9 +23,13 @@ type Report = {
   meanConfidence?: number | null;
   summary?: { itemCount: number; scoringItems: number; estimatedMinutes: number };
 };
-type QuizRow = {
+export type QuizRow = {
   slug: string;
   title: string;
+  emoji?: string | null;
+  /** 화면 방식 — running(러닝 자격증) · note(러닝 노트) · null(일반) */
+  experience?: "running" | "note" | null;
+  completed?: number;
   status: "draft" | "published" | "closed";
   itemCount: number;
   revision: number;
@@ -30,7 +37,9 @@ type QuizRow = {
   attempts: number;
 };
 
-const STATUS_LABEL: Record<QuizRow["status"], string> = {
+export const EXPERIENCE_LABEL: Record<string, string> = { running: "🏅 러닝 자격증", note: "☕ 러닝 노트" };
+
+export const STATUS_LABEL: Record<QuizRow["status"], string> = {
   draft: "작성 중",
   published: "공개",
   closed: "종료",
@@ -162,12 +171,19 @@ export function QuizPanel({ appKey }: { appKey: string }) {
                 <span className="adm-chip" data-tone={q.status === "published" ? "gold" : undefined}>
                   {STATUS_LABEL[q.status]}
                 </span>
-                <span className="adm-list-title">{q.title}</span>
+                <Link className="adm-list-title adm-list-link" href={`/admin/apps/${appKey}/quizzes/${q.slug}`}>
+                  {q.emoji ? `${q.emoji} ` : ""}
+                  {q.title}
+                </Link>
                 <code className="adm-list-code">{q.slug}</code>
+                {q.experience ? <span className="adm-chip">{EXPERIENCE_LABEL[q.experience] ?? q.experience}</span> : null}
                 <span className="adm-list-meta">
                   문항 {q.itemCount} · 응답 {q.attempts} · rev {q.revision}/{q.contentRevision}
                 </span>
                 <span className="adm-list-gap" />
+                <Link className="adm-btn adm-btn--ghost adm-btn--sm" href={`/admin/apps/${appKey}/quizzes/${q.slug}`}>
+                  상세 →
+                </Link>
                 {q.status === "draft" ? (
                   <button
                     type="button"

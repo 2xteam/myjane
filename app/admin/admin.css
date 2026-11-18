@@ -949,3 +949,35 @@
 .adm-lic-check input { width: 17px; height: 17px; margin: 0; cursor: pointer; accent-color: var(--danger); }
 .adm-lic[data-picked="true"] .adm-lic-card { outline: 3px solid var(--danger); outline-offset: 2px; }
 .adm-lic .adm-lic-band { padding-left: 44px; }
+
+/* 질문지 목록 → 상세 링크 (2026-11-18) */
+.adm-list-link { color: inherit; text-decoration: none; }
+.adm-list-link:hover { text-decoration: underline; }
+.adm-crumb { display: inline-flex; gap: 6px; font-size: 13px; color: var(--text-secondary); text-decoration: none; margin-bottom: 6px; }
+.adm-crumb:hover { color: var(--text-primary); }
+
+/* 러닝 노트 카드 — TypeLog components/note 의 카드를 작게. 색 · 글자색은 TypeLog 가 계산해 내려 준다 */
+.adm-note-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 18px; }
+.adm-note { position: relative; display: flex; flex-direction: column; gap: 8px; }
+.adm-note-card {
+  position: relative; aspect-ratio: 63 / 100; border-radius: 12px; overflow: hidden; padding: 16px 16px 14px;
+  display: flex; flex-direction: column; color: var(--note-ink); font-family: Georgia, "Noto Serif KR", serif;
+  box-shadow: 0 10px 24px rgba(var(--shadow-rgb), 0.28), inset 0 0 0 1px rgba(255, 255, 255, 0.1);
+  --note-ink: #f4ecdd; /* 카드마다 TypeLog 가 계산한 값을 style 로 덮어쓴다 */
+  --note-rule: color-mix(in srgb, var(--note-ink) 50%, transparent);
+}
+.adm-note-scrim { position: absolute; inset: 0; pointer-events: none; }
+.adm-note-card > :not(.adm-note-scrim) { position: relative; }
+.adm-note-top { display: flex; justify-content: space-between; font-size: 9px; letter-spacing: 0.24em; text-transform: uppercase; font-weight: 700; }
+.adm-note-code { margin: 26px 0 0; font-size: 34px; letter-spacing: 0.22em; line-height: 1; }
+.adm-note-name { margin: 8px 0 0; font-size: 14.5px; font-weight: 700; line-height: 1.35; word-break: keep-all; }
+.adm-note-table { margin: auto 0 0; font-size: 11px; }
+.adm-note-table div { display: grid; grid-template-columns: 58px 1fr; border-bottom: 1px solid var(--note-rule); padding: 3px 0; }
+.adm-note-table dt { font-weight: 700; }
+.adm-note-table dd { margin: 0; font-weight: 600; }
+.adm-note-foot { margin-top: 8px; display: flex; justify-content: space-between; font-size: 8.5px; letter-spacing: 0.18em; text-transform: uppercase; font-weight: 700; }
+.adm-note-colors { display: flex; flex-wrap: wrap; gap: 6px; }
+.adm-note-colors span { display: inline-flex; align-items: center; gap: 5px; padding: 3px 8px 3px 4px; border-radius: 999px; background: var(--bg-secondary); font-size: 11.5px; }
+.adm-note-colors i { width: 14px; height: 14px; border-radius: 50%; box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.15); }
+.adm-note[data-picked="true"] .adm-note-card { outline: 3px solid var(--danger); outline-offset: 2px; }
+.adm-note .adm-lic-check { top: 8px; left: auto; right: 8px; }
