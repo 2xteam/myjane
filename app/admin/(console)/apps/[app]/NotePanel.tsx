@@ -22,7 +22,7 @@ type Item = {
   member: { nickname: string | null; email: string | null; phone: string | null } | null;
   runner: string;
   result: { code: string; name: string; emoji: string };
-  card: { ink: string; scrim: number; contrast: number; back: string; meshImage: string; meshBase: string; roast: string; axes: Axis[] };
+  card: { ink: string; dark?: boolean; scrim: number; contrast: number; back: string; meshImage: string; meshBase: string; roast: string; axes: Axis[] };
   link: string | null;
   views: number;
   viaLink: boolean;
@@ -279,7 +279,7 @@ function NoteCard({ it, picked, onPick }: { it: Item; picked: boolean; onPick: (
         className="adm-note-card"
         style={{ "--note-ink": c.ink, backgroundColor: c.meshBase, backgroundImage: c.meshImage } as React.CSSProperties}
       >
-        {c.scrim ? <div className="adm-note-scrim" style={{ background: "#000", opacity: c.scrim }} /> : null}
+        {c.scrim ? <div className="adm-note-scrim" style={{ background: c.dark === false ? "#fff" : "#000", opacity: c.scrim }} /> : null}
         <div className="adm-note-top">
           <span>Running Note</span>
           <span>No. {String(it.attemptNo).padStart(2, "0")}</span>
