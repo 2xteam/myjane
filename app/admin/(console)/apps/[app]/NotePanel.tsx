@@ -277,7 +277,7 @@ function NoteCard({ it, picked, onPick }: { it: Item; picked: boolean; onPick: (
       </label>
       <div
         className="adm-note-card"
-        style={{ "--note-ink": c.ink, backgroundColor: c.meshBase, backgroundImage: c.meshImage } as React.CSSProperties}
+        style={{ "--note-ink": c.ink, backgroundColor: c.meshBase, backgroundImage: c.meshImage, backgroundSize: "100% 100%" } as React.CSSProperties}
       >
         {c.scrim ? <div className="adm-note-scrim" style={{ background: c.dark === false ? "#fff" : "#000", opacity: c.scrim }} /> : null}
         <div className="adm-note-top">
