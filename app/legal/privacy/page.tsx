@@ -197,7 +197,10 @@ export default function PrivacyPage() {
                 <td>
                   질문지 응답과 결과 유형. 로그인하지 않고 참여한 경우, 같은
                   질문지를 여러 번 하는 것을 막기 위해 브라우저에 임의로 만든
-                  식별자 하나가 저장되고 응답에 함께 기록됩니다
+                  식별자 하나가 저장되고 응답에 함께 기록됩니다. 러닝 자격증에
+                  사진을 넣으면(선택, 넣기 전에 동의를 받습니다) 결과 화면에 쓰려고
+                  얼굴 사진과 동의 시각이 그 결과에 함께 저장되고, 요청하면 바로
+                  파기합니다
                 </td>
               </tr>
               <tr>
@@ -358,7 +361,7 @@ export default function PrivacyPage() {
               <tr>
                 <th scope="row">Cloudflare R2</th>
                 <td>
-                  FitLog 결과지 사진, SnapNote 문제 사진, 2hbk 프로필·목표 이미지
+                  FitLog 결과지 사진, SnapNote 문제 사진, 2hbk 프로필·목표 이미지, TypeLog 러닝 자격증 사진
                 </td>
                 <td>이미지 파일 보관</td>
               </tr>
