@@ -25,6 +25,17 @@ const nextConfig: NextConfig = {
    * 개발 리소스(HMR 등)를 막지 않도록 허용해 둔다 → 볼트 30-Patterns/개발 서버와 검증 환경.md
    */
   allowedDevOrigins: ["local.myjane.co.kr"],
+  /**
+   * 프로모션 짧은 주소(사용자 2026-11-21) — 인스타 프로필 링크 등에 쓰는 www.myjane.co.kr/typelog/… 를
+   * TypeLog 의 홍보 시작 화면(/start/[slug] — 인트로 → 바로 설문)으로 보낸다. 임시(307)라 목적지를 바꿔도 캐시에 안 묶인다
+   */
+  async redirects() {
+    return [
+      { source: "/typelog/running_note", destination: "https://typelog.myjane.co.kr/start/runner-16type", permanent: false },
+      { source: "/typelog/running-note", destination: "https://typelog.myjane.co.kr/start/runner-16type", permanent: false },
+      { source: "/typelog/mbti_note", destination: "https://typelog.myjane.co.kr/start/kids-16type", permanent: false },
+    ];
+  },
 };
 
 export default nextConfig;
