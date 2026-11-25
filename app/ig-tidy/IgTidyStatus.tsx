@@ -94,7 +94,9 @@ export function IgTidyStatus() {
             </a>
             {macRelease ? <a className="btn btn-ghost" href="/api/ig-tidy/download?platform=mac">
               macOS 다운로드 · {macRelease.version}
-            </a> : null}
+            </a> : <span className="btn btn-ghost" aria-disabled="true" style={{ opacity: 0.55, cursor: "not-allowed" }}>
+              macOS 다운로드 준비 중
+            </span>}
           </div>
           {macRelease ? <p className="lead" style={{ marginTop: 10, fontSize: "0.9rem" }}>macOS는 Apple Silicon과 Intel을 지원하는 universal 앱이에요.</p> : null}
           {r.notes ? <p className="lead" style={{ marginTop: 14, whiteSpace: "pre-line" }}>바뀐 점 — {r.notes}</p> : null}
