@@ -20,6 +20,7 @@ const SIGNUP = "/signup?from=ig-tidy&next=/ig-tidy";
  */
 export function IgTidyStatus() {
   const [me, setMe] = useState<Me | null>(null);
+  const [macRelease, setMacRelease] = useState<Me["release"]>(null);
 
   useEffect(() => {
     /* 세션 표지가 없으면 부르지 않는다 — 공개 화면이 401 로 콘솔을 시끄럽게 하지 않게.
@@ -30,8 +31,14 @@ export function IgTidyStatus() {
     }
     void (async () => {
       try {
-        const res = await fetch("/api/ig-tidy/me", { cache: "no-store" });
-        setMe((await res.json()) as Me);
+        const [winRes, macRes] = await Promise.all([
+          fetch("/api/ig-tidy/me?platform=win", { cache: "no-store" }),
+          fetch("/api/ig-tidy/me?platform=mac", { cache: "no-store" }),
+        ]);
+        const win = (await winRes.json()) as Me;
+        const mac = (await macRes.json()) as Me;
+        setMe(win);
+        setMacRelease(mac.release ?? null);
       } catch {
         setMe({ ok: false, code: "network" });
       }
@@ -77,23 +84,27 @@ export function IgTidyStatus() {
     <>
       <h1 className="headline" style={{ fontSize: "clamp(1.6rem, 4.5vw, 2.2rem)" }}>IG Tidy 를 쓸 수 있어요</h1>
       <p className="lead">
-        윈도우용 설치 파일을 받아 실행하세요. 앱을 처음 열면 myjane 계정으로 한 번 로그인하고, 인스타그램에 로그인하면 바로 시작돼요.
+        사용하는 운영체제의 설치 파일을 받아 실행하세요. 앱을 처음 열면 myjane 계정으로 한 번 로그인하고, 인스타그램에 로그인하면 바로 시작돼요.
       </p>
       {r ? (
         <>
-          <div className="btn-row" style={{ marginTop: 20 }}>
-            <a className="btn btn-primary" href="/api/ig-tidy/download">
-              설치 파일 받기 · {r.version}
+          <div className="btn-row" style={{ marginTop: 20, flexWrap: "wrap" }}>
+            <a className="btn btn-primary" href="/api/ig-tidy/download?platform=win">
+              Windows 다운로드 · {r.version}
             </a>
+            {macRelease ? <a className="btn btn-ghost" href="/api/ig-tidy/download?platform=mac">
+              macOS 다운로드 · {macRelease.version}
+            </a> : null}
           </div>
+          {macRelease ? <p className="lead" style={{ marginTop: 10, fontSize: "0.9rem" }}>macOS는 Apple Silicon과 Intel을 지원하는 universal 앱이에요.</p> : null}
           {r.notes ? <p className="lead" style={{ marginTop: 14, whiteSpace: "pre-line" }}>바뀐 점 — {r.notes}</p> : null}
         </>
       ) : (
         <p className="lead" style={{ marginTop: 16 }}>설치 파일을 준비하고 있어요. 곧 올라와요.</p>
       )}
       <p className="lead" style={{ marginTop: 16, fontSize: "0.92rem" }}>
-        설치할 때 「Windows의 PC 보호」 창이 뜨면 <b>추가 정보 → 실행</b> 을 눌러 주세요. 지인용이라 서명 인증서가 없어서 뜨는 안내예요.
-        한 번 설치하면 새 버전은 앱이 알려 주고 버튼 하나로 올라가요.
+        Windows 설치할 때 「Windows의 PC 보호」 창이 뜨면 <b>추가 정보 → 실행</b> 을 눌러 주세요. 지인용이라 서명 인증서가 없어서 뜨는 안내예요.
+        한 번 설치하면 새 버전은 앱이 알려 주고 버튼 하나로 올라가요. macOS는 처음 실행할 때 시스템 보안 안내가 나타날 수 있어요.
       </p>
     </>
   );

@@ -37,11 +37,13 @@ export async function GET(req: Request) {
     return auth.error;
   }
   const user = auth.user;
-  const version = new URL(req.url).searchParams.get("v") ?? "";
+  const query = new URL(req.url).searchParams;
+  const version = query.get("v") ?? "";
+  const platform = query.get("platform") === "mac" ? "mac" : "win";
 
   try {
     await connectDB();
-    const [settings, release] = await Promise.all([loadSettings(), latestRelease()]);
+    const [settings, release] = await Promise.all([loadSettings(), latestRelease(platform)]);
     /* 공지 — 예전 앱은 settings.notice · noticeAt 한 줄을 띠로 보여 준다. 게시판으로 옮긴 뒤(2026-11-08)에는
        그 두 칸을 가장 최근에 켜진 공지로 채운다. 새 앱은 /api/ig-tidy/notices 를 따로 읽는다 */
     const s = { ...publicSettings(settings), ...(await noticeCompat(settings)) };

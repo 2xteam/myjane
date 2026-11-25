@@ -103,8 +103,11 @@ export function compareVersion(a: string, b: string): number {
 }
 
 /** 가장 최근에 올린 버전 */
-export async function latestRelease() {
-  const r = await getIgReleaseModel().findOne().sort({ publishedAt: -1 }).lean().exec();
+export async function latestRelease(platform: "win" | "mac" = "win") {
+  const filter = platform === "mac"
+    ? { macKey: { $exists: true, $nin: ["", null] } }
+    : { key: { $exists: true, $nin: ["", null] } };
+  const r = await getIgReleaseModel().findOne(filter).sort({ publishedAt: -1 }).lean().exec();
   if (!r) return null;
   return {
     version: r.version,

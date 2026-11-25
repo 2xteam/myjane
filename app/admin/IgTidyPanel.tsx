@@ -30,7 +30,7 @@ type Settings = {
   aiEnabled: boolean; aiFreePhotoDaily: number; aiApprovedPhotoDaily: number; aiPhotoWeight: number; aiPhotoMaxCaption: number;
   notice: string; noticeAt: string | null;
 };
-type Release = { version: string; notes: string; url: string; key: string; sha256: string; size: number; mandatory: boolean; publishedAt: string | null };
+type Release = { version: string; notes: string; url: string; key: string; sha256: string; size: number; macKey?: string; macSize?: number; macUpdateSize?: number; mandatory: boolean; publishedAt: string | null };
 type Overview = { settings: Settings; release: Release | null; waiting: Waiting[]; members: Member[]; live: Live[] };
 type Play = Live & { status: string; appVersion: string; endedAt: string | null; reason: string; tally: Record<string, { ok?: number; skip?: number; fail?: number }> };
 
@@ -1006,6 +1006,8 @@ function splitDraft(text: string): Pick<NoticeDraft, "title" | "body"> {
  * 포털(Vercel)을 거치지 않는다 — 100MB 안팎이라 함수 본문 제한(4.5MB)을 넘는다. */
 function UploadRelease({ onDone, latest }: { onDone: () => Promise<void>; latest: string | null }) {
   const [file, setFile] = useState<File | null>(null);
+  const [updateFile, setUpdateFile] = useState<File | null>(null);
+  const [platform, setPlatform] = useState<"win" | "mac">("win");
   const [version, setVersion] = useState("");
   const [notes, setNotes] = useState("");
   const [mandatory, setMandatory] = useState(false);
@@ -1020,6 +1022,8 @@ function UploadRelease({ onDone, latest }: { onDone: () => Promise<void>; latest
     if (m) setVersion(m[1]);
   }
 
+  function pickUpdate(f: File | null) { setUpdateFile(f); setMsg(null); }
+
   async function upload() {
     if (!file) return;
     setMsg(null);
@@ -1030,8 +1034,8 @@ function UploadRelease({ onDone, latest }: { onDone: () => Promise<void>; latest
         .map((b) => b.toString(16).padStart(2, "0")).join("");
 
       setStep("올릴 주소 받는 중…");
-      const { url, key } = await adminApi<{ url: string; key: string }>("/api/admin/ig-tidy/releases/upload-url", {
-        method: "POST", body: { version },
+      const { url, key, updateUrl, updateKey } = await adminApi<{ url: string; key: string; updateUrl?: string; updateKey?: string }>("/api/admin/ig-tidy/releases/upload-url", {
+        method: "POST", body: { version, platform },
       });
 
       setStep("R2 에 올리는 중…");
@@ -1045,12 +1049,26 @@ function UploadRelease({ onDone, latest }: { onDone: () => Promise<void>; latest
         xhr.send(file);
       });
 
+      let updateSha256 = "";
+      if (platform === "mac") {
+        if (!updateFile || !updateUrl || !updateKey) throw new Error("macOS 업데이트 ZIP도 골라 주세요.");
+        setStep("macOS 업데이트 ZIP 올리는 중…");
+        const updateBuf = await updateFile.arrayBuffer();
+        updateSha256 = Array.from(new Uint8Array(await crypto.subtle.digest("SHA-256", updateBuf)))
+          .map((b) => b.toString(16).padStart(2, "0")).join("");
+        await fetch(updateUrl, { method: "PUT", headers: { "Content-Type": "application/octet-stream" }, body: updateBuf }).then((r) => {
+          if (!r.ok) throw new Error(`R2 가 ${r.status} 로 거절했어요`);
+        });
+      }
+
       setStep("버전 등록 중…");
       await adminApi("/api/admin/ig-tidy/releases", {
-        method: "POST", body: { version, notes, key, sha256: hash, size: file.size, mandatory },
+        method: "POST", body: { version, platform, notes, key, sha256: hash, size: file.size, mandatory,
+          updateKey: platform === "mac" ? updateKey : "", updateSha256, updateSize: updateFile?.size || 0,
+          updateFileName: updateFile?.name || "" },
       });
       setMsg({ ok: true, text: `${version} 을 올렸어요. 1분 안에 앱들에 「새 버전」 이 떠요.` });
-      setFile(null); setNotes(""); setMandatory(false); setPct(0);
+      setFile(null); setUpdateFile(null); setNotes(""); setMandatory(false); setPct(0);
       await onDone();
     } catch (err) {
       setMsg({ ok: false, text: adminErrorMessage(err) });
@@ -1064,10 +1082,16 @@ function UploadRelease({ onDone, latest }: { onDone: () => Promise<void>; latest
     <div className="adm-card">
       <p className="adm-card-title">새 버전 올리기</p>
       <p className="adm-card-sub">
-        <code>npm run dist</code> 로 만든 <code>IG-Tidy-Setup-x.y.z.exe</code> 를 골라 올려요. 지금 최신은 <b>{latest ?? "없음"}</b>.
+        <code>npm run dist</code> 또는 <code>npm run dist:mac</code> 로 만든 설치 파일을 올려요. 지금 최신은 <b>{latest ?? "없음"}</b>.
       </p>
+      <label className="adm-field"><span className="adm-label">플랫폼</span>
+        <select className="adm-input" value={platform} onChange={(e) => { setPlatform(e.target.value as "win" | "mac"); setFile(null); setUpdateFile(null); }} disabled={!!step}>
+          <option value="win">Windows (.exe)</option><option value="mac">macOS (.dmg + .zip)</option>
+        </select></label>
       <label className="adm-field"><span className="adm-label">설치 파일</span>
-        <input type="file" accept=".exe" onChange={(e) => pick(e.target.files?.[0] ?? null)} disabled={!!step} /></label>
+        <input type="file" accept={platform === "mac" ? ".dmg" : ".exe"} onChange={(e) => pick(e.target.files?.[0] ?? null)} disabled={!!step} /></label>
+      {platform === "mac" ? <label className="adm-field"><span className="adm-label">자동 업데이트 ZIP</span>
+        <input type="file" accept=".zip" onChange={(e) => pickUpdate(e.target.files?.[0] ?? null)} disabled={!!step} /></label> : null}
       <label className="adm-field"><span className="adm-label">버전 (파일 이름에서 읽어요)</span>
         <input className="adm-input" style={{ maxWidth: 160 }} value={version} onChange={(e) => setVersion(e.target.value)} disabled={!!step} /></label>
       {sameOrOlder ? <p className="adm-msg adm-msg--bad">최신({latest})보다 높아야 앱이 새 버전으로 알아봐요. package.json 의 version 을 올렸는지 확인해 주세요.</p> : null}
@@ -1079,7 +1103,7 @@ function UploadRelease({ onDone, latest }: { onDone: () => Promise<void>; latest
         <span>꼭 올려야 함 — 낮은 버전은 시작 전에 업데이트를 요구해요</span>
       </label>
       <div className="adm-row" style={{ marginTop: 12, gap: 10 }}>
-        <button className="adm-btn" disabled={!file || !/^\d+\.\d+\.\d+$/.test(version) || !!step} onClick={upload}>올리기</button>
+        <button className="adm-btn" disabled={!file || (platform === "mac" && !updateFile) || !/^\d+\.\d+\.\d+$/.test(version) || !!step} onClick={upload}>올리기</button>
         {step ? <span className="adm-muted">{step}{step.startsWith("R2") ? ` ${pct}%` : ""}</span> : null}
         {msg ? <span className={msg.ok ? "adm-msg adm-msg--ok" : "adm-msg adm-msg--bad"}>{msg.text}</span> : null}
       </div>

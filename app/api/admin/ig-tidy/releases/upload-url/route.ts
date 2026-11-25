@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { adminError, requireAdmin } from "@/lib/adminAuth";
-import { igTidyReleaseKey, signedInstallerUploadUrl } from "@/lib/igTidyR2";
+import { igTidyReleaseKey, igTidyUpdateKey, signedInstallerUploadUrl } from "@/lib/igTidyR2";
 
 export const runtime = "nodejs";
 
@@ -15,13 +15,21 @@ export async function POST(req: Request) {
   const auth = await requireAdmin(req);
   if ("error" in auth) return auth.error;
   try {
-    const b = (await req.json().catch(() => ({}))) as { version?: unknown };
+    const b = (await req.json().catch(() => ({}))) as { version?: unknown; platform?: unknown };
     const version = String(b.version ?? "").trim();
     if (!/^\d+\.\d+\.\d+$/.test(version)) {
       return NextResponse.json({ ok: false, error: "버전은 1.2.3 모양으로 넣어 주세요." }, { status: 400 });
     }
-    const key = igTidyReleaseKey(version);
-    return NextResponse.json({ ok: true, key, url: await signedInstallerUploadUrl(key) });
+    const platform = b.platform === "mac" ? "mac" : "win";
+    const key = igTidyReleaseKey(version, platform);
+    const updateUrl = platform === "mac" ? await signedInstallerUploadUrl(igTidyUpdateKey(version, platform)) : "";
+    return NextResponse.json({
+      ok: true,
+      key,
+      url: await signedInstallerUploadUrl(key),
+      updateKey: platform === "mac" ? igTidyUpdateKey(version, platform) : "",
+      updateUrl,
+    });
   } catch (err) {
     return adminError(err);
   }

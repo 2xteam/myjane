@@ -15,7 +15,10 @@ import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
  * `IG_TIDY_R2_BUCKET` 으로 따로 둘 수도 있다(없으면 `myjane`).
  */
 export const IG_TIDY_RELEASE_PREFIX = "ig-tidy/releases/";
-export const igTidyReleaseKey = (version: string) => `${IG_TIDY_RELEASE_PREFIX}IG-Tidy-Setup-${version}.exe`;
+export const igTidyReleaseKey = (version: string, platform: "win" | "mac" = "win") =>
+  `${IG_TIDY_RELEASE_PREFIX}${platform === "mac" ? `IG-Tidy-${version}.dmg` : `IG-Tidy-Setup-${version}.exe`}`;
+export const igTidyUpdateKey = (version: string, platform: "win" | "mac" = "win") =>
+  `${IG_TIDY_RELEASE_PREFIX}IG-Tidy-${version}.zip`;
 
 let client: S3Client | null = null;
 

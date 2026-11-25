@@ -6,6 +6,12 @@ import { getIgReleaseModel } from "@/models/IgTidy";
 
 export const runtime = "nodejs";
 
+function requestedPlatform(req: Request): "win" | "mac" {
+  const explicit = new URL(req.url).searchParams.get("platform");
+  if (explicit === "mac" || explicit === "win") return explicit;
+  return /Macintosh|Mac OS X/i.test(req.headers.get("user-agent") ?? "") ? "mac" : "win";
+}
+
 /**
  * 설치 파일 받기 — **허용된 회원만.**
  *
@@ -25,6 +31,7 @@ export async function GET(req: Request) {
   }
 
   const url = new URL(req.url);
+  const platform = requestedPlatform(req);
   const version = url.searchParams.get("version");
   await connectDB();
   const Releases = getIgReleaseModel();
@@ -33,12 +40,16 @@ export async function GET(req: Request) {
     : await Releases.findOne().sort({ publishedAt: -1 }).lean().exec();
   if (!r) return igError("bad_request", "아직 올라온 설치 파일이 없어요.", 404);
 
-  const fileName = `IG-Tidy-Setup-${r.version}.exe`;
-  let href = r.url ?? "";
+  const mac = platform === "mac";
+  const fileName = mac ? `IG-Tidy-${r.version}.dmg` : `IG-Tidy-Setup-${r.version}.exe`;
+  const key = mac ? (r.macKey ?? "") : (r.key ?? "");
+  const sha256 = mac ? (r.macSha256 ?? "") : (r.sha256 ?? "");
+  const size = mac ? (r.macSize ?? 0) : (r.size ?? 0);
+  let href = mac ? "" : (r.url ?? "");
   if (!href) {
-    if (!r.key) return igError("bad_request", "설치 파일 위치가 비어 있어요. 관리자에게 알려 주세요.", 500);
+    if (!key) return igError("bad_request", "이 운영체제의 설치 파일이 아직 없어요.", 404);
     try {
-      href = await signedInstallerUrl(r.key, fileName);
+      href = await signedInstallerUrl(key, fileName);
     } catch (err) {
       const message = err instanceof Error ? err.message : "알 수 없는 오류";
       return NextResponse.json({ ok: false, error: `설치 파일 주소를 만들지 못했어요: ${message}` }, { status: 500 });
@@ -46,7 +57,14 @@ export async function GET(req: Request) {
   }
 
   if (url.searchParams.get("json")) {
-    return NextResponse.json({ ok: true, version: r.version, url: href, sha256: r.sha256 ?? "", size: r.size ?? 0, fileName });
+    const updateKey = mac ? (r.macUpdateKey ?? "") : "";
+    const updateFileName = mac ? (r.macUpdateFileName || `IG-Tidy-${r.version}.zip`) : "";
+    let updateUrl = "";
+    if (updateKey) updateUrl = await signedInstallerUrl(updateKey, updateFileName);
+    return NextResponse.json({
+      ok: true, version: r.version, url: href, sha256, size, fileName,
+      updateUrl, updateSha256: mac ? (r.macUpdateSha256 ?? "") : "", updateFileName,
+    });
   }
   return NextResponse.redirect(href, 302);
 }

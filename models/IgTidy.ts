@@ -384,6 +384,14 @@ const ReleaseSchema = new Schema(
     size: { type: Number, default: 0 },
     /** 이 버전부터는 꼭 올려야 하나 — 켜면 minVersion 도 함께 올린다 */
     mandatory: { type: Boolean, default: false },
+    /** 같은 버전의 macOS 배포물 — Windows 필드는 기존 호환을 위해 그대로 둔다 */
+    macKey: { type: String, default: "" },
+    macSha256: { type: String, default: "" },
+    macSize: { type: Number, default: 0 },
+    macUpdateKey: { type: String, default: "" },
+    macUpdateSha256: { type: String, default: "" },
+    macUpdateSize: { type: Number, default: 0 },
+    macUpdateFileName: { type: String, default: "" },
     publishedAt: { type: Date, default: Date.now },
   },
   { versionKey: false },
