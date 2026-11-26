@@ -9,6 +9,7 @@ import {
   getIgSettingsModel,
   type IgTidySettings,
 } from "@/models/IgTidy";
+import { igTidyReleaseKey, installerMetadata } from "@/lib/igTidyR2";
 
 /**
  * IG Tidy API 공용 — 누가 쓸 수 있는지, 실행 잠금, 버전 비교.
@@ -107,7 +108,17 @@ export async function latestRelease(platform: "win" | "mac" = "win") {
   const filter = platform === "mac"
     ? { macKey: { $exists: true, $nin: ["", null] } }
     : { key: { $exists: true, $nin: ["", null] } };
-  const r = await getIgReleaseModel().findOne(filter).sort({ publishedAt: -1 }).lean().exec();
+  let r = await getIgReleaseModel().findOne(filter).sort({ publishedAt: -1 }).lean().exec();
+  if (!r && platform === "mac") {
+    const candidates = await getIgReleaseModel().find().sort({ publishedAt: -1 }).limit(50).lean().exec();
+    for (const candidate of candidates) {
+      const key = igTidyReleaseKey(candidate.version, "mac");
+      if (await installerMetadata(key)) {
+        r = { ...candidate, macKey: key };
+        break;
+      }
+    }
+  }
   if (!r) return null;
   return {
     version: r.version,

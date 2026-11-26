@@ -1,4 +1,4 @@
-import { GetObjectCommand, PutObjectCommand, S3Client } from "@aws-sdk/client-s3";
+import { GetObjectCommand, HeadObjectCommand, PutObjectCommand, S3Client } from "@aws-sdk/client-s3";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 
 /**
@@ -69,4 +69,15 @@ export async function signedInstallerUrl(key: string, fileName: string): Promise
     }),
     { expiresIn: 600 },
   );
+}
+
+/** 릴리스 등록 문서가 예전 형식이어도 R2에 파일이 있는지 확인한다. */
+export async function installerMetadata(key: string): Promise<{ size: number } | null> {
+  try {
+    const h = await r2().send(new HeadObjectCommand({ Bucket: igTidyBucket(), Key: key }));
+    return { size: Number(h.ContentLength ?? 0) };
+  } catch (err) {
+    if ((err as { $metadata?: { httpStatusCode?: number } })?.$metadata?.httpStatusCode === 404) return null;
+    throw err;
+  }
 }

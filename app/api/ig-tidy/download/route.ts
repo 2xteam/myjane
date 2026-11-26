@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { connectDB } from "@/lib/db";
 import { igError, requireIgTidyUser } from "@/lib/igTidy";
-import { signedInstallerUrl } from "@/lib/igTidyR2";
+import { igTidyReleaseKey, installerMetadata, signedInstallerUrl } from "@/lib/igTidyR2";
 import { getIgReleaseModel } from "@/models/IgTidy";
 
 export const runtime = "nodejs";
@@ -35,9 +35,23 @@ export async function GET(req: Request) {
   const version = url.searchParams.get("version");
   await connectDB();
   const Releases = getIgReleaseModel();
-  const r = version
+  let r = version
     ? await Releases.findOne({ version }).lean().exec()
     : await Releases.findOne().sort({ publishedAt: -1 }).lean().exec();
+  if (platform === "mac" && r && !r.macKey) {
+    const key = igTidyReleaseKey(r.version, "mac");
+    if (await installerMetadata(key)) r = { ...r, macKey: key };
+  }
+  if (platform === "mac" && !version && (!r || !r.macKey)) {
+    const candidates = await Releases.find().sort({ publishedAt: -1 }).limit(50).lean().exec();
+    for (const candidate of candidates) {
+      const key = igTidyReleaseKey(candidate.version, "mac");
+      if (await installerMetadata(key)) {
+        r = { ...candidate, macKey: key };
+        break;
+      }
+    }
+  }
   if (!r) return igError("bad_request", "아직 올라온 설치 파일이 없어요.", 404);
 
   const mac = platform === "mac";
