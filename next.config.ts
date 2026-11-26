@@ -33,6 +33,8 @@ const nextConfig: NextConfig = {
     return [
       { source: "/typelog/running_note", destination: "https://typelog.myjane.co.kr/start/runner-16type", permanent: false },
       { source: "/typelog/running-note", destination: "https://typelog.myjane.co.kr/start/runner-16type", permanent: false },
+      { source: "/typelog/running_license", destination: "https://typelog.myjane.co.kr/start/running-record", permanent: false },
+      { source: "/typelog/running-license", destination: "https://typelog.myjane.co.kr/start/running-record", permanent: false },
       { source: "/typelog/mbti_note", destination: "https://typelog.myjane.co.kr/start/kids-16type", permanent: false },
     ];
   },
