@@ -63,6 +63,7 @@ function portalOrigin(isPortal: boolean): string {
   if (host === "localhost" || host === "127.0.0.1" || host.endsWith(".localhost")) {
     return `${window.location.protocol}//${host}:${LOCAL_PORTAL_PORT}`;
   }
+  if (/^local-[a-z0-9-]+\.myjane\.co\.kr$/.test(host)) return "https://local-www.myjane.co.kr";
   return (process.env.NEXT_PUBLIC_PORTAL_ORIGIN ?? "https://www.myjane.co.kr").replace(/\/+$/, "");
 }
 

@@ -100,5 +100,7 @@ export function portalOrigin(req: Request): string {
   const env = process.env.NEXT_PUBLIC_BASE_URL?.trim().replace(/\/+$/, "");
   const host = (req.headers.get("x-forwarded-host") ?? req.headers.get("host") ?? "").split(",")[0].trim();
   if (host.startsWith("localhost") || host.startsWith("127.0.0.1")) return `http://${host}`;
+  /* local-www.myjane.co.kr — 프록시(Caddy) 뒤의 로컬 포털. 소셜 콘솔에 이 주소를 등록해야 실제로 돌아온다 */
+  if (/^local-[a-z0-9-]+\.myjane\.co\.kr$/.test(host)) return `https://${host}`;
   return env || `https://${host}`;
 }

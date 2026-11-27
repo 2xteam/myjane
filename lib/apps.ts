@@ -181,5 +181,9 @@ function originFor(app: AppInfo): string {
   const host = window.location.hostname;
   const local = host === "localhost" || host === "127.0.0.1" || host.endsWith(".localhost");
   if (local && app.devPort) return `${window.location.protocol}//${host}:${app.devPort}`;
+  /* local-www.myjane.co.kr(로컬 포털) → local-<앱>.myjane.co.kr. 이름은 운영 오리진의 첫 칸 */
+  if (/^local-[a-z0-9-]+\.myjane\.co\.kr$/.test(host)) {
+    return `https://local-${new URL(app.origin).hostname.split(".")[0]}.myjane.co.kr`;
+  }
   return app.origin;
 }
